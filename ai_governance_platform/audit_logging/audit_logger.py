@@ -1,3 +1,4 @@
+# AuditLogger implementation
 import csv
 import os
 from datetime import datetime
@@ -11,12 +12,12 @@ class AuditLogger:
             "confidence_score", "risk_level", "decision", "rule_triggered", "reason", "required_controls"
         ]
         if not os.path.exists(log_path):
-            with open(log_path, mode="w", newline="", encoding="utf-8") as f:
+            with open(log_path, mode="w", newline='') as f:
                 writer = csv.writer(f)
                 writer.writerow(self.header)
 
     def log_interaction(self, entry: dict):
         row = [entry.get(h, "") for h in self.header]
-        with open(self.log_path, mode="a", newline="", encoding="utf-8") as f:
+        with open(self.log_path, mode="a", newline='') as f:
             writer = csv.writer(f)
             writer.writerow(row)

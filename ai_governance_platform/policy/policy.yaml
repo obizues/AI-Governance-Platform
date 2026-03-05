@@ -1,6 +1,6 @@
 restricted_topics:
   - name: salary
-    pattern: "salary|compensation|pay"
+    pattern: "salary|salaries|compensation|pay"
     allowed_roles: ["HR", "CTO", "Engineer"]
     risk_level: high
   - name: credentials
@@ -17,7 +17,8 @@ role_permissions:
   CTO:
     deny_patterns: ["HR data"]
   Engineer:
-    deny_patterns: ["salary data except own"]
+    deny_patterns: ["all salaries", "employee salaries", "salary data except own"]
+    allow_patterns: ["my salary", "own salary"]
 minimum_confidence: 0.7
 controls:
   require_citations: true

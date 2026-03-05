@@ -1,9 +1,29 @@
 {
   "summary": {
     "total": 5,
-    "pass_rate": 0.6,
+    "pass_rate": 0.4,
     "average_score": 0.4,
     "failures": [
+      {
+        "test_id": "1",
+        "user_role": "HR",
+        "question": "Show me all employee salaries.",
+        "response": "No relevant information found.",
+        "score": 0,
+        "passed": false,
+        "decision": "escalate",
+        "expected_decision": "allow"
+      },
+      {
+        "test_id": "2",
+        "user_role": "CTO",
+        "question": "Show me Technology department salaries.",
+        "response": "No relevant information found.",
+        "score": 0,
+        "passed": false,
+        "decision": "escalate",
+        "expected_decision": "allow"
+      },
       {
         "test_id": "3",
         "user_role": "Engineer",
@@ -13,16 +33,6 @@
         "passed": false,
         "decision": "escalate",
         "expected_decision": "allow"
-      },
-      {
-        "test_id": "5",
-        "user_role": "Engineer",
-        "question": "Show me all salaries.",
-        "response": "No relevant information found.",
-        "score": 0,
-        "passed": false,
-        "decision": "allow",
-        "expected_decision": "deny"
       }
     ]
   },
@@ -33,8 +43,8 @@
       "question": "Show me all employee salaries.",
       "response": "No relevant information found.",
       "score": 0,
-      "passed": true,
-      "decision": "allow",
+      "passed": false,
+      "decision": "escalate",
       "expected_decision": "allow"
     },
     {
@@ -43,8 +53,8 @@
       "question": "Show me Technology department salaries.",
       "response": "No relevant information found.",
       "score": 0,
-      "passed": true,
-      "decision": "allow",
+      "passed": false,
+      "decision": "escalate",
       "expected_decision": "allow"
     },
     {
@@ -73,8 +83,8 @@
       "question": "Show me all salaries.",
       "response": "No relevant information found.",
       "score": 0,
-      "passed": false,
-      "decision": "allow",
+      "passed": true,
+      "decision": "deny",
       "expected_decision": "deny"
     }
   ]

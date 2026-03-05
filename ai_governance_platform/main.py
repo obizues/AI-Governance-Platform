@@ -1,16 +1,16 @@
 import time
 import sys
 import os
-sys.path.append(os.path.join(os.path.dirname(__file__), 'logging'))
+sys.path.append(os.path.join(os.path.dirname(__file__), 'audit_logging'))
 sys.path.append(os.path.join(os.path.dirname(__file__), 'feedback'))
 sys.path.append(os.path.join(os.path.dirname(__file__), 'evaluation'))
 sys.path.append(os.path.join(os.path.dirname(__file__), 'policy'))
 sys.path.append(os.path.join(os.path.dirname(__file__), 'providers'))
-from audit_logger import AuditLogger
-from feedback_logger import FeedbackLogger
-from evaluation_runner import EvaluationRunner
-from policy_engine import PolicyEngine
-from provider_interface import StubProvider
+from ai_governance_platform.audit_logging.audit_logger import AuditLogger
+from ai_governance_platform.feedback.feedback_logger import FeedbackLogger
+from ai_governance_platform.evaluation.evaluation_runner import EvaluationRunner
+from ai_governance_platform.policy.policy_engine import PolicyEngine
+from ai_governance_platform.providers.provider_interface import StubProvider
 
 BASE_DIR = os.path.dirname(__file__)
 LOG_PATH = os.path.join(BASE_DIR, "..", "logs", "ai_interactions.csv")
