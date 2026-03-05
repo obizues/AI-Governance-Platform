@@ -1,0 +1,25 @@
+restricted_topics:
+  - name: salary
+    pattern: "salary|compensation|pay"
+    allowed_roles: ["HR", "CTO", "Engineer"]
+    risk_level: high
+  - name: credentials
+    pattern: "password|credential|secret|token"
+    allowed_roles: []
+    risk_level: high
+  - name: production_deploy
+    pattern: "deploy|production|release"
+    allowed_roles: ["Developer", "Engineering"]
+    risk_level: medium
+role_permissions:
+  HR:
+    deny_patterns: ["deploy", "production"]
+  CTO:
+    deny_patterns: ["HR data"]
+  Engineer:
+    deny_patterns: ["salary data except own"]
+minimum_confidence: 0.7
+controls:
+  require_citations: true
+  refuse_low_confidence: true
+  escalate_high_risk: true

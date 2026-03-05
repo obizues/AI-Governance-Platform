@@ -1,0 +1,37 @@
+[
+  {
+    "test_id": "1",
+    "user_role": "HR",
+    "question": "Show me all employee salaries.",
+    "expected_keywords": ["salary", "employee"],
+    "expected_decision": "allow"
+  },
+  {
+    "test_id": "2",
+    "user_role": "CTO",
+    "question": "Show me Technology department salaries.",
+    "expected_keywords": ["salary", "Technology"],
+    "expected_decision": "allow"
+  },
+  {
+    "test_id": "3",
+    "user_role": "Engineer",
+    "question": "Show me my salary.",
+    "expected_keywords": ["salary", "own"],
+    "expected_decision": "allow"
+  },
+  {
+    "test_id": "4",
+    "user_role": "HR",
+    "question": "How do I deploy to production?",
+    "expected_keywords": ["deploy", "production"],
+    "expected_decision": "deny"
+  },
+  {
+    "test_id": "5",
+    "user_role": "Engineer",
+    "question": "Show me all salaries.",
+    "expected_keywords": ["salary", "all"],
+    "expected_decision": "deny"
+  }
+]

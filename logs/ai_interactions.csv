@@ -1,0 +1,2 @@
+timestamp,user_id,user_role,prompt,response,response_time_ms,confidence_score,risk_level,decision,rule_triggered,reason,required_controls
+2026-03-04 20:27:52,user123,HR,Show me all employee salaries.,No relevant information found.,0,0.95,low,allow,,,
