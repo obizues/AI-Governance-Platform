@@ -3,17 +3,17 @@
 A technical proof-of-concept for safe, observable, and governed AI operations in production environments.
 
 ## Features
-- **Audit Logging:** Every interaction is logged for compliance and traceability.
+- **Audit Logging:** Every interaction is logged for compliance and traceability. (Now in `audit_logging`)
 - **Policy Engine + Risk Gate:** Enterprise-grade policy enforcement and risk scoring.
 - **Evaluation Framework:** Automated test cases, scoring, and reporting.
 - **Feedback Capture & Loop:** User feedback is logged and aggregated; repeated downvotes trigger escalation.
-- **Streamlit UI:** Demo interface for live queries, audit log review, and system health KPIs.
+- **Streamlit UI:** Demo interface for live queries, audit log review, and system health KPIs. UI now shows info messages when no query is present or after feedback.
 
 ## Architecture
 ```
 /ai_governance_platform
   /app            # Entrypoints / minimal UI hooks
-  /logging        # Audit logger
+  /audit_logging  # Audit logger (renamed from /logging)
   /evaluation     # Dataset, runner, scoring, report
   /feedback       # Feedback logging & summary
   /policy         # policy.yaml, policy engine, feedback gate
@@ -59,5 +59,11 @@ requirements.txt  # Python dependencies
 - Fork, branch, and submit PRs.
 - See CHANGELOG.md for release history.
 
----
-MIT License
+## v0.2.0 Updates
+- UI/UX improvements for Live Query tab
+- Info messages now reliably show when no query is present or after feedback
+- Feedback submission and cleanup logic improved
+- Indentation, import, and session state bugs fixed
+- Audit logging refactored to avoid shadowing standard library
+- All __init__.py files added for package structure
+- Evaluation and KPI logic clarified in documentation

@@ -10,3 +10,15 @@
 - Known bugs:
 	- Evaluation may fail with FileNotFoundError if dataset is missing
 	- System Health tab may not display metrics correctly
+
+## [v0.2.0] - 2026-03-04
+- Major UI/UX improvements for Live Query tab
+- Info messages now reliably show when no query is present or after feedback
+- Feedback submission and cleanup logic improved
+- Indentation, import, and session state bugs fixed
+- Audit logging refactored to avoid shadowing standard library
+- All __init__.py files added for package structure
+- Evaluation and KPI logic clarified in documentation
+- Known bugs:
+    - System Health tab may not display metrics correctly if log files are missing or malformed
+    - Evaluation may fail with FileNotFoundError if dataset is missing
