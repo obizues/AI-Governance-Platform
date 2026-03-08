@@ -22,3 +22,12 @@
 - Known bugs:
     - System Health tab may not display metrics correctly if log files are missing or malformed
     - Evaluation may fail with FileNotFoundError if dataset is missing
+
+## [v0.3.0] - 2026-03-08
+### Major Updates
+- Modernized UI with collapsible sidebar, emoji icons, and top banner
+- Updated documentation: README, requirements, architecture
+- Added docs/architecture.md with component diagram and extensibility notes
+- Improved audit logging, feedback, evaluation, and metrics modules
+- Enhanced links and sidebar content for clarity
+- Version bump and GitHub tagging for v0.3.0
