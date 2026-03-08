@@ -1,3 +1,8 @@
 streamlit
 pandas
 pyyaml
+# Version: v0.3.0
+# Add any new dependencies for UI enhancements or sidebar features
+# e.g. for advanced metrics or visualization:
+# plotly
+# streamlit-extras

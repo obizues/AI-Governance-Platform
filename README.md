@@ -1,15 +1,12 @@
-# AI Governance and Evaluation Platform
 
-A technical proof-of-concept for safe, observable, and governed AI operations in production environments.
+# AI Governance & Evaluation Platform 🤖
+
+A modular, open-source platform for safe, observable, and governed AI operations in enterprise environments.
+
+**Version:** v0.3.0
 
 ## Features
-- **Audit Logging:** Every interaction is logged for compliance and traceability. (Now in `audit_logging`)
-- **Policy Engine + Risk Gate:** Enterprise-grade policy enforcement and risk scoring.
-- **Evaluation Framework:** Automated test cases, scoring, and reporting.
-- **Feedback Capture & Loop:** User feedback is logged and aggregated; repeated downvotes trigger escalation.
-- **Streamlit UI:** Demo interface for live queries, audit log review, and system health KPIs. UI now shows info messages when no query is present or after feedback.
-
-## Architecture
+...existing code...
 ```
 /ai_governance_platform
   /app            # Entrypoints / minimal UI hooks
@@ -19,7 +16,7 @@ A technical proof-of-concept for safe, observable, and governed AI operations in
   /policy         # policy.yaml, policy engine, feedback gate
   /providers      # AI provider interface + stub provider
   /metrics        # KPI calculations
-  /ui             # Streamlit app
+  /ui             # Streamlit app (with banners, sidebar, tabs)
   /tests          # Pytest tests
 main.py           # CLI runner
 README.md         # Project documentation
@@ -55,12 +52,18 @@ requirements.txt  # Python dependencies
 - KPIs: total queries, deny rate, escalation rate, avg latency, positive feedback rate, trust score.
 - **Known Bug:** System Health tab may not display metrics correctly if log files are missing or malformed.
 
+## Documentation & Links
+- 🌐 [GitHub Repository](https://github.com/obizues/AI-Governance-Platform)
+- 📘 [README.md](https://github.com/obizues/AI-Governance-Platform/blob/main/README.md): Platform overview, setup, features
+- 📝 [CHANGELOG.md](https://github.com/obizues/AI-Governance-Platform/blob/main/CHANGELOG.md): Release notes and updates
+- 🗂️ [System Architecture](https://github.com/obizues/AI-Governance-Platform/blob/main/docs/architecture.md): Design and flow diagrams
+
 ## Contributing
 - Fork, branch, and submit PRs.
 - See CHANGELOG.md for release history.
 
 ## v0.2.0 Updates
-- UI/UX improvements for Live Query tab
+- UI/UX improvements for Live Query tab, banners, sidebar, and documentation links
 - Info messages now reliably show when no query is present or after feedback
 - Feedback submission and cleanup logic improved
 - Indentation, import, and session state bugs fixed

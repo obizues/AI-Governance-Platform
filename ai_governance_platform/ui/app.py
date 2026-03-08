@@ -19,21 +19,210 @@ POLICY_PATH = os.path.abspath(os.path.join(BASE_DIR, "..", "policy", "policy.yam
 import streamlit as st
 import pandas as pd
 import hashlib
+st.sidebar.markdown("""
+<div style='background:#eaf6ff;border:1.5px solid #b3e5fc;padding:10px 12px 8px 12px;margin-bottom:12px;text-align:center;border-radius:8px;'>
+    <span style='font-size:1.08em;font-weight:600;color:#1976d2;'>App version:</span><br>
+    <span style='font-size:1.05em;color:#222;'>v0.3.0 - Modular AI Governance, Audit Logging, Policy Engine, Feedback, Streamlit UI</span>
+</div>
+<div class='sidebar-card' style='background:#eaf6ff;font-size:0.93em;margin-bottom:16px;border:1.5px solid #b3e5fc;padding:8px 8px 6px 8px;'>
+    <div style='font-weight:700;font-size:1em;line-height:1.2;margin-bottom:2px;text-align:center;'>
+        <span style="font-size:1.05em;vertical-align:middle;">🤖</span> AI Governance & Evaluation Platform
+    </div>
+    <div style='margin:0 0 0 0;font-size:0.91em;line-height:1.35;text-align:center;'>
+        <div style='display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:2px;'>
+            <span style="font-size:1em;">📝</span> <span>Audit Logging for all AI interactions</span>
+        </div>
+        <div style='display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:2px;'>
+            <span style="font-size:1em;">⚖️</span> <span>Policy Engine for query risk assessment</span>
+        </div>
+        <div style='display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:2px;'>
+            <span style="font-size:1em;">💬</span> <span>Feedback logging and summary</span>
+        </div>
+        <div style='display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:2px;'>
+            <span style="font-size:1em;">📊</span> <span>System Health KPIs and metrics</span>
+        </div>
+        <div style='display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:2px;'>
+            <span style="font-size:1em;">🖥️</span> <span>Streamlit-based modern UI</span>
+        </div>
+        <div style='display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:2px;'>
+            <span style="font-size:1em;">🌐</span> <span>Open-source, modular Python codebase</span>
+        </div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-LOG_PATH = os.path.abspath(os.path.join(BASE_DIR, "..", "..", "logs", "ai_interactions.csv"))
-FEEDBACK_PATH = os.path.abspath(os.path.join(BASE_DIR, "..", "..", "logs", "feedback_log.csv"))
-FEEDBACK_SUMMARY_PATH = os.path.abspath(os.path.join(BASE_DIR, "..", "..", "logs", "feedback_summary.json"))
-POLICY_PATH = os.path.abspath(os.path.join(BASE_DIR, "..", "policy", "policy.yaml"))
+with st.sidebar.expander("ℹ️ About This Project", expanded=False):
+    st.markdown("""
+Modular AI Governance & Evaluation Platform
+- Audit logging for all AI interactions
+- Policy engine for risk assessment and controls
+- Feedback logging and summary for continuous improvement
+- System Health KPIs for operational visibility
+- Streamlit-based modern UI for business users
+- Open-source, extensible Python codebase
+- Designed for CTOs, CEOs, hiring managers, and PE operators
+
+**Target Audience:**
+Executives, engineering leaders, HR, private equity operators, and technical decision-makers seeking robust AI governance, auditability, and evaluation for enterprise AI systems.
+
+**Key Features:**
+- Modular audit logging and feedback
+- Policy-driven query evaluation
+- System health metrics and KPIs
+- Streamlit UI for easy access and reporting
+- Open-source, extensible design
+""", unsafe_allow_html=True)
+with st.sidebar.expander("&#128193; Project Documentation", expanded=False):
+    st.markdown("**Project Documentation**")
+    st.markdown("<span style='font-size:1.05em;'>🌐</span> [GitHub Repository](https://github.com/obizues/AI-Governance-Platform)", unsafe_allow_html=True)
+    st.markdown("<span style='font-size:1.05em;'>📄</span> **Documentation**", unsafe_allow_html=True)
+    st.markdown("- <span style='font-size:1.05em;'>📘</span> [README.md](https://github.com/obizues/AI-Governance-Platform/blob/main/README.md): Platform overview, setup, features", unsafe_allow_html=True)
+    st.markdown("- <span style='font-size:1.05em;'>📝</span> [CHANGELOG.md](https://github.com/obizues/AI-Governance-Platform/blob/main/CHANGELOG.md): Release notes and updates", unsafe_allow_html=True)
+    st.markdown("- <span style='font-size:1.05em;'>🗂️</span> [System Architecture](https://github.com/obizues/AI-Governance-Platform/blob/main/docs/architecture.md): Design and flow diagrams", unsafe_allow_html=True)
+    st.markdown("**Key Sections:**\n- Audit Logging\n- Policy Engine\n- Feedback & Evaluation\n- System Health KPIs\n- Deployment & Usage Guide")
+with st.sidebar.expander("&#128295; Tech Stack", expanded=False):
+    st.markdown("""
+<span style='font-size:1em;'>
+<ul style='margin-bottom:0; padding-left: 18px;'>
+<li>Python 3.10+</li>
+<li>Streamlit (UI)</li>
+<li>pandas (data handling)</li>
+<li>Audit logging (CSV, JSON)</li>
+<li>Policy engine (YAML-based rules)</li>
+<li>Feedback logging & summary</li>
+<li>System Health KPIs</li>
+<li>pytest (testing, audit validation)</li>
+<li>GitHub Actions (CI/CD)</li>
+</ul>
+</span>
+""", unsafe_allow_html=True)
+with st.sidebar.expander("🧩 System Design Notes", expanded=False):
+    st.markdown("""
+<span style='font-size:1em;'>
+<ul style='margin-bottom:0; padding-left: 18px;'>
+<li><b>Modular Architecture:</b> Separate modules for audit logging, policy engine, feedback, metrics, and UI.</li>
+<li><b>Audit Logging:</b> All AI interactions are logged for traceability and compliance.</li>
+<li><b>Policy Engine:</b> YAML-based rules for query risk assessment and control enforcement.</li>
+<li><b>Feedback Logging:</b> User feedback is logged and summarized for continuous improvement.</li>
+<li><b>System Health KPIs:</b> Real-time metrics for queries, deny rate, escalation, latency, trust score, and feedback.</li>
+<li><b>Streamlit UI:</b> Modern, business-focused interface with tabs for queries, feedback, and health.</li>
+<li><b>Open Source:</b> Extensible Python codebase, GitHub-hosted, CI/CD enabled.</li>
+<li><b>Deployment:</b> Streamlit Cloud, local, or containerized environments.</li>
+<li><b>Security & Privacy:</b> All processing is local; no data leaves the user's environment.</li>
+</ul>
+</span>
+""", unsafe_allow_html=True)
+    
+# --- Top blue app title bar (centered, above personal info) ---
+st.markdown(
+    """
+    <style>
+        .main-title-banner {
+            background: #1976d2;
+            color: #fff;
+            font-size: 1.45em;
+            font-weight: 700;
+            text-align: center;
+            margin: 0 auto 0 auto;
+            padding: 0.7em 0 0.7em 0;
+            box-sizing: border-box;
+            border-radius: 0 0 18px 18px;
+            box-shadow: 0 2px 8px rgba(25, 118, 210, 0.10);
+            letter-spacing: 0.01em;
+            max-width: 700px;
+        }
+        .main-title-banner .emoji {
+            font-size: 1.3em;
+            vertical-align: middle;
+            margin-right: 0.18em;
+            filter: none;
+        }
+    </style>
+    <div class="main-title-banner">
+        <span class="emoji">🤖</span> AI Governance & Evaluation Platform
+    </div>
+    """, unsafe_allow_html=True)
+
+# --- Personal Information Banner ---
+personal_info_banner = """
+<style>
+.app-title-banner {
+    background: #f5f5f5;
+    color: #222;
+    font-family: 'Segoe UI', 'Arial', sans-serif;
+    font-size: 1.08em;
+    font-weight: 500;
+    text-align: center;
+    margin: 0.5em auto 0 auto;
+    padding: 0.5em 0 0.5em 0;
+    box-sizing: border-box;
+    border-radius: 0 0 12px 12px;
+    box-shadow: 0 2px 8px rgba(25, 118, 210, 0.08);
+    max-width: 700px;
+}
+.app-title-banner .name-title {
+    font-size: 1.18em;
+    font-weight: 700;
+    color: #1976d2;
+    margin-bottom: 0.1em;
+}
+.app-title-banner .subtitle {
+    font-size: 0.98em;
+    color: #1976d2;
+    margin-bottom: 0.2em;
+}
+.app-title-banner .links, .app-title-banner .project-links {
+    font-size: 0.97em;
+    margin-bottom: 0.1em;
+}
+.app-title-banner a {
+    color: #1976d2;
+    text-decoration: underline;
+    margin: 0 8px;
+    font-size: 0.97em;
+}
+.app-title-banner .project-links {
+    margin-top: 0.1em;
+}
+    @media (max-width: 600px) {
+        .app-title-banner { font-size: 0.93em; }
+        .app-title-banner .name-title { font-size: 1em; }
+        .app-title-banner .subtitle { font-size: 0.91em; }
+        .app-title-banner .links, .app-title-banner .project-links { font-size: 0.91em; }
+    }
+</style>
+<div class="app-title-banner">
+    <div class="name-title" style="font-size:0.95em; font-weight:400; margin-bottom:0.08em; text-align:center; color:#1976d2;"><b>Chris Obermeier</b> | SVP of Engineering</div>
+    <div class="subtitle" style="background:transparent;border-radius:0;padding:2px 8px;font-size:0.83em;text-align:center;margin-bottom:0.08em;color:#64b5f6;font-weight:400;">Enterprise Platform & AI Transformation | Led 100+ Engineer Orgs | PE & Revenue-Scale Modernization</div>
+    <div class="links" style="font-size:0.92em; font-weight:400; margin-bottom:0em; text-align:center;">
+        <a href="https://www.linkedin.com/in/chris-obermeier/" target="_blank">LinkedIn</a> |
+        <a href="https://github.com/obizues" target="_blank">GitHub</a> |
+        <a href="mailto:chris.obermeier@gmail.com" target="_blank">Email</a>
+    </div>
+    <div class="project-links" style="font-size:0.92em; font-weight:400; margin-top:0em; text-align:center;">
+        <span style="margin-right:4px;">&#11088;</span><a href="https://github.com/obizues/AI-Governance-Platform" target="_blank">Star on GitHub</a> |
+        <span style="margin-right:4px;">&#128214;</span><a href="https://github.com/obizues/AI-Governance-Platform/blob/main/README.md" target="_blank">Read Documentation</a>
+    </div>
+</div>
+"""
+st.markdown(personal_info_banner, unsafe_allow_html=True)
 
 st.set_page_config(page_title="AI Governance & Evaluation Platform", layout="wide")
-st.sidebar.title("Controls")
-role = st.sidebar.selectbox("User Role", ["HR", "CTO", "Engineer", "Developer", "Other"], key="sidebar_user_role")
-user_id = st.sidebar.text_input("User ID", "demo_user", key="sidebar_user_id")
-prompt = st.sidebar.text_area("Prompt", "Show me all employee salaries.", key="sidebar_prompt")
-run_query = st.sidebar.button("Run Query", key="sidebar_run_query")
-run_eval = st.sidebar.button("Run Evaluation", key="sidebar_run_eval")
-rebuild_feedback = st.sidebar.button("Rebuild Feedback Summary", key="sidebar_rebuild_feedback")
+
+provider = StubProvider()
+policy_engine = PolicyEngine(POLICY_PATH)
+audit_logger = AuditLogger(LOG_PATH)
+feedback_logger = FeedbackLogger(FEEDBACK_PATH)
+feedback_gate = FeedbackGate(FEEDBACK_SUMMARY_PATH)
+
+role = st.selectbox("User Role", ["HR", "CTO", "Engineer", "Developer", "Other"], key="main_user_role")
+user_id = st.text_input("User ID", "demo_user", key="main_user_id")
+prompt = st.text_area("Prompt", "Show me all employee salaries.", key="main_prompt")
+run_query = st.button("Run Query", key="main_run_query")
+run_eval = st.button("Run Evaluation", key="main_run_eval")
+rebuild_feedback = st.button("Rebuild Feedback Summary", key="main_rebuild_feedback")
+
+
 
 provider = StubProvider()
 policy_engine = PolicyEngine(POLICY_PATH)
@@ -192,12 +381,14 @@ with tabs[1]:
 with tabs[2]:
     st.header("System Health KPIs")
     kpis = compute_kpis(LOG_PATH, FEEDBACK_PATH)
+    st.subheader("Operational KPIs")
     st.metric("Total Queries", kpis["total_queries"])
     st.metric("Deny Rate", f"{kpis['deny_rate']:.2%}")
     st.metric("Escalation Rate", f"{kpis['escalation_rate']:.2%}")
     st.metric("Avg Latency (ms)", f"{kpis['avg_latency']:.0f}")
     st.metric("Positive Feedback Rate", f"{kpis['positive_feedback_rate']:.2%}")
     st.metric("Trust Score", f"{kpis['trust_score']:.2%}")
+    st.subheader("Evaluation KPIs")
     if kpis.get("eval_pass_rate") is not None:
         st.metric("Evaluation Pass Rate", f"{kpis['eval_pass_rate']:.2%}")
     if kpis.get("eval_avg_score") is not None:
