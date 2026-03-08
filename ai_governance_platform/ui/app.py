@@ -9,13 +9,11 @@ from ai_governance_platform.policy.policy_engine import PolicyEngine
 from ai_governance_platform.policy.feedback_gate import FeedbackGate
 from ai_governance_platform.providers.provider_interface import StubProvider
 from ai_governance_platform.evaluation.evaluation_runner import EvaluationRunner
-
 import streamlit as st
 import pandas as pd
 import hashlib
 
 def main():
-    # Use os.getcwd() for Streamlit Cloud compatibility
     BASE_DIR = os.getcwd()
     LOG_PATH = os.path.abspath(os.path.join(BASE_DIR, "ai_governance_platform", "logs", "ai_interactions.csv"))
     FEEDBACK_PATH = os.path.abspath(os.path.join(BASE_DIR, "ai_governance_platform", "logs", "feedback_log.csv"))
