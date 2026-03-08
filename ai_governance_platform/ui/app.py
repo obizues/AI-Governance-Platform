@@ -394,3 +394,20 @@ with tabs[2]:
     if kpis.get("eval_avg_score") is not None:
         st.metric("Evaluation Avg Score", f"{kpis['eval_avg_score']:.2%}")
 
+def main():
+    # All Streamlit UI logic goes here
+    # Move all code from global scope into this function
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    LOG_PATH = os.path.abspath(os.path.join(BASE_DIR, "..", "..", "logs", "ai_interactions.csv"))
+    FEEDBACK_PATH = os.path.abspath(os.path.join(BASE_DIR, "..", "..", "logs", "feedback_log.csv"))
+    FEEDBACK_SUMMARY_PATH = os.path.abspath(os.path.join(BASE_DIR, "..", "..", "logs", "feedback_summary.json"))
+    POLICY_PATH = os.path.abspath(os.path.join(BASE_DIR, "..", "policy", "policy.yaml"))
+
+    import streamlit as st
+    import pandas as pd
+    import hashlib
+    # ...existing Streamlit UI code...
+    # Move all code from global scope here
+
+main()
+
