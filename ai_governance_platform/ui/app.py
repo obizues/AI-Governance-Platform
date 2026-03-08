@@ -10,17 +10,17 @@ from ai_governance_platform.policy.feedback_gate import FeedbackGate
 from ai_governance_platform.providers.provider_interface import StubProvider
 from ai_governance_platform.evaluation.evaluation_runner import EvaluationRunner
 
-# All imports must be at the top level for Streamlit compatibility
 import streamlit as st
 import pandas as pd
 import hashlib
 
 def main():
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    LOG_PATH = os.path.abspath(os.path.join(BASE_DIR, "..", "..", "logs", "ai_interactions.csv"))
-    FEEDBACK_PATH = os.path.abspath(os.path.join(BASE_DIR, "..", "..", "logs", "feedback_log.csv"))
-    FEEDBACK_SUMMARY_PATH = os.path.abspath(os.path.join(BASE_DIR, "..", "..", "logs", "feedback_summary.json"))
-    POLICY_PATH = os.path.abspath(os.path.join(BASE_DIR, "..", "policy", "policy.yaml"))
+    # Use os.getcwd() for Streamlit Cloud compatibility
+    BASE_DIR = os.getcwd()
+    LOG_PATH = os.path.abspath(os.path.join(BASE_DIR, "ai_governance_platform", "logs", "ai_interactions.csv"))
+    FEEDBACK_PATH = os.path.abspath(os.path.join(BASE_DIR, "ai_governance_platform", "logs", "feedback_log.csv"))
+    FEEDBACK_SUMMARY_PATH = os.path.abspath(os.path.join(BASE_DIR, "ai_governance_platform", "logs", "feedback_summary.json"))
+    POLICY_PATH = os.path.abspath(os.path.join(BASE_DIR, "ai_governance_platform", "policy", "policy.yaml"))
 
     st.sidebar.markdown("""
 <div style='background:#eaf6ff;border:1.5px solid #b3e5fc;padding:10px 12px 8px 12px;margin-bottom:12px;text-align:center;border-radius:8px;'>
