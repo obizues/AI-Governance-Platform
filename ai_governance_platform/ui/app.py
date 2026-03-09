@@ -21,11 +21,11 @@ POLICY_PATH = os.path.abspath(os.path.join(BASE_DIR, "..", "policy", "policy.yam
 st.sidebar.markdown("""
 <div style='background:#eaf6ff;border:1.5px solid #b3e5fc;padding:10px 12px 8px 12px;margin-bottom:12px;text-align:center;border-radius:8px;'>
     <span style='font-size:1.08em;font-weight:600;color:#1976d2;'>App version:</span><br>
-    <span style='font-size:1.05em;color:#222;'>v0.5.0 - Real-time Escalation Sync, Prompt/Session Fixes, Audit Logging, Policy Engine, Feedback, Streamlit UI</span>
+    <span style='font-size:1.05em;color:#222;'>v0.6.0 - Real-time Escalation Sync, Human Review Workflow, Document Extraction & Validation, Audit Log Tab, Sequential Loan Numbering, UI/UX Improvements</span>
 </div>
 <div class='sidebar-card' style='background:#eaf6ff;font-size:0.93em;margin-bottom:16px;border:1.5px solid #b3e5fc;padding:8px 8px 6px 8px;'>
     <div style='font-weight:700;font-size:1em;line-height:1.2;margin-bottom:2px;text-align:center;'>
-        <span style="font-size:1.05em;vertical-align:middle;">🤖</span> AI Governance & Evaluation Platform
+        <span style="font-size:1.05em;vertical-align:middle;">🤖</span> AI Governance & Evaluation Platform v0.6.0
     </div>
     <div style='margin:0 0 0 0;font-size:0.91em;line-height:1.35;text-align:center;'>
         <div style='display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:2px;'>
@@ -38,10 +38,16 @@ st.sidebar.markdown("""
             <span style="font-size:1em;">💬</span> <span>Feedback logging and summary</span>
         </div>
         <div style='display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:2px;'>
-            <span style="font-size:1em;">🛑</span> <span>Escalation Review (HIL) for high-risk queries</span>
+            <span style="font-size:1em;">🛑</span> <span>Escalation Review & Human-in-the-Loop (HIL) for low-confidence or high-risk documents</span>
         </div>
         <div style='display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:2px;'>
             <span style="font-size:1em;">📊</span> <span>System Health KPIs and metrics</span>
+        </div>
+        <div style='display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:2px;'>
+            <span style="font-size:1em;">📄</span> <span>Document Extraction, Validation, and Confidence Scoring</span>
+        </div>
+        <div style='display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:2px;'>
+            <span style="font-size:1em;">🗂️</span> <span>Audit Log Tab & Sequential Loan Numbering</span>
         </div>
         <div style='display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:2px;'>
             <span style="font-size:1em;">🖥️</span> <span>Streamlit-based modern UI</span>
