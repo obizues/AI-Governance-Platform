@@ -10,6 +10,7 @@ from ai_governance_platform.policy.feedback_gate import FeedbackGate
 from ai_governance_platform.providers.provider_interface import StubProvider
 from ai_governance_platform.evaluation.evaluation_runner import EvaluationRunner
 import yaml
+import streamlit as st
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 LOG_PATH = os.path.abspath(os.path.join(BASE_DIR, "..", "..", "logs", "ai_interactions.csv"))
@@ -17,20 +18,6 @@ FEEDBACK_PATH = os.path.abspath(os.path.join(BASE_DIR, "..", "..", "logs", "feed
 FEEDBACK_SUMMARY_PATH = os.path.abspath(os.path.join(BASE_DIR, "..", "..", "logs", "feedback_summary.json"))
 POLICY_PATH = os.path.abspath(os.path.join(BASE_DIR, "..", "policy", "policy.yaml"))
 
-prompt_examples = []
-try:
-    with open(POLICY_PATH, 'r', encoding='utf-8') as f:
-        policy_data = yaml.safe_load(f)
-        for topic in policy_data.get('restricted_topics', []):
-            prompt_examples.append(f"Show me all {topic['name']} information.")
-except Exception:
-    pass
-if not prompt_examples:
-    prompt_examples = ["Show me all employee information."]
-
-import streamlit as st
-import pandas as pd
-import hashlib
 st.sidebar.markdown("""
 <div style='background:#eaf6ff;border:1.5px solid #b3e5fc;padding:10px 12px 8px 12px;margin-bottom:12px;text-align:center;border-radius:8px;'>
     <span style='font-size:1.08em;font-weight:600;color:#1976d2;'>App version:</span><br>
@@ -66,8 +53,9 @@ st.sidebar.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
+
 with st.sidebar.expander("ℹ️ About This Project", expanded=False):
-    st.markdown("""
+   st.markdown("""
 Modular AI Governance & Evaluation Platform
 - Audit logging for all AI interactions
 - Policy engine for risk assessment and controls
@@ -75,6 +63,10 @@ Modular AI Governance & Evaluation Platform
 - System Health KPIs for operational visibility
 - Streamlit-based modern UI for business users
 - Open-source, extensible Python codebase
+- Real-time escalation sync and human review workflow
+- Document extraction, validation, and confidence scoring
+- Audit log tab with full review history
+- Sequential loan numbering and improved UI/UX
 - Designed for CTOs, CEOs, hiring managers, and PE operators
 
 **Target Audience:**
@@ -215,21 +207,8 @@ personal_info_banner = """
 """
 st.markdown(personal_info_banner, unsafe_allow_html=True)
 
-st.set_page_config(page_title="AI Governance & Evaluation Platform", layout="wide")
+st.set_page_config(page_title="AI Governance & Evaluation Platform v0.6.0", layout="wide")
 
-provider = StubProvider()
-policy_engine = PolicyEngine(POLICY_PATH)
-audit_logger = AuditLogger(LOG_PATH)
-feedback_logger = FeedbackLogger(FEEDBACK_PATH)
-feedback_gate = FeedbackGate(FEEDBACK_SUMMARY_PATH)
-
-role = st.selectbox("User Role", ["HR", "CTO", "Engineer", "Developer", "Other"], key="main_user_role")
-prompt = st.selectbox("Prompt", sorted(set(prompt_examples)), key="main_prompt")
-col1, col2 = st.columns(2)
-with col1:
-    run_query = st.button("Run Query", key="main_run_query")
-with col2:
-    run_eval = st.button("Run Evaluation", key="main_run_eval")
 
 
 
@@ -238,280 +217,520 @@ policy_engine = PolicyEngine(POLICY_PATH)
 audit_logger = AuditLogger(LOG_PATH)
 feedback_logger = FeedbackLogger(FEEDBACK_PATH)
 feedback_gate = FeedbackGate(FEEDBACK_SUMMARY_PATH)
-tabs = st.tabs(["Query & Feedback", "Feedback Log", "System Health KPIs", "Evaluation Metrics", "Escalation Review", "Escalation Review Logs"])
-with tabs[5]:
-    st.header("Escalation Review Logs")
-    st.info("This tab shows all escalation review logs, including both reviewed and unreviewed items.")
-    from ai_governance_platform.escalation import escalation
-    logs_df = escalation.load_all_escalation_logs()
-    if logs_df.empty:
-        st.info("No escalation review logs found.")
-    else:
-        if 'user_role' in logs_df.columns:
-            logs_df = logs_df.drop(columns=['user_role'])
-        st.dataframe(logs_df)
-with tabs[4]:
-    st.header("Escalation Review (HIL)")
-    st.info("This section allows human reviewers to approve or deny escalated queries. Actions are logged and affect trust score.")
-    from ai_governance_platform.escalation import escalation
-    pending_escalations = escalation.load_pending_escalations()
-    st.write(f"Escalations Remaining: {len(pending_escalations)}")
-    if pending_escalations.empty:
-        st.warning("No pending escalations for HIL review.")
-    else:
-        st.write("### Pending Escalations")
-        reviewers = ["Chris Obermeier", "Alex Smith", "Taylor Lee", "Morgan Patel", "Jordan Kim"]
-        escalation_indices = [int(idx) for idx in list(pending_escalations.index)]
-        if 'escalation_idx' not in st.session_state:
-            st.session_state['escalation_idx'] = escalation_indices[0] if escalation_indices else 0
-        current_idx = int(st.session_state['escalation_idx'])
-        # Navigation controls
-        st.markdown("""
-        <div style='display:flex;justify-content:center;align-items:center;margin-bottom:18px;'>
-            <button style='background:#f5f7fa;border:1px solid #b3e5fc;border-radius:6px;padding:8px 28px;font-size:1em;color:#1976d2;cursor:pointer;margin-right:32px;' onclick='window.location.reload();'>⬅️ Previous</button>
-            <div style='min-width:180px;'></div>
-            <button style='background:#f5f7fa;border:1px solid #b3e5fc;border-radius:6px;padding:8px 28px;font-size:1em;color:#1976d2;cursor:pointer;margin-left:32px;' onclick='window.location.reload();'>Next ➡️</button>
-        </div>
-        """, unsafe_allow_html=True)
-        curr_pos = escalation_indices.index(current_idx) if current_idx in escalation_indices else 0
-        jump_value = st.selectbox("Jump to Escalation", escalation_indices, index=curr_pos)
-        if jump_value != current_idx:
-            st.session_state['escalation_idx'] = jump_value
-            st.rerun()
-        # Show only the current escalation
-        row = pending_escalations.loc[current_idx]
-        unique_key = escalation.get_unique_key(row)
-        prompt = row['prompt'] if pd.notna(row['prompt']) and row['prompt'] else '[No prompt]'
-        user_role = row['user_role'] if pd.notna(row['user_role']) and row['user_role'] else '[No user role]'
-        if user_role == '[No user role]' and 'response' in row and pd.notna(row['response']):
-            user_role = row['response']
-        risk_level = row['risk_level'] if pd.notna(row['risk_level']) and row['risk_level'] else '[No risk level]'
-        reason = row['reason'] if pd.notna(row['reason']) and row['reason'] else '[No reason]'
-        st.write(f"**Prompt:** {prompt}")
-        st.write(f"**User Role:** {user_role}")
-        st.write(f"**Risk Level:** {risk_level}")
-        st.write(f"**Reason:** {reason}")
-        reviewer = st.selectbox(f"Select reviewer for escalation", reviewers, key=f"reviewer_{unique_key}")
-        action = st.radio(f"HIL Action", ["Approve", "Deny", "Skip"], key=f"hil_action_{unique_key}")
-        if st.button(f"Submit action"):
-            escalation.log_hil_action(row['timestamp'], reviewer, action, row['prompt'], row['risk_level'])
-            st.success(f"HIL action '{action}' by '{reviewer}' logged for escalation.")
-            st.session_state['escalation_idx'] = min(current_idx, len(escalation_indices)-2)
-            st.rerun()
-        st.success("Pending escalations for HIL review:")
-        st.dataframe(pending_escalations)
+from ai_governance_platform.extraction.validation import (
+    validate_loan_application, validate_disclosure, validate_credit_report, validate_appraisal_report,
+    validate_income_verification, validate_bank_statement, validate_tax_return, validate_closing_documents
+)
+def parse_fields(text, doc_type):
+    lines = [line.strip() for line in text.split('\n') if line.strip()]
+    fields = {}
+    for line in lines:
+        if ':' in line:
+            key, value = line.split(':', 1)
+            fields[key.strip()] = value.strip()
+    return fields
 
-with tabs[0]:
-    st.header("Query & Feedback")
+def build_object(doc_type, fields):
+    if doc_type == 'Loan Application':
+        return LoanApplication(
+            fields.get('Applicant Name',''), fields.get('Property Address',''), fields.get('Loan Amount',''),
+            fields.get('Interest Rate',''), fields.get('Term (years)',''), fields.get('Signature',''))
+    elif doc_type == 'Disclosure':
+        return Disclosure(
+            fields.get('Disclosure Date',''), fields.get('Loan Terms',''), fields.get('Interest Rate',''),
+            fields.get('Fees',''), fields.get('Signature',''))
+    elif doc_type == 'Credit Report':
+        return CreditReport(
+            fields.get('Applicant Name',''), fields.get('Credit Score',''), fields.get('Report Date',''),
+            fields.get('Accounts',''), fields.get('Signature',''))
+    elif doc_type == 'Appraisal Report':
+        return AppraisalReport(
+            fields.get('Property Address',''), fields.get('Appraised Value',''), fields.get('Appraiser Name',''),
+            fields.get('Date',''), fields.get('Signature',''))
+    elif doc_type == 'Income Verification':
+        return IncomeVerification(
+            fields.get('Applicant Name',''), fields.get('Employer',''), fields.get('Income',''),
+            fields.get('Tax Year',''), fields.get('Signature',''))
+    elif doc_type == 'Bank Statement':
+        return BankStatement(
+            fields.get('Account Holder',''), fields.get('Account Number',''), fields.get('Balance',''),
+            fields.get('Statement Date',''), fields.get('Signature',''))
+    elif doc_type == 'Tax Return':
+        return TaxReturn(
+            fields.get('Taxpayer Name',''), fields.get('Year',''), fields.get('Income',''),
+            fields.get('Deductions',''), fields.get('Signature',''))
+    elif doc_type == 'Closing Documents':
+        return ClosingDocuments(
+            fields.get('Closing Date',''), fields.get('Property Address',''), fields.get('Loan Amount',''),
+            fields.get('Buyer',''), fields.get('Seller',''), fields.get('Signature',''))
+    else:
+        return fields
+from ai_governance_platform.extraction.document_types import (
+LoanApplication, Disclosure, CreditReport, AppraisalReport, IncomeVerification, BankStatement, TaxReturn, ClosingDocuments
+    )
+st.header("Document Extraction & Review")
+st.write("Upload a .zip file containing only PDFs, or an individual .pdf file.")
+
+import zipfile
+from io import BytesIO
+import pdfplumber
+import pandas as pd
+
+uploaded_file = st.file_uploader(
+    "Upload .zip or .pdf",
+    type=["zip", "pdf"],
+    key="file_upload"
+)
+
+pdf_contents = {}
+pdf_files_bytes = {}
+error_msg = None
+
+def extract_pdf_text(pdf_bytes, pdf_name):
+        def parse_fields(text, doc_type):
+            lines = [line.strip() for line in text.split('\n') if line.strip()]
+            fields = {}
+            for line in lines:
+                if ':' in line:
+                    key, value = line.split(':', 1)
+                    fields[key.strip()] = value.strip()
+            return fields
+
+        def build_object(doc_type, fields):
+            if doc_type == 'Loan Application':
+                return LoanApplication(
+                    fields.get('Applicant Name',''), fields.get('Property Address',''), fields.get('Loan Amount',''),
+                    fields.get('Interest Rate',''), fields.get('Term (years)',''), fields.get('Signature',''))
+            elif doc_type == 'Disclosure':
+                return Disclosure(
+                    fields.get('Disclosure Date',''), fields.get('Loan Terms',''), fields.get('Interest Rate',''),
+                    fields.get('Fees',''), fields.get('Signature',''))
+            elif doc_type == 'Credit Report':
+                return CreditReport(
+                    fields.get('Applicant Name',''), fields.get('Credit Score',''), fields.get('Report Date',''),
+                    fields.get('Accounts',''), fields.get('Signature',''))
+            elif doc_type == 'Appraisal Report':
+                return AppraisalReport(
+                    fields.get('Property Address',''), fields.get('Appraised Value',''), fields.get('Appraiser Name',''),
+                    fields.get('Date',''), fields.get('Signature',''))
+            elif doc_type == 'Income Verification':
+                return IncomeVerification(
+                    fields.get('Applicant Name',''), fields.get('Employer',''), fields.get('Income',''),
+                    fields.get('Tax Year',''), fields.get('Signature',''))
+            elif doc_type == 'Bank Statement':
+                return BankStatement(
+                    fields.get('Account Holder',''), fields.get('Account Number',''), fields.get('Balance',''),
+                    fields.get('Statement Date',''), fields.get('Signature',''))
+            elif doc_type == 'Tax Return':
+                return TaxReturn(
+                    fields.get('Taxpayer Name',''), fields.get('Year',''), fields.get('Income',''),
+                    fields.get('Deductions',''), fields.get('Signature',''))
+            elif doc_type == 'Closing Documents':
+                return ClosingDocuments(
+                    fields.get('Closing Date',''), fields.get('Property Address',''), fields.get('Loan Amount',''),
+                    fields.get('Buyer',''), fields.get('Seller',''), fields.get('Signature',''))
+            else:
+                return fields
+        with pdfplumber.open(BytesIO(pdf_bytes)) as pdf:
+            text = "\n".join(page.extract_text() or "" for page in pdf.pages)
+            return text
+
+if uploaded_file:
+    filename = uploaded_file.name.lower()
+    if filename.endswith(".pdf"):
+        pdf_bytes = uploaded_file.read()
+        pdf_contents[filename] = extract_pdf_text(pdf_bytes, filename)
+        pdf_files_bytes[filename] = pdf_bytes
+    elif filename.endswith(".zip"):
+        try:
+            zip_bytes = BytesIO(uploaded_file.read())
+            with zipfile.ZipFile(zip_bytes) as z:
+                pdf_files = [f for f in z.namelist() if f.lower().endswith(".pdf")]
+                non_pdf_files = [f for f in z.namelist() if not f.lower().endswith(".pdf")]
+                if non_pdf_files:
+                    error_msg = f"Error: .zip contains non-PDF files: {', '.join(non_pdf_files)}"
+                else:
+                    for pdf_file in pdf_files:
+                        with z.open(pdf_file) as pdf_f:
+                            pdf_bytes = pdf_f.read()
+                            pdf_contents[pdf_file] = extract_pdf_text(pdf_bytes, pdf_file)
+                            pdf_files_bytes[pdf_file] = pdf_bytes
+        except zipfile.BadZipFile:
+            error_msg = "Error: Invalid .zip file."
+    else:
+        error_msg = "Error: Unsupported file type."
+
+if error_msg:
+    st.error(error_msg)
+elif pdf_contents:
+    st.success(f"Extracted {len(pdf_contents)} PDF(s). Displaying extracted data:")
+    def doc_type_from_name(name):
+        return name.replace(".pdf","").replace("_"," ").title()
+    data = []
+    objects = []
+    validation_results = []
+    confidence_scores = []
+    pdf_metadata = []
+    for idx, (pdf_name, text) in enumerate(pdf_contents.items(), 1):
+        doc_type = doc_type_from_name(pdf_name)
+        fields = parse_fields(text, doc_type)
+        obj = build_object(doc_type, fields)
+        data.append({"Document #": idx, "Document Type": doc_type, "PDF Name": pdf_name, "Extracted Text": text})
+        objects.append((doc_type, obj))
+        # Store PDF metadata for later download/view
+        pdf_bytes = None
+        if pdf_name in pdf_files_bytes:
+            pdf_bytes = pdf_files_bytes[pdf_name]
+        pdf_metadata.append((idx, doc_type, pdf_name, pdf_bytes))
+        # Validation
+        if doc_type == 'Loan Application':
+            errors = validate_loan_application(obj)
+        elif doc_type == 'Disclosure':
+            errors = validate_disclosure(obj)
+        elif doc_type == 'Credit Report':
+            errors = validate_credit_report(obj)
+        elif doc_type == 'Appraisal Report':
+            errors = validate_appraisal_report(obj)
+        elif doc_type == 'Income Verification':
+            errors = validate_income_verification(obj)
+        elif doc_type == 'Bank Statement':
+            errors = validate_bank_statement(obj)
+        elif doc_type == 'Tax Return':
+            errors = validate_tax_return(obj)
+        elif doc_type == 'Closing Documents':
+            errors = validate_closing_documents(obj)
+        else:
+            errors = []
+        validation_results.append({"doc_type": doc_type, "errors": errors})
+        # Confidence scoring
+        def score_confidence(fields):
+            score = 100
+            # Penalize missing fields
+            for k, v in fields.items():
+                if not v or v.strip() == "":
+                    score -= 10
+            # Penalize short names
+            if "Applicant Name" in fields and len(fields["Applicant Name"]) < 3:
+                score -= 15
+            # Penalize weird date formats
+            for k in fields:
+                if "Date" in k:
+                    import re
+                    if not re.match(r"\d{4}-\d{2}-\d{2}", fields[k]):
+                        score -= 10
+            # Penalize suspicious values
+            if "Loan Amount" in fields and fields["Loan Amount"] in ["0", "", None]:
+                score -= 20
+            return max(score, 0)
+        confidence_scores.append(score_confidence(fields))
+    df = pd.DataFrame(data)
+    df = df.sort_values("Document Type")
+    st.session_state["pdf_metadata"] = pdf_metadata
+
+    tab1, tab2, tab3, tab4, tab5 = st.tabs(["Document Extraction & Review", "Extracted Objects & Fields", "Confidence Scoring", "Escalation Required", "Audit Log"])
+    with tab5:
+        import csv, os
+        audit_log_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../logs/human_review_log.csv'))
+        st.header("Audit Log: Loan Review Status")
+        audit_entries = []
+        if os.path.exists(audit_log_path):
+            with open(audit_log_path, mode="r", encoding="utf-8") as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    audit_entries.append(row)
+        # Build summary for each loan
+        loan_status = {}
+        loan_status = {}
+        reviewed_docs = st.session_state.get("reviewed_docs", set())
+        loan_number = loan_numbers[0] if 'loan_numbers' in locals() and loan_numbers else 1
+        for idx, (doc_type, obj) in enumerate(st.session_state.get("extracted_objects", [])):
+            loan_num = loan_number
+            score = confidence_scores[idx] if idx < len(confidence_scores) else None
+            validation_errors = st.session_state["validation_results"][idx]["errors"] if st.session_state.get("validation_results") else []
+            status = "Auto-approved"
+            reviewer = ""
+            action = ""
+            reasons = ""
+            pdf_name = ""
+            for entry in audit_entries:
+                if str(entry.get("loan_number")) == str(loan_num) and entry.get("doc_type") == doc_type:
+                    reviewer = entry.get("reviewer", "")
+                    action = entry.get("action", "")
+                    reasons = entry.get("reasons", "")
+                    pdf_name = entry.get("pdf_name", "")
+                    if action == "Approve":
+                        status = "Human-approved"
+                    elif action == "Deny":
+                        status = "Human-denied"
+                    elif action == "Skip":
+                        status = "Escalation Skipped"
+            # Only mark as 'Human-approved' if it was escalated and reviewed
+            if status == "Auto-approved" and ((score is not None and score < 90) or validation_errors):
+                # If all escalated docs for this loan are reviewed, show in audit log
+                escalated_docs = [(loan_num, dt) for dt, _ in st.session_state.get("extracted_objects", []) if ((score is not None and score < 90) or validation_errors)]
+                if all(doc in reviewed_docs for doc in escalated_docs):
+                    status = "Human-approved"
+                else:
+                    status = "Escalation Required"
+            loan_status[idx] = {
+                "Loan #": loan_num,
+                "Document Type": doc_type,
+                "Confidence Score": score,
+                "Status": status,
+                "Reviewer": reviewer,
+                "Reasons": reasons,
+                "PDF Name": pdf_name
+            }
+        # Display audit log table
+        st.write("Below is the audit log for all loans:")
+        st.dataframe(
+            [v for v in loan_status.values()],
+            use_container_width=True
+        )
+
+    with tab1:
+        st.dataframe(df)
+        if st.button("Extract Objects & Show Fields"):
+            st.session_state["show_extraction_results"] = True
+            st.session_state["extracted_objects"] = objects
+            st.session_state["validation_results"] = validation_results
+            st.session_state["extraction_summary"] = "All data valid." if all(len(r["errors"]) == 0 for r in validation_results) else "Validation errors found."
+            st.info("Switch to the 'Extracted Objects & Fields' tab to view detailed results.")
+
+    with tab2:
+        if st.session_state.get("show_extraction_results"):
+            all_errors = []
+            for idx, result in enumerate(st.session_state["validation_results"]):
+                if result["errors"]:
+                    all_errors.append(f"{st.session_state['extracted_objects'][idx][0]}: {result['errors']}")
+            if not all_errors:
+                st.success("🟢 Extraction Summary: All data valid.")
+            else:
+                error_details = '\n'.join([f"- {err}" for err in all_errors])
+                st.error(f"🔴 Extraction Summary: Validation errors found.\n\n**Details:**\n{error_details}")
+            with st.expander("Object Details", expanded=False):
+                for idx, (doc_type, obj) in enumerate(st.session_state["extracted_objects"]):
+                    st.write(f"### {doc_type}")
+                    st.json(obj.__dict__)
+                    errors = st.session_state["validation_results"][idx]["errors"]
+                    score = confidence_scores[idx] if idx < len(confidence_scores) else None
+                    if errors:
+                        st.warning(f"Validation errors: {errors}")
+                    else:
+                        st.success("All fields valid.")
+                    # Confidence score not shown in this tab
+
+    with tab3:
+        if st.session_state.get("show_extraction_results"):
+            st.write("## Confidence Scoring Results")
+            for idx, (doc_type, obj) in enumerate(st.session_state["extracted_objects"]):
+                score = confidence_scores[idx] if idx < len(confidence_scores) else None
+                reasons = []
+                fields = obj.__dict__ if hasattr(obj, '__dict__') else obj
+                # Re-run confidence scoring logic for reasons
+                reasons = []
+                if score is not None and score < 100:
+                    for k, v in fields.items():
+                        if not v or v.strip() == "":
+                            reasons.append(f"{k} missing")
+                    if "Applicant Name" in fields and len(fields["Applicant Name"]) < 3:
+                        reasons.append("Applicant Name too short")
+                    for k in fields:
+                        if "Date" in k:
+                            import re
+                            if not re.match(r"\d{4}-\d{2}-\d{2}", fields[k]):
+                                reasons.append(f"{k} format invalid")
+                    if "Loan Amount" in fields and fields["Loan Amount"] in ["0", "", None]:
+                        reasons.append("Loan Amount not positive")
+                if score is not None:
+                    if score == 100:
+                        st.success(f"{doc_type}: Confidence Score {score}/100 (Perfect)")
+                    elif score >= 90:
+                        st.warning(f"{doc_type}: Confidence Score {score}/100")
+                        if reasons:
+                            st.write("**Reasons for minor issues:**")
+                            for r in reasons:
+                                st.write(f"- {r}")
+                    else:
+                        st.error(f"{doc_type}: Confidence Score {score}/100")
+                        if reasons:
+                            st.write("**Reasons for major issues:**")
+                            for r in reasons:
+                                st.write(f"- {r}")
+    with tab4:
+        if st.session_state.get("show_extraction_results"):
+            import csv, os, datetime
+            audit_log_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../logs/human_review_log.csv'))
+            escalated = []
+            # Assign the next available loan number by checking audit log
+            import csv
+            audit_log_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../logs/human_review_log.csv'))
+            max_loan_number = 0
+            if os.path.exists(audit_log_path):
+                with open(audit_log_path, mode="r", encoding="utf-8") as f:
+                    reader = csv.DictReader(f)
+                    for row in reader:
+                        try:
+                            num = int(row.get("loan_number", 0))
+                            if num > max_loan_number:
+                                max_loan_number = num
+                        except Exception:
+                            pass
+            loan_number = max_loan_number + 1
+            loan_numbers = [loan_number] * len(st.session_state["extracted_objects"])
+            pdf_metadata = st.session_state.get("pdf_metadata", [])
+            reviewed_docs = st.session_state.get("reviewed_docs", set())
+            for idx, (doc_type, obj) in enumerate(st.session_state["extracted_objects"]):
+                score = confidence_scores[idx] if idx < len(confidence_scores) else None
+                reasons = []
+                fields = obj.__dict__ if hasattr(obj, '__dict__') else obj
+                # Re-run confidence scoring logic for reasons
+                reasons = []
+                loan_num = loan_numbers[idx]
+                validation_errors = st.session_state["validation_results"][idx]["errors"] if st.session_state.get("validation_results") else []
+                validation_errors = st.session_state["validation_results"][idx]["errors"] if st.session_state.get("validation_results") else []
+                if ((score is not None and score < 90) or validation_errors) and (loan_num, doc_type) not in reviewed_docs:
+                    for k, v in fields.items():
+                        if not v or v.strip() == "":
+                            reasons.append(f"{k} missing")
+                    if "Applicant Name" in fields and len(fields["Applicant Name"]) < 3:
+                        reasons.append("Applicant Name too short")
+                    for k in fields:
+                        if "Date" in k:
+                            import re
+                            if not re.match(r"\d{4}-\d{2}-\d{2}", fields[k]):
+                                reasons.append(f"{k} format invalid")
+                    if "Loan Amount" in fields and fields["Loan Amount"] in ["0", "", None]:
+                        reasons.append("Loan Amount not positive")
+                    # Add validation errors to escalation reasons
+                    if validation_errors:
+                        reasons.extend([f"Validation error ({doc_type}): {err}" for err in validation_errors])
+                    # Find PDF bytes for this loan
+                    pdf_bytes = None
+                    pdf_name = None
+                    for meta in pdf_metadata:
+                        if meta[0] == idx+1 and meta[2]:
+                            pdf_name = meta[2]
+                            pdf_bytes = meta[3]
+                            break
+                    escalated.append((idx, doc_type, obj, score, reasons, loan_num, pdf_name, pdf_bytes))
+            if escalated:
+                st.error("⚠️ Escalation Required: The following objects require human review due to low confidence.")
+                reviewer = st.text_input("Reviewer Name", value="")
+                for idx, doc_type, obj, score, reasons, loan_num, pdf_name, pdf_bytes in escalated:
+                    with st.expander(f"Escalation: Loan #{loan_num} - {doc_type} (Score: {score}/100)", expanded=False):
+                        st.write(f"### Reasons for escalation ({doc_type}):")
+                        for r in reasons:
+                            st.write(f"- {r}")
+                        st.write("---")
+                        st.write(f"### Object and variable view ({doc_type}):")
+                        st.json(obj.__dict__)
+                        st.write("---")
+                        if pdf_bytes:
+                            st.download_button(
+                                label=f"Download PDF for {doc_type}",
+                                data=pdf_bytes,
+                                file_name=pdf_name or f"{doc_type.replace(' ', '_')}.pdf",
+                                mime="application/pdf"
+                            )
+                        st.write("---")
+                        action = st.radio(f"Human Review Action for {doc_type}", ["Approve", "Deny", "Skip"], key=f"escalate_action_{idx}")
+                        if st.button(f"Submit Review for {doc_type}", key=f"submit_escalate_{idx}"):
+                            timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                            log_entry = [timestamp, reviewer, loan_num, doc_type, action, score, ", ".join(reasons), pdf_name]
+                            header = ["timestamp", "reviewer", "loan_number", "doc_type", "action", "confidence_score", "reasons", "pdf_name"]
+                            file_exists = os.path.exists(audit_log_path)
+                            with open(audit_log_path, mode="a", newline="", encoding="utf-8") as f:
+                                writer = csv.writer(f)
+                                if not file_exists or os.stat(audit_log_path).st_size == 0:
+                                    writer.writerow(header)
+                                writer.writerow(log_entry)
+                            # Mark document as reviewed
+                            if "reviewed_docs" not in st.session_state:
+                                st.session_state["reviewed_docs"] = set()
+                            st.session_state["reviewed_docs"].add((loan_num, doc_type))
+                            st.success(f"Action '{action}' recorded for {doc_type} and logged. This document will now be removed from the escalation list.")
+                            st.rerun()
+        else:
+            st.info("No extraction results yet. Run extraction in the first tab.")
+            from ai_governance_platform.escalation.escalation import load_pending_escalations
+            pending_escalations = load_pending_escalations()
+            escalation_indices = list(pending_escalations.index)
+            current_idx = st.session_state.get('escalation_idx', escalation_indices[0] if escalation_indices else 0)
+            # Show only the current escalation
+
     # Always show info message if no query context is present
     if st.session_state.get("show_feedback_info", False):
         st.info("Feedback submitted successfully! Enter a prompt and click 'Run Query' to get started.")
         st.session_state["show_feedback_info"] = False
-    elif "last_query_context" not in st.session_state and not run_query:
-        st.info("No query has been run yet. Enter a prompt and click 'Run Query' to get started.")
-    # Store last query context in session state
-    if run_query:
-        # Always get the prompt from the selectbox at button press
-        current_prompt = st.session_state.get("main_prompt", prompt)
-        # Clear session state for previous query
-        for key in ["last_query_context", "last_query_response", "last_query_decision", "last_prompt", "last_response"]:
-            if key in st.session_state:
-                del st.session_state[key]
-        import time
-        start_time = time.time()
-        context = {
-            "user_role": role,
-            "prompt": current_prompt,
-            "confidence_score": 0.95,
-            "retrieved_sources_present": True
-        }
-        context["prompt_hash"] = hashlib.sha256(current_prompt.encode()).hexdigest()
-        decision = feedback_gate.apply_feedback_gate(context, policy_engine)
-        response = provider.generate_response(current_prompt)
-        end_time = time.time()
-        response_time_ms = int((end_time - start_time) * 1000)
-        # Always update session state with latest prompt and response
-        st.session_state["last_query_context"] = context
-        st.session_state["last_query_response"] = response
-        st.session_state["last_query_decision"] = decision
-        st.session_state["last_prompt"] = current_prompt
-        st.session_state["last_response"] = response
-        # Log query to ai_interactions.csv
-        audit_entry = {
-            "timestamp": pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "user_role": role,
-            "prompt": current_prompt,
-            "response": response,
-            "response_time_ms": response_time_ms,
-            "confidence_score": context["confidence_score"],
-            "risk_level": decision.get("risk_level", ""),
-            "decision": decision.get("decision", ""),
-            "rule_triggered": decision.get("rule_triggered", ""),
-            "reason": decision.get("reason", ""),
-            "hil_action": "" if decision.get("decision", "") == "escalate" else decision.get("hil_action", ""),
-            "hil_reviewer": ""
-        }
-        # Force rule_triggered to 'escalate' for escalated queries
-        if audit_entry["decision"] == "escalate":
-            audit_entry["rule_triggered"] = "escalate"
-        if not audit_entry["timestamp"] or pd.isna(audit_entry["timestamp"]):
-            audit_entry["timestamp"] = pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S")
-        audit_logger.log_interaction(audit_entry)
-        import streamlit as st
-        st.rerun()
+    elif "last_query_context" not in st.session_state:
     # Show last query result if available
-    if "last_query_context" in st.session_state:
-        context = st.session_state["last_query_context"]
-        response = st.session_state["last_query_response"]
-        decision = st.session_state["last_query_decision"]
-        # ...existing code...
-        st.write(f"**Query:** {context['prompt']}")
-        st.write(f"**Decision:** {decision['decision']}")
-        st.write(f"**Risk Level:** {decision['risk_level']}")
-        st.write(f"**Rule Triggered:** {decision.get('rule_triggered') or 'No rule triggered'}")
-        st.write(f"**Reason:** {decision.get('reason') or 'No reason'}")
-        st.write(f"**Response:** {response if response else '[No response generated]'}")
+        if "last_query_context" in st.session_state:
+            context = st.session_state["last_query_context"]
+            response = st.session_state["last_query_response"]
+            decision = st.session_state["last_query_decision"]
+            # ...existing code...
+            st.write(f"**Query:** {context['prompt']}")
+            st.write(f"**Decision:** {decision['decision']}")
+            st.write(f"**Risk Level:** {decision['risk_level']}")
+            st.write(f"**Rule Triggered:** {decision.get('rule_triggered') or 'No rule triggered'}")
+            st.write(f"**Reason:** {decision.get('reason') or 'No reason'}")
+            st.write(f"**Response:** {response if response else '[No response generated]'}")
 
-        # Show escalation warning and human action if needed
-        if decision['decision'] == 'escalate':
-            st.warning("⚠️ This query has been escalated and requires human review or intervention. Please assign a responsible person to handle this escalation.")
-            st.info("Escalation actions may include: reviewing the query, approving or denying access, or following up with compliance/audit teams.")
+            # Show escalation warning and human action if needed
+            if decision['decision'] == 'escalate':
+                st.warning("⚠️ This query has been escalated and requires human review or intervention. Please assign a responsible person to handle this escalation.")
+                st.info("Escalation actions may include: reviewing the query, approving or denying access, or following up with compliance/audit teams.")
 
-        thumbs = st.radio("Rate the system's response:", ["👍", "👎"], key="feedback_radio")
-        submit = st.button("Submit Feedback")
-        cleanup = st.button("Cleanup Downvotes for This Prompt")
-        if submit:
-            st.session_state["show_feedback_info"] = True
-            feedback_entry = [
-                pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S"),
-                context["user_role"],
-                context["prompt"],
-                response,
-                thumbs if thumbs in ["👍", "👎"] else ""
-            ]
-            try:
+            thumbs = st.radio("Rate the system's response:", ["👍", "👎"], key="feedback_radio")
+            submit = st.button("Submit Feedback")
+            cleanup = st.button("Cleanup Downvotes for This Prompt")
+            if submit:
+                st.session_state["show_feedback_info"] = True
+                feedback_entry = [
+                    pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    context["user_role"],
+                    context["prompt"],
+                    response,
+                    thumbs if thumbs in ["👍", "👎"] else ""
+                ]
+                try:
+                    import csv
+                    import os
+                    # Write header if file is empty
+                    if not os.path.exists(FEEDBACK_PATH) or os.stat(FEEDBACK_PATH).st_size == 0:
+                        with open(FEEDBACK_PATH, mode="w", newline="", encoding="utf-8") as f:
+                            writer = csv.writer(f)
+                            writer.writerow(["timestamp", "user_role", "prompt", "response", "feedback"])
+                    with open(FEEDBACK_PATH, mode="a", newline="", encoding="utf-8") as f:
+                        writer = csv.writer(f)
+                        writer.writerow(feedback_entry)
+                        f.flush()
+                    summary = FeedbackSummary(FEEDBACK_PATH, FEEDBACK_SUMMARY_PATH)
+                    summary.rebuild_summary()
+                    st.session_state["show_feedback_banner"] = True
+                    # Clear last query context and rerun to reset screen
+                    for key in ["last_query_context", "last_query_response", "last_query_decision", "last_prompt", "last_response"]:
+                        if key in st.session_state:
+                            del st.session_state[key]
+                    st.rerun()
+                except Exception as e:
+                    st.warning(f"Feedback logging failed: {e}")
+            if cleanup:
                 import csv
                 import os
-                # Write header if file is empty
-                if not os.path.exists(FEEDBACK_PATH) or os.stat(FEEDBACK_PATH).st_size == 0:
+                prompt_text = context["prompt"]
+                # Remove all 👎 feedback for this prompt
+                if os.path.exists(FEEDBACK_PATH):
+                    with open(FEEDBACK_PATH, mode="r", encoding="utf-8") as f:
+                        rows = list(csv.reader(f))
+                    header = rows[0]
+                    filtered = [row for row in rows[1:] if not (row[2] == prompt_text and row[4] == "👎")]
                     with open(FEEDBACK_PATH, mode="w", newline="", encoding="utf-8") as f:
                         writer = csv.writer(f)
-                        writer.writerow(["timestamp", "user_role", "prompt", "response", "feedback"])
-                with open(FEEDBACK_PATH, mode="a", newline="", encoding="utf-8") as f:
-                    writer = csv.writer(f)
-                    writer.writerow(feedback_entry)
-                    f.flush()
+                        writer.writerow(header)
+                        writer.writerows(filtered)
+                # Rebuild feedback summary
                 summary = FeedbackSummary(FEEDBACK_PATH, FEEDBACK_SUMMARY_PATH)
                 summary.rebuild_summary()
-                st.session_state["show_feedback_banner"] = True
-                # Clear last query context and rerun to reset screen
-                for key in ["last_query_context", "last_query_response", "last_query_decision", "last_prompt", "last_response"]:
-                    if key in st.session_state:
-                        del st.session_state[key]
-                st.rerun()
-            except Exception as e:
-                st.warning(f"Feedback logging failed: {e}")
-        if cleanup:
-            import csv
-            import os
-            prompt_text = context["prompt"]
-            # Remove all 👎 feedback for this prompt
-            if os.path.exists(FEEDBACK_PATH):
-                with open(FEEDBACK_PATH, mode="r", encoding="utf-8") as f:
-                    rows = list(csv.reader(f))
-                header = rows[0]
-                filtered = [row for row in rows[1:] if not (row[2] == prompt_text and row[4] == "👎")]
-                with open(FEEDBACK_PATH, mode="w", newline="", encoding="utf-8") as f:
-                    writer = csv.writer(f)
-                    writer.writerow(header)
-                    writer.writerows(filtered)
-            # Rebuild feedback summary
-            summary = FeedbackSummary(FEEDBACK_PATH, FEEDBACK_SUMMARY_PATH)
-            summary.rebuild_summary()
-            st.success("Downvotes for this prompt have been cleaned up!")
-
-
-
-
-if run_eval:
-    st.info("Running evaluation...")
-    EVAL_DATASET_PATH = os.path.abspath(os.path.join(BASE_DIR, "..", "evaluation", "evaluation_dataset.json"))
-    EVAL_REPORT_PATH = os.path.abspath(os.path.join(BASE_DIR, "..", "evaluation", "evaluation_report.json"))
-    runner = EvaluationRunner(EVAL_DATASET_PATH, EVAL_REPORT_PATH)
-    runner.run(provider, policy_engine)
-    st.success(f"Evaluation report generated at {EVAL_REPORT_PATH}")
-
-with tabs[1]:
-    st.header("Feedback Log")
-    if os.path.exists(FEEDBACK_PATH):
-        try:
-            df = pd.read_csv(FEEDBACK_PATH)
-            if df.empty:
-                st.info("No feedback entries found.")
-            else:
-                role_filter = st.selectbox("Role Filter", ["All"] + sorted(df["user_role"].unique()), key="feedback_role_filter")
-                feedback_filter = st.selectbox("Feedback Filter", ["All", "👍", "👎"], key="feedback_type_filter")
-                n_rows = st.slider("Show Last N Rows", 10, 100, 20, key="feedback_n_rows_slider")
-                filtered = df.copy()
-                if role_filter != "All":
-                    filtered = filtered[filtered["user_role"] == role_filter]
-                if feedback_filter != "All":
-                    filtered = filtered[filtered["feedback"] == feedback_filter]
-                st.dataframe(filtered.tail(n_rows))
-        except pd.errors.EmptyDataError:
-            st.info("No feedback log found or file is empty.")
-    else:
-        st.info("No feedback log found.")
-
-with tabs[2]:
-    col_kpi_header, col_kpi_clear = st.columns([3,1])
-    with col_kpi_header:
-        st.header("System Health KPIs")
-    with col_kpi_clear:
-        if st.button("🗑️ Clear All Historical KPIs"):
-            import os
-            import csv
-            # Clear ai_interactions.csv
-            if os.path.exists(LOG_PATH):
-                with open(LOG_PATH, mode="w", newline="", encoding="utf-8") as f:
-                    writer = csv.writer(f)
-                    writer.writerow(["timestamp", "user_role", "prompt", "response", "response_time_ms", "confidence_score", "risk_level", "decision", "rule_triggered", "reason", "required_controls"])
-            # Clear feedback_log.csv
-            if os.path.exists(FEEDBACK_PATH):
-                with open(FEEDBACK_PATH, mode="w", newline="", encoding="utf-8") as f:
-                    writer = csv.writer(f)
-                    writer.writerow(["timestamp", "user_role", "prompt", "response", "feedback"])
-            st.success("All historical KPIs and logs have been cleared!")
-            st.rerun()
-
-    kpis = compute_kpis(LOG_PATH, FEEDBACK_PATH)
-    st.metric("Total Queries", kpis["total_queries"])
-    st.metric("Deny Rate", f"{kpis['deny_rate']:.2%}")
-    st.metric("Escalation Rate", f"{kpis['escalation_rate']:.2%}")
-    st.metric("Avg Latency (ms)", f"{kpis['avg_latency']:.0f}")
-    st.metric("Positive Feedback Rate", f"{kpis['positive_feedback_rate']:.2%}")
-    st.metric("Trust Score", f"{kpis['trust_score']:.2%}")
-
-    from ai_governance_platform.metrics.kpis import refresh_system_health_kpi
-    col_health_header, col_health_refresh = st.columns([3,1])
-    with col_health_header:
-        st.subheader("Live System Health Metrics")
-    with col_health_refresh:
-        if st.button("🔄 Refresh System Health Metrics"):
-            st.session_state['health_kpi'] = refresh_system_health_kpi()
-    if 'health_kpi' not in st.session_state:
-        st.session_state['health_kpi'] = refresh_system_health_kpi()
-    health_kpi = st.session_state['health_kpi']
-    st.metric("Uptime (seconds)", f"{health_kpi['uptime_seconds']:.0f}")
-    st.metric("Memory Usage (%)", f"{health_kpi['memory_percent']:.1f}")
-    st.metric("CPU Usage (%)", f"{health_kpi['cpu_percent']:.1f}")
-    st.metric("Status", health_kpi['status'])
-
-with tabs[3]:
-    st.header("Evaluation Metrics")
-    kpis = compute_kpis(LOG_PATH, FEEDBACK_PATH)
-    if kpis.get("eval_pass_rate") is not None:
-        st.metric("Evaluation Pass Rate", f"{kpis['eval_pass_rate']:.2%}")
-    if kpis.get("eval_avg_score") is not None:
-        st.metric("Evaluation Avg Score", f"{kpis['eval_avg_score']:.2%}")
-
+                st.success("Downvotes for this prompt have been cleaned up!")

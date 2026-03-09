@@ -1,18 +1,11 @@
 
 # AI Governance & Evaluation Platform 🤖
-
+**Version:** v0.6.0
 A modular, open-source platform for safe, observable, and governed AI operations in enterprise environments.
-
-**Version:** v0.5.0
-
-## Features
-
-- Real-time escalation review count updates
-- Prompt/session state fixes for accurate query context
-- CSV audit log flush for immediate sync
-- UI bug fixes for escalation navigation and count
-- Modular audit logging for all AI interactions
-- Policy engine for risk assessment and controls
+- Real-time escalation sync and human review workflow
+- Document extraction, validation, and confidence scoring
+- Audit log tab with full review history
+- Sequential loan numbering and improved UI/UX
 - Feedback logging and summary for continuous improvement
 - System Health KPIs for operational visibility
 - Streamlit-based modern UI for business users

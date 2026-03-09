@@ -1,0 +1,7 @@
+timestamp,reviewer,loan_number,doc_type,action,confidence_score,reasons,pdf_name
+2026-03-09 01:46:13,,1,Credit Report,Approve,90,Validation error (Credit Report): Credit Score out of range,Credit_Report.pdf
+2026-03-09 01:49:02,,2,Credit Report,Approve,90,Validation error (Credit Report): Credit Score out of range,Credit_Report.pdf
+2026-03-09 01:49:16,,3,Loan Application,Approve,75,"applicant_name missing, Validation error (Loan Application): Applicant Name missing, Validation error (Loan Application): Loan Amount must be positive, Validation error (Loan Application): Interest Rate out of range, Validation error (Loan Application): Term must be 10-30 years, Validation error (Loan Application): Signature must match applicant name",Loan_Application.pdf
+2026-03-09 01:50:16,,4,Credit Report,Approve,90,Validation error (Credit Report): Credit Score out of range,Credit_Report.pdf
+2026-03-09 01:59:07,,5,Credit Report,Approve,90,Validation error (Credit Report): Credit Score out of range,Credit_Report.pdf
+2026-03-09 01:59:11,,6,Loan Application,Approve,75,"applicant_name missing, Validation error (Loan Application): Applicant Name missing, Validation error (Loan Application): Loan Amount must be positive, Validation error (Loan Application): Interest Rate out of range, Validation error (Loan Application): Term must be 10-30 years, Validation error (Loan Application): Signature must match applicant name",Loan_Application.pdf
