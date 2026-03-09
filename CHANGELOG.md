@@ -1,4 +1,31 @@
 # [v0.4.0] - 2026-03-08
+# [v0.5.0] - 2026-03-08
+### Major Updates
+- Real-time escalation review count updates after query submission
+- Prompt/session state fixes for accurate query context
+- CSV audit log flush for immediate sync
+- UI bug fixes for escalation navigation and count
+- Robust escalation workflow and audit logging
+
+# Changelog
+
+## [v0.5.0] - 2026-03-08
+### Added
+- Real-time escalation review count updates after query submission
+- Prompt/session state fixes for accurate query context
+- CSV audit log flush for immediate sync
+- UI bug fixes for escalation navigation and count
+- Robust escalation workflow and audit logging
+
+### Changed
+- Escalation review logic now guarantees immediate visibility of escalated queries
+- Audit logger flushes CSV after every write
+- Session state always uses prompt at button press
+
+### Fixed
+- Escalation count not updating on first query
+- Session state mismatches for prompt/response
+- TypeError in escalation navigation
 ### Major Updates
 - Escalation workflow reliably updates CSV and removes reviewed escalations from UI
 - Mask logic in escalation.py now matches only by timestamp for robust row updates

@@ -1,3 +1,8 @@
+def load_all_escalation_logs():
+    """Load all escalation logs from ai_interactions.csv, including reviewed and unreviewed."""
+    df = pd.read_csv(ESCALATION_CSV)
+    logs = df[df['rule_triggered'] == 'escalate']
+    return logs
 """
 escalation.py: Handles escalation review logic, CSV parsing, and HIL actions for the AI Governance Platform.
 """
@@ -12,9 +17,28 @@ HIL_ACTIONS_CSV = os.path.join(os.path.dirname(__file__), '../../logs/hil_action
 def load_pending_escalations():
     """Load pending escalations from ai_interactions.csv."""
     df = pd.read_csv(ESCALATION_CSV)
-    # Normalize hil_action values
-    df['hil_action'] = df['hil_action'].fillna('').astype(str).str.strip()
-    pending = df[(df['rule_triggered'] == 'escalate') & (~df['hil_action'].isin(['approve', 'deny']))]
+    # Aggressively normalize columns
+    for col in ['hil_action', 'rule_triggered', 'decision']:
+        if col in df.columns:
+            df[col] = df[col].fillna('').astype(str).str.strip().str.lower()
+        else:
+            df[col] = ''
+    # Print debug info
+    print("[DEBUG] Escalation CSV shape:", df.shape)
+    print("[DEBUG] Columns:", df.columns.tolist())
+    print("[DEBUG] Unique values - rule_triggered:", df['rule_triggered'].unique())
+    print("[DEBUG] Unique values - decision:", df['decision'].unique())
+    print("[DEBUG] Unique values - hil_action:", df['hil_action'].unique())
+    # Print sample rows where escalate is present
+    escalate_rows = df[df['rule_triggered'].str.contains('escalate') | df['decision'].str.contains('escalate')]
+    print("[DEBUG] Sample escalate rows:")
+    print(escalate_rows[['timestamp','rule_triggered','decision','hil_action']].head(10))
+    # Pending: rule_triggered contains 'escalate', decision == 'escalate', hil_action == ''
+    pending = df[df['rule_triggered'].str.contains('escalate') & (df['decision'] == 'escalate') & (df['hil_action'] == '')]
+    print("[DEBUG] Pending escalations shape:", pending.shape)
+    print("[DEBUG] Pending escalation values:")
+    if not pending.empty:
+        print(pending[['timestamp','rule_triggered','decision','hil_action']].head(10))
     return pending
 
 

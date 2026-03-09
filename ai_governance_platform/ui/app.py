@@ -34,7 +34,7 @@ import hashlib
 st.sidebar.markdown("""
 <div style='background:#eaf6ff;border:1.5px solid #b3e5fc;padding:10px 12px 8px 12px;margin-bottom:12px;text-align:center;border-radius:8px;'>
     <span style='font-size:1.08em;font-weight:600;color:#1976d2;'>App version:</span><br>
-    <span style='font-size:1.05em;color:#222;'>v0.4.0 - Escalation Workflow Fix, Modular AI Governance, Audit Logging, Policy Engine, Feedback, Streamlit UI</span>
+    <span style='font-size:1.05em;color:#222;'>v0.5.0 - Real-time Escalation Sync, Prompt/Session Fixes, Audit Logging, Policy Engine, Feedback, Streamlit UI</span>
 </div>
 <div class='sidebar-card' style='background:#eaf6ff;font-size:0.93em;margin-bottom:16px;border:1.5px solid #b3e5fc;padding:8px 8px 6px 8px;'>
     <div style='font-weight:700;font-size:1em;line-height:1.2;margin-bottom:2px;text-align:center;'>
@@ -238,36 +238,68 @@ policy_engine = PolicyEngine(POLICY_PATH)
 audit_logger = AuditLogger(LOG_PATH)
 feedback_logger = FeedbackLogger(FEEDBACK_PATH)
 feedback_gate = FeedbackGate(FEEDBACK_SUMMARY_PATH)
-tabs = st.tabs(["Query & Feedback", "Feedback Log", "System Health KPIs", "Evaluation Metrics", "Escalation Review"])
+tabs = st.tabs(["Query & Feedback", "Feedback Log", "System Health KPIs", "Evaluation Metrics", "Escalation Review", "Escalation Review Logs"])
+with tabs[5]:
+    st.header("Escalation Review Logs")
+    st.info("This tab shows all escalation review logs, including both reviewed and unreviewed items.")
+    from ai_governance_platform.escalation import escalation
+    logs_df = escalation.load_all_escalation_logs()
+    if logs_df.empty:
+        st.info("No escalation review logs found.")
+    else:
+        if 'user_role' in logs_df.columns:
+            logs_df = logs_df.drop(columns=['user_role'])
+        st.dataframe(logs_df)
 with tabs[4]:
     st.header("Escalation Review (HIL)")
     st.info("This section allows human reviewers to approve or deny escalated queries. Actions are logged and affect trust score.")
     from ai_governance_platform.escalation import escalation
     pending_escalations = escalation.load_pending_escalations()
-    st.write(f"Escalated rows found: {len(pending_escalations)}")
+    st.write(f"Escalations Remaining: {len(pending_escalations)}")
     if pending_escalations.empty:
-        st.info("No escalated queries pending review.")
+        st.warning("No pending escalations for HIL review.")
     else:
         st.write("### Pending Escalations")
         reviewers = ["Chris Obermeier", "Alex Smith", "Taylor Lee", "Morgan Patel", "Jordan Kim"]
-        for idx, row in pending_escalations.iterrows():
-            unique_key = escalation.get_unique_key(row)
-            prompt = row['prompt'] if pd.notna(row['prompt']) and row['prompt'] else '[No prompt]'
-            user_role = row['user_role'] if pd.notna(row['user_role']) and row['user_role'] else '[No user role]'
-            if user_role == '[No user role]' and 'response' in row and pd.notna(row['response']):
-                user_role = row['response']
-            risk_level = row['risk_level'] if pd.notna(row['risk_level']) and row['risk_level'] else '[No risk level]'
-            reason = row['reason'] if pd.notna(row['reason']) and row['reason'] else '[No reason]'
-            st.write(f"**Prompt:** {prompt}")
-            st.write(f"**User Role:** {user_role}")
-            st.write(f"**Risk Level:** {risk_level}")
-            st.write(f"**Reason:** {reason}")
-            reviewer = st.selectbox(f"Select reviewer for escalation {idx}", reviewers, key=f"reviewer_{unique_key}")
-            action = st.radio(f"HIL Action for escalation {idx}", ["Approve", "Deny", "Skip"], key=f"hil_action_{unique_key}")
-            if st.button(f"Submit action for escalation {idx}"):
-                escalation.log_hil_action(row['timestamp'], reviewer, action, row['prompt'], row['risk_level'])
-                st.success(f"HIL action '{action}' by '{reviewer}' logged for escalation.")
-                st.rerun()
+        escalation_indices = [int(idx) for idx in list(pending_escalations.index)]
+        if 'escalation_idx' not in st.session_state:
+            st.session_state['escalation_idx'] = escalation_indices[0] if escalation_indices else 0
+        current_idx = int(st.session_state['escalation_idx'])
+        # Navigation controls
+        st.markdown("""
+        <div style='display:flex;justify-content:center;align-items:center;margin-bottom:18px;'>
+            <button style='background:#f5f7fa;border:1px solid #b3e5fc;border-radius:6px;padding:8px 28px;font-size:1em;color:#1976d2;cursor:pointer;margin-right:32px;' onclick='window.location.reload();'>⬅️ Previous</button>
+            <div style='min-width:180px;'></div>
+            <button style='background:#f5f7fa;border:1px solid #b3e5fc;border-radius:6px;padding:8px 28px;font-size:1em;color:#1976d2;cursor:pointer;margin-left:32px;' onclick='window.location.reload();'>Next ➡️</button>
+        </div>
+        """, unsafe_allow_html=True)
+        curr_pos = escalation_indices.index(current_idx) if current_idx in escalation_indices else 0
+        jump_value = st.selectbox("Jump to Escalation", escalation_indices, index=curr_pos)
+        if jump_value != current_idx:
+            st.session_state['escalation_idx'] = jump_value
+            st.rerun()
+        # Show only the current escalation
+        row = pending_escalations.loc[current_idx]
+        unique_key = escalation.get_unique_key(row)
+        prompt = row['prompt'] if pd.notna(row['prompt']) and row['prompt'] else '[No prompt]'
+        user_role = row['user_role'] if pd.notna(row['user_role']) and row['user_role'] else '[No user role]'
+        if user_role == '[No user role]' and 'response' in row and pd.notna(row['response']):
+            user_role = row['response']
+        risk_level = row['risk_level'] if pd.notna(row['risk_level']) and row['risk_level'] else '[No risk level]'
+        reason = row['reason'] if pd.notna(row['reason']) and row['reason'] else '[No reason]'
+        st.write(f"**Prompt:** {prompt}")
+        st.write(f"**User Role:** {user_role}")
+        st.write(f"**Risk Level:** {risk_level}")
+        st.write(f"**Reason:** {reason}")
+        reviewer = st.selectbox(f"Select reviewer for escalation", reviewers, key=f"reviewer_{unique_key}")
+        action = st.radio(f"HIL Action", ["Approve", "Deny", "Skip"], key=f"hil_action_{unique_key}")
+        if st.button(f"Submit action"):
+            escalation.log_hil_action(row['timestamp'], reviewer, action, row['prompt'], row['risk_level'])
+            st.success(f"HIL action '{action}' by '{reviewer}' logged for escalation.")
+            st.session_state['escalation_idx'] = min(current_idx, len(escalation_indices)-2)
+            st.rerun()
+        st.success("Pending escalations for HIL review:")
+        st.dataframe(pending_escalations)
 
 with tabs[0]:
     st.header("Query & Feedback")
@@ -279,27 +311,36 @@ with tabs[0]:
         st.info("No query has been run yet. Enter a prompt and click 'Run Query' to get started.")
     # Store last query context in session state
     if run_query:
+        # Always get the prompt from the selectbox at button press
+        current_prompt = st.session_state.get("main_prompt", prompt)
+        # Clear session state for previous query
+        for key in ["last_query_context", "last_query_response", "last_query_decision", "last_prompt", "last_response"]:
+            if key in st.session_state:
+                del st.session_state[key]
         import time
         start_time = time.time()
         context = {
             "user_role": role,
-            "prompt": prompt,
+            "prompt": current_prompt,
             "confidence_score": 0.95,
             "retrieved_sources_present": True
         }
-        context["prompt_hash"] = hashlib.sha256(prompt.encode()).hexdigest()
+        context["prompt_hash"] = hashlib.sha256(current_prompt.encode()).hexdigest()
         decision = feedback_gate.apply_feedback_gate(context, policy_engine)
-        response = provider.generate_response(prompt)
+        response = provider.generate_response(current_prompt)
         end_time = time.time()
         response_time_ms = int((end_time - start_time) * 1000)
+        # Always update session state with latest prompt and response
         st.session_state["last_query_context"] = context
         st.session_state["last_query_response"] = response
         st.session_state["last_query_decision"] = decision
+        st.session_state["last_prompt"] = current_prompt
+        st.session_state["last_response"] = response
         # Log query to ai_interactions.csv
         audit_entry = {
             "timestamp": pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S"),
             "user_role": role,
-            "prompt": prompt,
+            "prompt": current_prompt,
             "response": response,
             "response_time_ms": response_time_ms,
             "confidence_score": context["confidence_score"],
@@ -307,19 +348,23 @@ with tabs[0]:
             "decision": decision.get("decision", ""),
             "rule_triggered": decision.get("rule_triggered", ""),
             "reason": decision.get("reason", ""),
-            "required_controls": decision.get("required_controls", ""),
-            # Patch: Always log hil_action as empty for escalated queries
-            "hil_action": "" if decision.get("decision", "") == "escalate" else decision.get("hil_action", "")
+            "hil_action": "" if decision.get("decision", "") == "escalate" else decision.get("hil_action", ""),
+            "hil_reviewer": ""
         }
-        # Patch: Always ensure timestamp is present and valid
+        # Force rule_triggered to 'escalate' for escalated queries
+        if audit_entry["decision"] == "escalate":
+            audit_entry["rule_triggered"] = "escalate"
         if not audit_entry["timestamp"] or pd.isna(audit_entry["timestamp"]):
             audit_entry["timestamp"] = pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S")
         audit_logger.log_interaction(audit_entry)
+        import streamlit as st
+        st.rerun()
     # Show last query result if available
     if "last_query_context" in st.session_state:
         context = st.session_state["last_query_context"]
         response = st.session_state["last_query_response"]
         decision = st.session_state["last_query_decision"]
+        # ...existing code...
         st.write(f"**Query:** {context['prompt']}")
         st.write(f"**Decision:** {decision['decision']}")
         st.write(f"**Risk Level:** {decision['risk_level']}")
@@ -360,9 +405,9 @@ with tabs[0]:
                 summary.rebuild_summary()
                 st.session_state["show_feedback_banner"] = True
                 # Clear last query context and rerun to reset screen
-                del st.session_state["last_query_context"]
-                del st.session_state["last_query_response"]
-                del st.session_state["last_query_decision"]
+                for key in ["last_query_context", "last_query_response", "last_query_decision", "last_prompt", "last_response"]:
+                    if key in st.session_state:
+                        del st.session_state[key]
                 st.rerun()
             except Exception as e:
                 st.warning(f"Feedback logging failed: {e}")

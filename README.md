@@ -3,10 +3,21 @@
 
 A modular, open-source platform for safe, observable, and governed AI operations in enterprise environments.
 
-**Version:** v0.4.0
+**Version:** v0.5.0
 
 ## Features
-...existing code...
+
+- Real-time escalation review count updates
+- Prompt/session state fixes for accurate query context
+- CSV audit log flush for immediate sync
+- UI bug fixes for escalation navigation and count
+- Modular audit logging for all AI interactions
+- Policy engine for risk assessment and controls
+- Feedback logging and summary for continuous improvement
+- System Health KPIs for operational visibility
+- Streamlit-based modern UI for business users
+- Open-source, extensible Python codebase
+- Designed for CTOs, CEOs, hiring managers, and PE operators
 ```
 /ai_governance_platform
   /app            # Entrypoints / minimal UI hooks
@@ -62,7 +73,24 @@ requirements.txt  # Python dependencies
 - Fork, branch, and submit PRs.
 - See CHANGELOG.md for release history.
 
-## v0.2.0 Updates
+## v0.5.0 Updates
+
+### Added
+- Real-time escalation review count updates after query submission
+- Prompt/session state fixes for accurate query context
+- CSV audit log flush for immediate sync
+- UI bug fixes for escalation navigation and count
+- Robust escalation workflow and audit logging
+
+### Changed
+- Escalation review logic now guarantees immediate visibility of escalated queries
+- Audit logger flushes CSV after every write
+- Session state always uses prompt at button press
+
+### Fixed
+- Escalation count not updating on first query
+- Session state mismatches for prompt/response
+- TypeError in escalation navigation
 - UI/UX improvements for Live Query tab, banners, sidebar, and documentation links
 - Info messages now reliably show when no query is present or after feedback
 - Feedback submission and cleanup logic improved

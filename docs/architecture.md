@@ -1,10 +1,23 @@
 ---
-# System Architecture 🗂️
+# AI Governance & Evaluation Platform Architecture
 
-**Version:** v0.4.0
+## Version: v0.4.0
 
-## Overview
-The AI Governance & Evaluation Platform is designed for modularity, auditability, and extensibility. It consists of:
+### Key Features
+
+### Key Features
+
+- Real-time escalation review count updates
+- Prompt/session state fixes for accurate query context
+- CSV audit log flush for immediate sync
+- UI bug fixes for escalation navigation and count
+- Modular audit logging for all AI interactions
+- Policy engine for risk assessment and controls
+- Feedback logging and summary for continuous improvement
+- System Health KPIs for operational visibility
+- Streamlit-based modern UI for business users
+- Open-source, extensible Python codebase
+- Designed for CTOs, CEOs, hiring managers, and PE operators
 ...existing code...
 
 ## Component Diagram

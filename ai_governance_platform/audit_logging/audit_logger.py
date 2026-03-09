@@ -8,8 +8,8 @@ class AuditLogger:
         self.log_path = log_path
         os.makedirs(os.path.dirname(log_path), exist_ok=True)
         self.header = [
-            "timestamp", "user_id", "user_role", "prompt", "response", "response_time_ms",
-            "confidence_score", "risk_level", "decision", "rule_triggered", "reason", "required_controls"
+            "timestamp", "user_role", "prompt", "response", "response_time_ms",
+            "confidence_score", "risk_level", "decision", "rule_triggered", "reason", "hil_action", "hil_reviewer"
         ]
         if not os.path.exists(log_path):
             with open(log_path, mode="w", newline='') as f:
@@ -21,3 +21,4 @@ class AuditLogger:
         with open(self.log_path, mode="a", newline='') as f:
             writer = csv.writer(f)
             writer.writerow(row)
+            f.flush()
