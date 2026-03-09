@@ -154,8 +154,9 @@ st.markdown("""
 # --- Personal Information Banner ---
 personal_info_banner = """
 <style>
-    background: #f5f5f5;
-    color: #222;
+.app-title-banner {
+    background: #eaf6ff;
+    color: #fff;
     font-family: 'Segoe UI', 'Arial', sans-serif;
     font-size: 1.08em;
     font-weight: 500;
