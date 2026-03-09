@@ -110,32 +110,50 @@ with st.sidebar.expander("&#128295; Tech Stack", expanded=False):
 <li>GitHub Actions (CI/CD)</li>
 </ul>
 """, unsafe_allow_html=True)
-<li><b>Feedback Logging:</b> User feedback is logged and summarized for continuous improvement.</li>
-<li><b>System Health KPIs:</b> Real-time metrics for queries, deny rate, escalation, latency, trust score, and feedback.</li>
-<li><b>Streamlit UI:</b> Modern, business-focused interface with tabs for queries, feedback, and health.</li>
-<li><b>Open Source:</b> Extensible Python codebase, GitHub-hosted, CI/CD enabled.</li>
-<li><b>Deployment:</b> Streamlit Cloud, local, or containerized environments.</li>
-# --- Top blue app title bar (centered, above personal info) ---
-    st.markdown("""
-st.markdown(
-            margin: 0 auto 0 auto;
-            padding: 0.7em 0 0.7em 0;
-            box-sizing: border-box;
-            border-radius: 0 0 18px 18px;
-            box-shadow: 0 2px 8px rgba(25, 118, 210, 0.10);
-            margin-right: 0.18em;
-            filter: none;
-        }
-    </style>
-    <div class="main-title-banner">
-        <span class="emoji">🤖</span> AI Governance & Evaluation Platform
-    </div>
+
+    with st.sidebar.expander("📝 System Design Notes", expanded=False):
+        st.markdown("""
+    **Key architectural decisions**
+    <li><b>Feedback Logging:</b> User feedback is logged and summarized for continuous improvement.</li>
+    <li><b>System Health KPIs:</b> Real-time metrics for queries, deny rate, escalation, latency, trust score, and feedback.</li>
+    <li><b>Streamlit UI:</b> Modern, business-focused interface with tabs for queries, feedback, health, and escalation review.</li>
+    <li><b>Open Source:</b> Extensible Python codebase, GitHub-hosted, CI/CD enabled.</li>
+    <li><b>Deployment:</b> Streamlit Cloud, local, or containerized environments.</li>
     """, unsafe_allow_html=True)
+"""
+
+"""
+# --- Top blue app title bar (centered, above personal info) ---
+st.markdown("""
+<style>
+    .main-title-banner {
+        background: #1976d2;
+        color: #fff;
+        font-family: 'Segoe UI', 'Arial', sans-serif;
+        font-size: 1.35em;
+        font-weight: 600;
+        text-align: center;
+        margin: 0 auto 0 auto;
+        padding: 0.7em 0 0.7em 0;
+        box-sizing: border-box;
+        border-radius: 0 0 18px 18px;
+        box-shadow: 0 2px 8px rgba(25, 118, 210, 0.10);
+        margin-right: 0.18em;
+        filter: none;
+    }
+    .emoji {
+        font-size: 1.3em;
+        margin-right: 0.18em;
+    }
+</style>
+<div class="main-title-banner">
+    <span class="emoji">🤖</span> AI Governance & Evaluation Platform
+</div>
+""", unsafe_allow_html=True)
 
 # --- Personal Information Banner ---
 personal_info_banner = """
 <style>
-.app-title-banner {
     background: #f5f5f5;
     color: #222;
     font-family: 'Segoe UI', 'Arial', sans-serif;
