@@ -21,11 +21,11 @@ POLICY_PATH = os.path.abspath(os.path.join(BASE_DIR, "..", "policy", "policy.yam
 st.sidebar.markdown("""
 <div style='background:#eaf6ff;border:1.5px solid #b3e5fc;padding:10px 12px 8px 12px;margin-bottom:12px;text-align:center;border-radius:8px;'>
     <span style='font-size:1.08em;font-weight:600;color:#1976d2;'>App version:</span><br>
-    <span style='font-size:1.05em;color:#222;'>v0.6.0 - Real-time Escalation Sync, Human Review Workflow, Document Extraction & Validation, Audit Log Tab, Sequential Loan Numbering, UI/UX Improvements</span>
+    <span style='font-size:1.05em;color:#222;'>v0.7.0 - Demo Files Sidebar, Escalation UI Improvements, Audit Log, Real-time Sync, Human Review Workflow, Document Extraction & Validation, UI/UX Enhancements</span>
 </div>
 <div class='sidebar-card' style='background:#eaf6ff;font-size:0.93em;margin-bottom:16px;border:1.5px solid #b3e5fc;padding:8px 8px 6px 8px;'>
     <div style='font-weight:700;font-size:1em;line-height:1.2;margin-bottom:2px;text-align:center;'>
-        <span style="font-size:1.05em;vertical-align:middle;">🤖</span> AI Governance & Evaluation Platform v0.6.0
+        <span style="font-size:1.05em;vertical-align:middle;">🤖</span> AI Governance & Evaluation Platform v0.7.0
     </div>
     <div style='margin:0 0 0 0;font-size:0.91em;line-height:1.35;text-align:center;'>
         <div style='display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:2px;'>
@@ -58,6 +58,30 @@ st.sidebar.markdown("""
     </div>
 </div>
 """, unsafe_allow_html=True)
+
+# --- Demo Files dropdown at the bottom of the sidebar ---
+import streamlit as st
+import os
+demo_files = [
+    "home_loan_docs_1.zip",
+    "home_loan_docs_2.zip",
+    "home_loan_docs_3.zip",
+    "home_loan_docs_4.zip",
+    "home_loan_docs_5.zip"
+]
+demo_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../sample_zips'))
+with st.sidebar.expander("📦 Demo Files", expanded=False):
+    st.markdown("Download sample zip files for demo/testing:")
+    for fname in demo_files:
+        fpath = os.path.join(demo_dir, fname)
+        if os.path.exists(fpath):
+            with open(fpath, "rb") as f:
+                st.download_button(
+                    label=f"Download {fname}",
+                    data=f.read(),
+                    file_name=fname,
+                    mime="application/zip"
+                )
 
 
 with st.sidebar.expander("ℹ️ About This Project", expanded=False):
@@ -213,7 +237,7 @@ personal_info_banner = """
 """
 st.markdown(personal_info_banner, unsafe_allow_html=True)
 
-st.set_page_config(page_title="AI Governance & Evaluation Platform v0.6.0", layout="wide")
+st.set_page_config(page_title="AI Governance & Evaluation Platform v0.7.0", layout="wide")
 
 
 
@@ -444,64 +468,21 @@ elif pdf_contents:
                 reader = csv.DictReader(f)
                 for row in reader:
                     audit_entries.append(row)
-        # Build summary for each loan
-        loan_status = {}
-        loan_status = {}
-        reviewed_docs = st.session_state.get("reviewed_docs", set())
-        loan_number = loan_numbers[0] if 'loan_numbers' in locals() and loan_numbers else 1
-        for idx, (doc_type, obj) in enumerate(st.session_state.get("extracted_objects", [])):
-            loan_num = loan_number
-            score = confidence_scores[idx] if idx < len(confidence_scores) else None
-            validation_errors = st.session_state["validation_results"][idx]["errors"] if st.session_state.get("validation_results") else []
-            status = "Auto-approved"
-            reviewer = ""
-            action = ""
-            reasons = ""
-            pdf_name = ""
-            for entry in audit_entries:
-                if str(entry.get("loan_number")) == str(loan_num) and entry.get("doc_type") == doc_type:
-                    reviewer = entry.get("reviewer", "")
-                    action = entry.get("action", "")
-                    reasons = entry.get("reasons", "")
-                    pdf_name = entry.get("pdf_name", "")
-                    if action == "Approve":
-                        status = "Human-approved"
-                    elif action == "Deny":
-                        status = "Human-denied"
-                    elif action == "Skip":
-                        status = "Escalation Skipped"
-            # Only mark as 'Human-approved' if it was escalated and reviewed
-            if status == "Auto-approved" and ((score is not None and score < 90) or validation_errors):
-                # If all escalated docs for this loan are reviewed, show in audit log
-                escalated_docs = [(loan_num, dt) for dt, _ in st.session_state.get("extracted_objects", []) if ((score is not None and score < 90) or validation_errors)]
-                if all(doc in reviewed_docs for doc in escalated_docs):
-                    status = "Human-approved"
-                else:
-                    status = "Escalation Required"
-            loan_status[idx] = {
-                "Loan #": loan_num,
-                "Document Type": doc_type,
-                "Confidence Score": score,
-                "Status": status,
-                "Reviewer": reviewer,
-                "Reasons": reasons,
-                "PDF Name": pdf_name
-            }
-        # Display audit log table
-        st.write("Below is the audit log for all loans:")
-        st.dataframe(
-            [v for v in loan_status.values()],
-            use_container_width=True
-        )
+        # Show all entries from human_review_log.csv
+        if audit_entries:
+            st.write("Below is the audit log for all loans:")
+            st.dataframe(audit_entries, use_container_width=True)
+        else:
+            st.info("No audit log entries found.")
 
     with tab1:
         st.dataframe(df)
-        if st.button("Extract Objects & Show Fields"):
-            st.session_state["show_extraction_results"] = True
-            st.session_state["extracted_objects"] = objects
-            st.session_state["validation_results"] = validation_results
-            st.session_state["extraction_summary"] = "All data valid." if all(len(r["errors"]) == 0 for r in validation_results) else "Validation errors found."
-            st.info("Switch to the 'Extracted Objects & Fields' tab to view detailed results.")
+        # Automatically extract and show results when upload completes
+        st.session_state["show_extraction_results"] = True
+        st.session_state["extracted_objects"] = objects
+        st.session_state["validation_results"] = validation_results
+        st.session_state["extraction_summary"] = "All data valid." if all(len(r["errors"]) == 0 for r in validation_results) else "Validation errors found."
+        st.info("Extraction completed automatically. Switch to the 'Extracted Objects & Fields' tab to view detailed results.")
 
     with tab2:
         if st.session_state.get("show_extraction_results"):
@@ -568,6 +549,7 @@ elif pdf_contents:
             import csv, os, datetime
             audit_log_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../logs/human_review_log.csv'))
             escalated = []
+            loan_escalations = {}
             # Assign the next available loan number by checking audit log
             import csv
             audit_log_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../logs/human_review_log.csv'))
@@ -582,7 +564,10 @@ elif pdf_contents:
                                 max_loan_number = num
                         except Exception:
                             pass
-            loan_number = max_loan_number + 1
+            # Only increment loan number for new uploads, not for each review
+            if "current_loan_number" not in st.session_state:
+                st.session_state["current_loan_number"] = max_loan_number + 1
+            loan_number = st.session_state["current_loan_number"]
             loan_numbers = [loan_number] * len(st.session_state["extracted_objects"])
             pdf_metadata = st.session_state.get("pdf_metadata", [])
             reviewed_docs = st.session_state.get("reviewed_docs", set())
@@ -590,12 +575,9 @@ elif pdf_contents:
                 score = confidence_scores[idx] if idx < len(confidence_scores) else None
                 reasons = []
                 fields = obj.__dict__ if hasattr(obj, '__dict__') else obj
-                # Re-run confidence scoring logic for reasons
-                reasons = []
                 loan_num = loan_numbers[idx]
                 validation_errors = st.session_state["validation_results"][idx]["errors"] if st.session_state.get("validation_results") else []
-                validation_errors = st.session_state["validation_results"][idx]["errors"] if st.session_state.get("validation_results") else []
-                if ((score is not None and score < 90) or validation_errors) and (loan_num, doc_type) not in reviewed_docs:
+                if ((score is not None and score < 90) or validation_errors) and all((loan_num, doc['doc_type']) not in reviewed_docs for doc in loan_escalations.get(loan_num, [])):
                     for k, v in fields.items():
                         if not v or v.strip() == "":
                             reasons.append(f"{k} missing")
@@ -608,10 +590,8 @@ elif pdf_contents:
                                 reasons.append(f"{k} format invalid")
                     if "Loan Amount" in fields and fields["Loan Amount"] in ["0", "", None]:
                         reasons.append("Loan Amount not positive")
-                    # Add validation errors to escalation reasons
                     if validation_errors:
                         reasons.extend([f"Validation error ({doc_type}): {err}" for err in validation_errors])
-                    # Find PDF bytes for this loan
                     pdf_bytes = None
                     pdf_name = None
                     for meta in pdf_metadata:
@@ -619,43 +599,66 @@ elif pdf_contents:
                             pdf_name = meta[2]
                             pdf_bytes = meta[3]
                             break
-                    escalated.append((idx, doc_type, obj, score, reasons, loan_num, pdf_name, pdf_bytes))
-            if escalated:
-                st.error("⚠️ Escalation Required: The following objects require human review due to low confidence.")
+                    # Group escalations by loan number
+                    if loan_num not in loan_escalations:
+                        loan_escalations[loan_num] = []
+                    loan_escalations[loan_num].append({
+                        "idx": idx,
+                        "doc_type": doc_type,
+                        "obj": obj,
+                        "score": score,
+                        "reasons": reasons,
+                        "pdf_name": pdf_name,
+                        "pdf_bytes": pdf_bytes
+                    })
+            reviewed_loans = set(loan_num for (loan_num, doc_type) in st.session_state.get("reviewed_docs", set()))
+            visible_loans = [loan_num for loan_num in loan_escalations.keys() if loan_num not in reviewed_loans]
+            if not visible_loans:
+                st.markdown("<div style='background-color:#e0e0e0;padding:10px;border-radius:5px;margin-bottom:10px'><b>No loans require escalation review at this time.</b></div>", unsafe_allow_html=True)
+            else:
+                st.error("⚠️ Escalation Required: The following loans require human review due to low confidence or validation errors.")
                 reviewer = st.text_input("Reviewer Name", value="")
-                for idx, doc_type, obj, score, reasons, loan_num, pdf_name, pdf_bytes in escalated:
-                    with st.expander(f"Escalation: Loan #{loan_num} - {doc_type} (Score: {score}/100)", expanded=False):
-                        st.write(f"### Reasons for escalation ({doc_type}):")
-                        for r in reasons:
-                            st.write(f"- {r}")
+                for loan_num in visible_loans:
+                    docs = loan_escalations[loan_num]
+                    with st.expander(f"Escalation: Loan #{loan_num} - {len(docs)} document(s)", expanded=False):
+                        st.write("### Reasons for escalation:")
+                        for doc in docs:
+                            st.write(f"**{doc['doc_type']}**:")
+                            for r in doc['reasons']:
+                                st.write(f"- {r}")
                         st.write("---")
-                        st.write(f"### Object and variable view ({doc_type}):")
-                        st.json(obj.__dict__)
+                        st.write("### Object and variable views:")
+                        for doc in docs:
+                            st.write(f"**{doc['doc_type']}**:")
+                            st.json(doc['obj'].__dict__)
                         st.write("---")
-                        if pdf_bytes:
-                            st.download_button(
-                                label=f"Download PDF for {doc_type}",
-                                data=pdf_bytes,
-                                file_name=pdf_name or f"{doc_type.replace(' ', '_')}.pdf",
-                                mime="application/pdf"
-                            )
+                        st.write("### Download PDFs:")
+                        for doc in docs:
+                            if doc['pdf_bytes']:
+                                st.download_button(
+                                    label=f"Download PDF for {doc['doc_type']}",
+                                    data=doc['pdf_bytes'],
+                                    file_name=doc['pdf_name'] or f"{doc['doc_type'].replace(' ', '_')}.pdf",
+                                    mime="application/pdf"
+                                )
                         st.write("---")
-                        action = st.radio(f"Human Review Action for {doc_type}", ["Approve", "Deny", "Skip"], key=f"escalate_action_{idx}")
-                        if st.button(f"Submit Review for {doc_type}", key=f"submit_escalate_{idx}"):
+                        action = st.radio(f"Human Review Action for Loan #{loan_num}", ["Approve", "Deny", "Skip"], key=f"escalate_action_{loan_num}")
+                        if st.button(f"Submit Review for Loan #{loan_num}", key=f"submit_escalate_{loan_num}"):
                             timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                            log_entry = [timestamp, reviewer, loan_num, doc_type, action, score, ", ".join(reasons), pdf_name]
                             header = ["timestamp", "reviewer", "loan_number", "doc_type", "action", "confidence_score", "reasons", "pdf_name"]
                             file_exists = os.path.exists(audit_log_path)
-                            with open(audit_log_path, mode="a", newline="", encoding="utf-8") as f:
-                                writer = csv.writer(f)
-                                if not file_exists or os.stat(audit_log_path).st_size == 0:
-                                    writer.writerow(header)
-                                writer.writerow(log_entry)
-                            # Mark document as reviewed
-                            if "reviewed_docs" not in st.session_state:
-                                st.session_state["reviewed_docs"] = set()
-                            st.session_state["reviewed_docs"].add((loan_num, doc_type))
-                            st.success(f"Action '{action}' recorded for {doc_type} and logged. This document will now be removed from the escalation list.")
+                            for doc in docs:
+                                log_entry = [timestamp, reviewer, loan_num, doc['doc_type'], action, doc['score'], ", ".join(doc['reasons']), doc['pdf_name']]
+                                with open(audit_log_path, mode="a", newline="", encoding="utf-8") as f:
+                                    writer = csv.writer(f)
+                                    if not file_exists or os.stat(audit_log_path).st_size == 0:
+                                        writer.writerow(header)
+                                    writer.writerow(log_entry)
+                                # Mark document as reviewed
+                                if "reviewed_docs" not in st.session_state:
+                                    st.session_state["reviewed_docs"] = set()
+                                st.session_state["reviewed_docs"].add((loan_num, doc['doc_type']))
+                            st.success(f"Action '{action}' recorded for Loan #{loan_num} and logged. All documents for this loan will now be removed from the escalation list.")
                             st.rerun()
         else:
             st.info("No extraction results yet. Run extraction in the first tab.")
