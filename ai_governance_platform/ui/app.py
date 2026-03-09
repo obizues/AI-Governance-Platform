@@ -249,25 +249,27 @@ feedback_logger = FeedbackLogger(FEEDBACK_PATH)
 feedback_gate = FeedbackGate(FEEDBACK_SUMMARY_PATH)
 import importlib
 import sys
-import os
+validation_imported = False
 try:
     from ai_governance_platform.extraction.validation import (
         validate_loan_application, validate_disclosure, validate_credit_report, validate_appraisal_report,
         validate_income_verification, validate_bank_statement, validate_tax_return, validate_closing_documents
     )
+    validation_imported = True
 except ModuleNotFoundError:
     try:
         from ..extraction.validation import (
             validate_loan_application, validate_disclosure, validate_credit_report, validate_appraisal_report,
             validate_income_verification, validate_bank_statement, validate_tax_return, validate_closing_documents
         )
+        validation_imported = True
     except ModuleNotFoundError:
-        # Try importing directly from file path using importlib.util
-        import importlib.util
-        validation_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../extraction/validation.py'))
-        spec = importlib.util.spec_from_file_location('validation', validation_path)
-        validation_module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(validation_module)
+        # Try adding extraction to sys.path and import directly
+        import os
+        extraction_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../extraction'))
+        if extraction_path not in sys.path:
+            sys.path.append(extraction_path)
+        validation_module = importlib.import_module('validation')
         validate_loan_application = validation_module.validate_loan_application
         validate_disclosure = validation_module.validate_disclosure
         validate_credit_report = validation_module.validate_credit_report
