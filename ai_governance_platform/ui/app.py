@@ -1,3 +1,4 @@
+__all__ = ["main"]
 import os
 import json
 import sys
