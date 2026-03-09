@@ -1,3 +1,9 @@
+# [v0.4.0] - 2026-03-08
+### Major Updates
+- Escalation workflow reliably updates CSV and removes reviewed escalations from UI
+- Mask logic in escalation.py now matches only by timestamp for robust row updates
+- All documentation, sidebar, and app version references updated to v0.4.0
+
 # Changelog
 
 ## [v0.1.0] - 2026-03-04

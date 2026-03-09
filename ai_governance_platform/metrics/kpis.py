@@ -1,3 +1,17 @@
+def refresh_system_health_kpi():
+    """
+    Refreshes and returns system health KPIs such as uptime, memory usage, CPU load, and status.
+    Returns a dict with health metrics.
+    """
+    import psutil
+    import time
+    health_kpi = {}
+    health_kpi["uptime_seconds"] = time.time() - psutil.boot_time()
+    health_kpi["memory_percent"] = psutil.virtual_memory().percent
+    health_kpi["cpu_percent"] = psutil.cpu_percent(interval=1)
+    health_kpi["status"] = "healthy" if health_kpi["cpu_percent"] < 80 and health_kpi["memory_percent"] < 80 else "warning"
+    return health_kpi
+
 import pandas as pd
 import os
 
@@ -17,7 +31,12 @@ def compute_kpis(log_path, feedback_path):
         kpis["total_queries"] = len(df)
         kpis["deny_rate"] = (df["decision"] == "deny").mean() if len(df) else 0.0
         kpis["escalation_rate"] = (df["decision"] == "escalate").mean() if len(df) else 0.0
-        kpis["avg_latency"] = df["response_time_ms"].mean() if "response_time_ms" in df else 0.0
+        if "response_time_ms" in df:
+            if not pd.api.types.is_numeric_dtype(df["response_time_ms"]):
+                df["response_time_ms"] = pd.to_numeric(df["response_time_ms"], errors="coerce")
+            kpis["avg_latency"] = df["response_time_ms"].mean()
+        else:
+            kpis["avg_latency"] = 0.0
     if os.path.exists(feedback_path):
         try:
             fdf = pd.read_csv(feedback_path)

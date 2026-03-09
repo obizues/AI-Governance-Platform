@@ -1,7 +1,7 @@
 ---
 # System Architecture 🗂️
 
-**Version:** v0.3.0
+**Version:** v0.4.0
 
 ## Overview
 The AI Governance & Evaluation Platform is designed for modularity, auditability, and extensibility. It consists of:

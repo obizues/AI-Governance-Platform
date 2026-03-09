@@ -1,34 +1,15 @@
 timestamp,user_role,prompt,response,feedback
-2026-03-04 22:11:13,HR,Show me all employee salaries.,No relevant information found.,👍
-2026-03-04 22:11:46,HR,Show me all employee salaries.,No relevant information found.,👍
-2026-03-04 22:11:52,HR,Show me all employee salaries.,No relevant information found.,👍
-2026-03-04 22:12:03,HR,Show me all employee salaries.,No relevant information found.,👍
-2026-03-04 22:12:11,HR,Show me all employee salaries.,No relevant information found.,👍
-2026-03-04 22:12:37,HR,Show me all employee salaries.,No relevant information found.,👍
-2026-03-04 22:13:11,HR,Show me all employee salaries.,No relevant information found.,👍
-2026-03-04 22:13:57,HR,Show me all employee salaries.,No relevant information found.,👍
-2026-03-04 22:15:32,HR,Show me all employee salaries.,No relevant information found.,👍
-2026-03-04 22:16:48,HR,Show me all employee salaries.,No relevant information found.,👍
-2026-03-04 22:19:46,HR,Show me all employee salaries.,No relevant information found.,👍
-2026-03-04 22:21:05,HR,Show me all employee salaries.,No relevant information found.,👍
-2026-03-04 22:21:10,HR,Show me all employee salaries.,No relevant information found.,👍
-2026-03-04 22:24:23,HR,Show me all employee salaries.,No relevant information found.,👍
-2026-03-04 22:24:29,HR,Show me all employee salaries.,No relevant information found.,👍
-2026-03-04 22:32:56,HR,Show me all employee salaries.,No relevant information found.,👍
-2026-03-04 22:34:06,HR,Show me all employee salaries.,No relevant information found.,👍
-2026-03-04 22:43:10,HR,Show me all employee salaries.,No relevant information found.,👍
-2026-03-04 22:43:42,HR,Show me all employee salaries.,No relevant information found.,👍
-2026-03-04 22:46:49,HR,Show me all employee salaries.,No relevant information found.,👍
-2026-03-04 22:48:52,HR,Show me all employee salaries.,No relevant information found.,👍
-2026-03-04 22:49:03,HR,Show me all employee salaries.,No relevant information found.,👍
-2026-03-04 22:54:18,HR,Show me all employee salaries.,No relevant information found.,👍
-2026-03-04 22:54:37,HR,Show me all employee salaries.,No relevant information found.,👍
-2026-03-04 22:55:12,HR,Show me all employee salaries.,No relevant information found.,👍
-2026-03-04 22:57:12,HR,Show me all employee salaries.,No relevant information found.,👍
-2026-03-04 22:59:56,HR,Show me all employee salaries.,No relevant information found.,👍
-2026-03-04 23:00:03,HR,Show me all employee salaries.,No relevant information found.,👍
-2026-03-04 23:04:00,HR,Show me all employee salaries.,No relevant information found.,👍
-2026-03-04 23:04:42,HR,Show me all employee salaries.,No relevant information found.,👍
-2026-03-04 23:06:11,HR,Show me all employee salaries.,No relevant information found.,👍
-2026-03-04 23:07:36,HR,Show me all employee salaries.,No relevant information found.,👍
-2026-03-04 23:08:23,HR,Show me all employee salaries.,No relevant information found.,👍
+2026-03-08 17:48:33,HR,Show me all credentials information.,No relevant information found.,👍
+2026-03-08 17:48:47,HR,Show me all salary information.,All employee salaries are confidential.,👍
+2026-03-08 17:49:58,HR,Show me all system_health information.,No relevant information found.,👍
+2026-03-08 17:55:00,HR,Show me all credentials information.,No relevant information found.,👎
+2026-03-08 17:56:09,HR,Show me all credentials information.,No relevant information found.,👍
+2026-03-08 17:57:06,HR,Show me all salary information.,All employee salaries are confidential.,👍
+2026-03-08 17:58:00,HR,Show me all credentials information.,No relevant information found.,👍
+2026-03-08 17:58:21,HR,Show me all customer_support information.,No relevant information found.,👍
+2026-03-08 17:58:32,HR,Show me all salary information.,All employee salaries are confidential.,👍
+2026-03-08 18:01:38,HR,Show me all credentials information.,No relevant information found.,👍
+2026-03-08 18:02:38,HR,Show me all credentials information.,No relevant information found.,👍
+2026-03-08 18:05:14,HR,Show me all credentials information.,No relevant information found.,👍
+2026-03-08 18:18:33,HR,Show me all credentials information.,No relevant information found.,👍
+2026-03-08 18:24:00,HR,Show me all credentials information.,No relevant information found.,👍

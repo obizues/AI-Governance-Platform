@@ -1,9 +1,30 @@
 {
-  "b2300cae59727f7a5d84a9afaec2aa7bdf94388fc90bf40f8b46973f57265936": {
-    "up": 33,
+  "be0496bee19b2fc56bcf371380b47e3f3e319a8a8db64f1e4c35c4014caa4dbc": {
+    "up": 8,
+    "down": 1,
+    "prompts": [
+      "Show me all credentials information."
+    ]
+  },
+  "a0b48f755f45092804bb3b671d1d07a4a9d362a2653a46d45924212b1230e2ce": {
+    "up": 3,
     "down": 0,
     "prompts": [
-      "Show me all employee salaries."
+      "Show me all salary information."
+    ]
+  },
+  "d585c7dc49088341459bc1e1e600981e394c6255e8d4f5a071ebc2d542844ed4": {
+    "up": 1,
+    "down": 0,
+    "prompts": [
+      "Show me all system_health information."
+    ]
+  },
+  "2f7dd2e4f7f0b3c6b245c583afa182dbf62f742d19e75d4c69f092e3558d0227": {
+    "up": 1,
+    "down": 0,
+    "prompts": [
+      "Show me all customer_support information."
     ]
   }
 }

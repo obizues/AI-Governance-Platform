@@ -1,0 +1,13 @@
+timestamp,user_role,prompt,risk_level,rule_triggered,reason,hil_reviewer,hil_action
+nan,HR,Show me all salary information.,high,risk:high,High risk prompt escalated,,Approve
+nan,CTO,Show me all salary information.,high,risk:high,High risk prompt escalated,,Approve
+nan,HR,Show me all salary information.,high,risk:high,High risk prompt escalated,,Approve
+,,,,,,Chris Obermeier,Approve
+,,,,,,Chris Obermeier,Approve
+,,,,,,Chris Obermeier,Approve
+,,,,,,Chris Obermeier,Approve
+,,,,,,Chris Obermeier,Deny
+,,,,,,Chris Obermeier,Skip
+,,,,,,Chris Obermeier,Skip
+,,,,,,Chris Obermeier,Approve
+,,,,,,Alex Smith,Approve

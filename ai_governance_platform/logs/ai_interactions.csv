@@ -1,0 +1,1 @@
+timestamp,user_id,user_role,prompt,response,response_time_ms,confidence_score,risk_level,decision,rule_triggered,reason,required_controls

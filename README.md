@@ -3,7 +3,7 @@
 
 A modular, open-source platform for safe, observable, and governed AI operations in enterprise environments.
 
-**Version:** v0.3.0
+**Version:** v0.4.0
 
 ## Features
 ...existing code...
