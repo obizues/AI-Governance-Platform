@@ -247,10 +247,16 @@ policy_engine = PolicyEngine(POLICY_PATH)
 audit_logger = AuditLogger(LOG_PATH)
 feedback_logger = FeedbackLogger(FEEDBACK_PATH)
 feedback_gate = FeedbackGate(FEEDBACK_SUMMARY_PATH)
-from ai_governance_platform.extraction.validation import (
-    validate_loan_application, validate_disclosure, validate_credit_report, validate_appraisal_report,
-    validate_income_verification, validate_bank_statement, validate_tax_return, validate_closing_documents
-)
+try:
+    from ai_governance_platform.extraction.validation import (
+        validate_loan_application, validate_disclosure, validate_credit_report, validate_appraisal_report,
+        validate_income_verification, validate_bank_statement, validate_tax_return, validate_closing_documents
+    )
+except ModuleNotFoundError:
+    from ..extraction.validation import (
+        validate_loan_application, validate_disclosure, validate_credit_report, validate_appraisal_report,
+        validate_income_verification, validate_bank_statement, validate_tax_return, validate_closing_documents
+    )
 def parse_fields(text, doc_type):
     lines = [line.strip() for line in text.split('\n') if line.strip()]
     fields = {}
