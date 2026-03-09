@@ -51,6 +51,9 @@ st.sidebar.markdown("""
             <span style="font-size:1em;">💬</span> <span>Feedback logging and summary</span>
         </div>
         <div style='display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:2px;'>
+            <span style="font-size:1em;">🛑</span> <span>Escalation Review (HIL) for high-risk queries</span>
+        </div>
+        <div style='display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:2px;'>
             <span style="font-size:1em;">📊</span> <span>System Health KPIs and metrics</span>
         </div>
         <div style='display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:2px;'>
@@ -106,46 +109,20 @@ with st.sidebar.expander("&#128295; Tech Stack", expanded=False):
 <li>pytest (testing, audit validation)</li>
 <li>GitHub Actions (CI/CD)</li>
 </ul>
-</span>
 """, unsafe_allow_html=True)
-with st.sidebar.expander("🧩 System Design Notes", expanded=False):
-    st.markdown("""
-<span style='font-size:1em;'>
-<ul style='margin-bottom:0; padding-left: 18px;'>
-<li><b>Modular Architecture:</b> Separate modules for audit logging, policy engine, feedback, metrics, and UI.</li>
-<li><b>Audit Logging:</b> All AI interactions are logged for traceability and compliance.</li>
-<li><b>Policy Engine:</b> YAML-based rules for query risk assessment and control enforcement.</li>
 <li><b>Feedback Logging:</b> User feedback is logged and summarized for continuous improvement.</li>
 <li><b>System Health KPIs:</b> Real-time metrics for queries, deny rate, escalation, latency, trust score, and feedback.</li>
 <li><b>Streamlit UI:</b> Modern, business-focused interface with tabs for queries, feedback, and health.</li>
 <li><b>Open Source:</b> Extensible Python codebase, GitHub-hosted, CI/CD enabled.</li>
 <li><b>Deployment:</b> Streamlit Cloud, local, or containerized environments.</li>
-<li><b>Security & Privacy:</b> All processing is local; no data leaves the user's environment.</li>
-</ul>
-</span>
-""", unsafe_allow_html=True)
-    
 # --- Top blue app title bar (centered, above personal info) ---
+    st.markdown("""
 st.markdown(
-    """
-    <style>
-        .main-title-banner {
-            background: #1976d2;
-            color: #fff;
-            font-size: 1.45em;
-            font-weight: 700;
-            text-align: center;
             margin: 0 auto 0 auto;
             padding: 0.7em 0 0.7em 0;
             box-sizing: border-box;
             border-radius: 0 0 18px 18px;
             box-shadow: 0 2px 8px rgba(25, 118, 210, 0.10);
-            letter-spacing: 0.01em;
-            max-width: 700px;
-        }
-        .main-title-banner .emoji {
-            font-size: 1.3em;
-            vertical-align: middle;
             margin-right: 0.18em;
             filter: none;
         }
