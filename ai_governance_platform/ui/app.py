@@ -127,7 +127,7 @@ def main():
             </div>
         </div>
         """, unsafe_allow_html=True)
-        st.set_page_config(page_title="AI Governance & Evaluation Platform v0.8.0", layout="wide")
+        st.set_page_config(page_title="AI Governance & Evaluation Platform v0.8.1", layout="wide")
         provider = StubProvider()
         policy_engine = PolicyEngine(POLICY_PATH)
         audit_logger = AuditLogger(LOG_PATH)
@@ -172,11 +172,11 @@ def main():
     st.sidebar.markdown("""
     <div style='background:#eaf6ff;border:1.5px solid #b3e5fc;padding:10px 12px 8px 12px;margin-bottom:12px;text-align:center;border-radius:8px;'>
         <span style='font-size:1.08em;font-weight:600;color:#1976d2;'>App version:</span><br>
-        <span style='font-size:1.05em;color:#222;'>v0.8.0 - Data Validation Escalation Fix, Demo Files Sidebar Restored, Escalation UI Improvements, Audit Log, Real-time Sync, Human Review Workflow, Document Extraction & Validation, UI/UX Enhancements</span>
+        <span style='font-size:1.05em;color:#222;'>v0.8.1 - Demo Files Sidebar, Dynamic Listing, UI/UX Improvements, Audit Log, Real-time Sync, Human Review Workflow, Document Extraction & Validation</span>
     </div>
     <div class='sidebar-card' style='background:#eaf6ff;font-size:0.93em;margin-bottom:16px;border:1.5px solid #b3e5fc;padding:8px 8px 6px 8px;'>
         <div style='font-weight:700;font-size:1em;line-height:1.2;margin-bottom:2px;text-align:center;'>
-            <span style="font-size:1.05em;vertical-align:middle;">🤖</span> AI Governance & Evaluation Platform v0.8.0
+            <span style="font-size:1.05em;vertical-align:middle;">🤖</span> AI Governance & Evaluation Platform v0.8.1
         </div>
         <div style='margin:0 0 0 0;font-size:0.91em;line-height:1.35;text-align:center;'>
             <div style='display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:2px;'>
@@ -298,7 +298,7 @@ def main():
 
     """
 
-    st.set_page_config(page_title="AI Governance & Evaluation Platform v0.7.1", layout="wide")
+    st.set_page_config(page_title="AI Governance & Evaluation Platform v0.8.1", layout="wide")
 
     provider = StubProvider()
     policy_engine = PolicyEngine(POLICY_PATH)
