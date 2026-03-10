@@ -38,8 +38,43 @@ def main():
         personal_info_banner = """...existing personal info banner..."""
         st.markdown(personal_info_banner, unsafe_allow_html=True)
         st.set_page_config(page_title="AI Governance & Evaluation Platform v0.7.1", layout="wide")
-        # ...existing Streamlit UI logic (tabs, file upload, extraction, etc.)...
-        # (Move all code from global scope here)
+        provider = StubProvider()
+        policy_engine = PolicyEngine(POLICY_PATH)
+        audit_logger = AuditLogger(LOG_PATH)
+        feedback_logger = FeedbackLogger(FEEDBACK_PATH)
+        feedback_gate = FeedbackGate(FEEDBACK_SUMMARY_PATH)
+        import importlib
+        import sys
+        validation_imported = False
+        try:
+            from ai_governance_platform.extraction.validation import (
+                validate_loan_application, validate_disclosure, validate_credit_report, validate_appraisal_report,
+                validate_income_verification, validate_bank_statement, validate_tax_return, validate_closing_documents
+            )
+            validation_imported = True
+        except ModuleNotFoundError:
+            try:
+                from ..extraction.validation import (
+                    validate_loan_application, validate_disclosure, validate_credit_report, validate_appraisal_report,
+                    validate_income_verification, validate_bank_statement, validate_tax_return, validate_closing_documents
+                )
+                validation_imported = True
+            except ModuleNotFoundError:
+                # Try adding extraction to sys.path and import directly
+                import os
+                extraction_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../extraction'))
+                if extraction_path not in sys.path:
+                    sys.path.append(extraction_path)
+                validation_module = importlib.import_module('validation')
+                validate_loan_application = validation_module.validate_loan_application
+                validate_disclosure = validation_module.validate_disclosure
+                validate_credit_report = validation_module.validate_credit_report
+                validate_appraisal_report = validation_module.validate_appraisal_report
+                validate_income_verification = validation_module.validate_income_verification
+                validate_bank_statement = validation_module.validate_bank_statement
+                validate_tax_return = validation_module.validate_tax_return
+                validate_closing_documents = validation_module.validate_closing_documents
+        # ...existing Streamlit UI logic (file upload, extraction, tabs, etc.)...
     except Exception as e:
         st.error(f"A fatal error occurred: {str(e)}")
         print(f"Streamlit fatal error: {str(e)}")
