@@ -1,7 +1,7 @@
 ---
 # AI Governance & Evaluation Platform Architecture
 
-## Version: v0.4.0
+## Version: v0.8.0
 
 ### Key Features
 
@@ -17,6 +17,10 @@
 - System Health KPIs for operational visibility
 - Streamlit-based modern UI for business users
 - Open-source, extensible Python codebase
+- Demo Files sidebar expander with download buttons
+- Dynamic listing of sample_zips files
+- Streamlit download buttons for demo files
+- Improved sidebar layout and UI/UX
 - Designed for CTOs, CEOs, hiring managers, and PE operators
 ...existing code...
 

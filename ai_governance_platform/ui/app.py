@@ -36,30 +36,98 @@ def main():
         from ai_governance_platform.evaluation.evaluation_runner import EvaluationRunner
         import yaml
         import streamlit as st
+
         BASE_DIR = os.path.dirname(os.path.abspath(__file__))
         LOG_PATH = os.path.abspath(os.path.join(BASE_DIR, "..", "..", "logs", "ai_interactions.csv"))
         FEEDBACK_PATH = os.path.abspath(os.path.join(BASE_DIR, "..", "..", "logs", "feedback_log.csv"))
         FEEDBACK_SUMMARY_PATH = os.path.abspath(os.path.join(BASE_DIR, "..", "..", "logs", "feedback_summary.json"))
         POLICY_PATH = os.path.abspath(os.path.join(BASE_DIR, "..", "policy", "policy.yaml"))
-        st.sidebar.markdown("""...existing sidebar markdown...""", unsafe_allow_html=True)
-        with st.sidebar.expander("ℹ️ About This Project", expanded=False):
-            st.markdown("""...existing about markdown...""", unsafe_allow_html=True)
-        with st.sidebar.expander("&#128193; Project Documentation", expanded=False):
-            st.markdown("**Project Documentation**")
-            st.markdown("<span style='font-size:1.05em;'>🌐</span> [GitHub Repository](https://github.com/obizues/AI-Governance-Platform)", unsafe_allow_html=True)
-            st.markdown("<span style='font-size:1.05em;'>📄</span> **Documentation**", unsafe_allow_html=True)
-            st.markdown("- <span style='font-size:1.05em;'>📘</span> [README.md](https://github.com/obizues/AI-Governance-Platform/blob/main/README.md): Platform overview, setup, features", unsafe_allow_html=True)
-            st.markdown("- <span style='font-size:1.05em;'>📝</span> [CHANGELOG.md](https://github.com/obizues/AI-Governance-Platform/blob/main/CHANGELOG.md): Release notes and updates", unsafe_allow_html=True)
-            st.markdown("- <span style='font-size:1.05em;'>🗂️</span> [System Architecture](https://github.com/obizues/AI-Governance-Platform/blob/main/docs/architecture.md): Design and flow diagrams", unsafe_allow_html=True)
-            st.markdown("**Key Sections:**\n- Audit Logging\n- Policy Engine\n- Feedback & Evaluation\n- System Health KPIs\n- Deployment & Usage Guide")
-        with st.sidebar.expander("&#128295; Tech Stack", expanded=False):
-            st.markdown("""...existing tech stack markdown...""", unsafe_allow_html=True)
-            with st.sidebar.expander("📝 System Design Notes", expanded=False):
-                st.markdown("""...existing design notes markdown...""", unsafe_allow_html=True)
-        st.markdown("""...existing main title banner...""", unsafe_allow_html=True)
-        personal_info_banner = """...existing personal info banner..."""
-        st.markdown(personal_info_banner, unsafe_allow_html=True)
-        st.set_page_config(page_title="AI Governance & Evaluation Platform v0.7.1", layout="wide")
+        
+        # Render banners only once at the top
+        st.markdown("""
+        <style>
+            .main-title-banner {
+                background: #1976d2;
+                color: #fff;
+                font-family: 'Segoe UI', 'Arial', sans-serif;
+                font-size: 1.35em;
+                font-weight: 600;
+                text-align: center;
+                margin: 0 auto 0 auto;
+                padding: 0.7em 0 0.7em 0;
+                box-sizing: border-box;
+                border-radius: 0 0 18px 18px;
+                box-shadow: 0 2px 8px rgba(25, 118, 210, 0.10);
+                margin-right: 0.18em;
+                filter: none;
+            }
+            .emoji {
+                font-size: 1.3em;
+                margin-right: 0.18em;
+            }
+            .app-title-banner {
+                background: #eaf6ff;
+                color: #fff;
+                font-family: 'Segoe UI', 'Arial', sans-serif;
+                font-size: 1.08em;
+                font-weight: 500;
+                text-align: center;
+                margin: 0.5em auto 0 auto;
+                padding: 0.5em 0 0.5em 0;
+                box-sizing: border-box;
+                border-radius: 0 0 12px 12px;
+                box-shadow: 0 2px 8px rgba(25, 118, 210, 0.08);
+                max-width: 700px;
+            }
+            .app-title-banner .name-title {
+                font-size: 1.18em;
+                font-weight: 700;
+                color: #1976d2;
+                margin-bottom: 0.1em;
+            }
+            .app-title-banner .subtitle {
+                font-size: 0.98em;
+                color: #1976d2;
+                margin-bottom: 0.2em;
+            }
+            .app-title-banner .links, .app-title-banner .project-links {
+                font-size: 0.97em;
+                margin-bottom: 0.1em;
+            }
+            .app-title-banner a {
+                color: #1976d2;
+                text-decoration: underline;
+                margin: 0 8px;
+                font-size: 0.97em;
+            }
+            .app-title-banner .project-links {
+                margin-top: 0.1em;
+            }
+            @media (max-width: 600px) {
+                .app-title-banner { font-size: 0.93em; }
+                .app-title-banner .name-title { font-size: 1em; }
+                .app-title-banner .subtitle { font-size: 0.91em; }
+                .app-title-banner .links, .app-title-banner .project-links { font-size: 0.91em; }
+            }
+        </style>
+        <div class="main-title-banner">
+            <span class="emoji">🤖</span> AI Governance & Evaluation Platform
+        </div>
+        <div class="app-title-banner">
+            <div class="name-title" style="font-size:0.95em; font-weight:400; margin-bottom:0.08em; text-align:center; color:#1976d2;"><b>Chris Obermeier</b> | SVP of Engineering</div>
+            <div class="subtitle" style="background:transparent;border-radius:0;padding:2px 8px;font-size:0.83em;text-align:center;margin-bottom:0.08em;color:#64b5f6;font-weight:400;">Enterprise Platform & AI Transformation | Led 100+ Engineer Orgs | PE & Revenue-Scale Modernization</div>
+            <div class="links" style="font-size:0.92em; font-weight:400; margin-bottom:0em; text-align:center;">
+                <a href="https://www.linkedin.com/in/chris-obermeier/" target="_blank">LinkedIn</a> |
+                <a href="https://github.com/obizues" target="_blank">GitHub</a> |
+                <a href="mailto:chris.obermeier@gmail.com" target="_blank">Email</a>
+            </div>
+            <div class="project-links" style="font-size:0.92em; font-weight:400; margin-top:0em; text-align:center;">
+                <span style="margin-right:4px;">&#11088;</span><a href="https://github.com/obizues/AI-Governance-Platform" target="_blank">Star on GitHub</a> |
+                <span style="margin-right:4px;">&#128214;</span><a href="https://github.com/obizues/AI-Governance-Platform/blob/main/README.md" target="_blank">Read Documentation</a>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        st.set_page_config(page_title="AI Governance & Evaluation Platform v0.8.0", layout="wide")
         provider = StubProvider()
         policy_engine = PolicyEngine(POLICY_PATH)
         audit_logger = AuditLogger(LOG_PATH)
@@ -104,11 +172,11 @@ def main():
     st.sidebar.markdown("""
     <div style='background:#eaf6ff;border:1.5px solid #b3e5fc;padding:10px 12px 8px 12px;margin-bottom:12px;text-align:center;border-radius:8px;'>
         <span style='font-size:1.08em;font-weight:600;color:#1976d2;'>App version:</span><br>
-        <span style='font-size:1.05em;color:#222;'>v0.7.1 - Data Validation Escalation Fix, Demo Files Sidebar, Escalation UI Improvements, Audit Log, Real-time Sync, Human Review Workflow, Document Extraction & Validation, UI/UX Enhancements</span>
+        <span style='font-size:1.05em;color:#222;'>v0.8.0 - Data Validation Escalation Fix, Demo Files Sidebar Restored, Escalation UI Improvements, Audit Log, Real-time Sync, Human Review Workflow, Document Extraction & Validation, UI/UX Enhancements</span>
     </div>
     <div class='sidebar-card' style='background:#eaf6ff;font-size:0.93em;margin-bottom:16px;border:1.5px solid #b3e5fc;padding:8px 8px 6px 8px;'>
         <div style='font-weight:700;font-size:1em;line-height:1.2;margin-bottom:2px;text-align:center;'>
-            <span style="font-size:1.05em;vertical-align:middle;">🤖</span> AI Governance & Evaluation Platform v0.7.1
+            <span style="font-size:1.05em;vertical-align:middle;">🤖</span> AI Governance & Evaluation Platform v0.8.0
         </div>
         <div style='margin:0 0 0 0;font-size:0.91em;line-height:1.35;text-align:center;'>
             <div style='display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:2px;'>
@@ -142,6 +210,22 @@ def main():
     </div>
     """, unsafe_allow_html=True)
 
+    # Demo Files expander in sidebar
+    import glob
+    demo_dir = os.path.join(BASE_DIR, '..', '..', 'sample_zips')
+    demo_files = sorted([os.path.basename(f) for f in glob.glob(os.path.join(demo_dir, '*')) if os.path.isfile(f)])
+    with st.sidebar.expander("🗃️ Demo Files", expanded=False):
+        for fname in demo_files:
+            fpath = os.path.join(demo_dir, fname)
+            with open(fpath, "rb") as f:
+                st.download_button(
+                    label=f"Download {fname}",
+                    data=f.read(),
+                    file_name=fname,
+                    mime="application/octet-stream"
+                )
+        st.markdown("<span style='font-size:0.95em;color:#888;'>Click to download demo files for testing.</span>", unsafe_allow_html=True)
+
     with st.sidebar.expander("ℹ️ About This Project", expanded=False):
         st.markdown("""
         Modular AI Governance & Evaluation Platform
@@ -155,6 +239,9 @@ def main():
         - Document extraction, validation, and confidence scoring
         - Audit log tab with full review history
         - Sequential loan numbering and improved UI/UX
+        - Demo Files sidebar expander with download buttons
+        - Dynamic listing of sample_zips files
+        - UI/UX improvements and version update
         - Designed for CTOs, CEOs, hiring managers, and PE operators
 
         **Target Audience:**
@@ -166,6 +253,9 @@ def main():
         - System health metrics and KPIs
         - Streamlit UI for easy access and reporting
         - Open-source, extensible design
+        - Real-time escalation review and human-in-the-loop workflow
+        - Demo file downloads for testing
+        - Improved sidebar and UI layout
         """, unsafe_allow_html=True)
     with st.sidebar.expander("&#128193; Project Documentation", expanded=False):
         st.markdown("**Project Documentation**")
@@ -188,6 +278,8 @@ def main():
     <li>System Health KPIs</li>
     <li>pytest (testing, audit validation)</li>
     <li>GitHub Actions (CI/CD)</li>
+    <li>Streamlit download buttons for demo files</li>
+    <li>Dynamic sidebar content</li>
     </ul>
     """, unsafe_allow_html=True)
 
@@ -199,106 +291,14 @@ def main():
         <li><b>Streamlit UI:</b> Modern, business-focused interface with tabs for queries, feedback, health, and escalation review.</li>
         <li><b>Open Source:</b> Extensible Python codebase, GitHub-hosted, CI/CD enabled.</li>
         <li><b>Deployment:</b> Streamlit Cloud, local, or containerized environments.</li>
+        <li><b>Demo Files:</b> Sidebar expander with download buttons, dynamic listing of sample files for testing.</li>
+        <li><b>UI/UX:</b> Improved sidebar layout, banners, and tabbed navigation.</li>
         """, unsafe_allow_html=True)
     """
 
     """
-    # --- Top blue app title bar (centered, above personal info) ---
-    st.markdown("""
-    <style>
-        .main-title-banner {
-            background: #1976d2;
-            color: #fff;
-            font-family: 'Segoe UI', 'Arial', sans-serif;
-            font-size: 1.35em;
-            font-weight: 600;
-            text-align: center;
-            margin: 0 auto 0 auto;
-            padding: 0.7em 0 0.7em 0;
-            box-sizing: border-box;
-            border-radius: 0 0 18px 18px;
-            box-shadow: 0 2px 8px rgba(25, 118, 210, 0.10);
-            margin-right: 0.18em;
-            filter: none;
-        }
-        .emoji {
-            font-size: 1.3em;
-            margin-right: 0.18em;
-        }
-    </style>
-    <div class="main-title-banner">
-        <span class="emoji">🤖</span> AI Governance & Evaluation Platform
-    </div>
-    """, unsafe_allow_html=True)
-
-    # --- Personal Information Banner ---
-    personal_info_banner = """
-    <style>
-    .app-title-banner {
-        background: #eaf6ff;
-        color: #fff;
-        font-family: 'Segoe UI', 'Arial', sans-serif;
-        font-size: 1.08em;
-        font-weight: 500;
-        text-align: center;
-        margin: 0.5em auto 0 auto;
-        padding: 0.5em 0 0.5em 0;
-        box-sizing: border-box;
-        border-radius: 0 0 12px 12px;
-        box-shadow: 0 2px 8px rgba(25, 118, 210, 0.08);
-        max-width: 700px;
-    }
-    .app-title-banner .name-title {
-        font-size: 1.18em;
-        font-weight: 700;
-        color: #1976d2;
-        margin-bottom: 0.1em;
-    }
-    .app-title-banner .subtitle {
-        font-size: 0.98em;
-        color: #1976d2;
-        margin-bottom: 0.2em;
-    }
-    .app-title-banner .links, .app-title-banner .project-links {
-        font-size: 0.97em;
-        margin-bottom: 0.1em;
-    }
-    .app-title-banner a {
-        color: #1976d2;
-        text-decoration: underline;
-        margin: 0 8px;
-        font-size: 0.97em;
-    }
-    .app-title-banner .project-links {
-        margin-top: 0.1em;
-    }
-        @media (max-width: 600px) {
-            .app-title-banner { font-size: 0.93em; }
-            .app-title-banner .name-title { font-size: 1em; }
-            .app-title-banner .subtitle { font-size: 0.91em; }
-            .app-title-banner .links, .app-title-banner .project-links { font-size: 0.91em; }
-        }
-    </style>
-    <div class="app-title-banner">
-        <div class="name-title" style="font-size:0.95em; font-weight:400; margin-bottom:0.08em; text-align:center; color:#1976d2;"><b>Chris Obermeier</b> | SVP of Engineering</div>
-        <div class="subtitle" style="background:transparent;border-radius:0;padding:2px 8px;font-size:0.83em;text-align:center;margin-bottom:0.08em;color:#64b5f6;font-weight:400;">Enterprise Platform & AI Transformation | Led 100+ Engineer Orgs | PE & Revenue-Scale Modernization</div>
-        <div class="links" style="font-size:0.92em; font-weight:400; margin-bottom:0em; text-align:center;">
-            <a href="https://www.linkedin.com/in/chris-obermeier/" target="_blank">LinkedIn</a> |
-            <a href="https://github.com/obizues" target="_blank">GitHub</a> |
-            <a href="mailto:chris.obermeier@gmail.com" target="_blank">Email</a>
-        </div>
-        <div class="project-links" style="font-size:0.92em; font-weight:400; margin-top:0em; text-align:center;">
-            <span style="margin-right:4px;">&#11088;</span><a href="https://github.com/obizues/AI-Governance-Platform" target="_blank">Star on GitHub</a> |
-            <span style="margin-right:4px;">&#128214;</span><a href="https://github.com/obizues/AI-Governance-Platform/blob/main/README.md" target="_blank">Read Documentation</a>
-        </div>
-    </div>
-    """
-    st.markdown(personal_info_banner, unsafe_allow_html=True)
 
     st.set_page_config(page_title="AI Governance & Evaluation Platform v0.7.1", layout="wide")
-
-
-
 
     provider = StubProvider()
     policy_engine = PolicyEngine(POLICY_PATH)

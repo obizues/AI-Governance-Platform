@@ -1,6 +1,6 @@
 
 # AI Governance & Evaluation Platform 🤖
-**Version:** v0.6.0
+**Version:** v0.8.0
 A modular, open-source platform for safe, observable, and governed AI operations in enterprise environments.
 - Real-time escalation sync and human review workflow
 - Document extraction, validation, and confidence scoring
@@ -10,6 +10,10 @@ A modular, open-source platform for safe, observable, and governed AI operations
 - System Health KPIs for operational visibility
 - Streamlit-based modern UI for business users
 - Open-source, extensible Python codebase
+- Demo Files sidebar expander with download buttons
+- Dynamic listing of sample_zips files
+- Streamlit download buttons for demo files
+- Improved sidebar layout and UI/UX
 - Designed for CTOs, CEOs, hiring managers, and PE operators
 ```
 /ai_governance_platform

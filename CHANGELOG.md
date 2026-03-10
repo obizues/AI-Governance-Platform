@@ -1,3 +1,14 @@
+
+# [v0.8.0] - 2026-03-10
+### Major Updates
+- Demo Files sidebar expander with download buttons
+- Dynamic listing of sample_zips files
+- Streamlit download buttons for demo files
+- Improved sidebar layout and UI/UX
+- Real-time escalation review and human-in-the-loop workflow
+- Modular audit logging, policy engine, feedback, and metrics
+- All documentation and sidebar content up to date
+
 # [v0.4.0] - 2026-03-08
 # [v0.5.0] - 2026-03-08
 ### Major Updates
