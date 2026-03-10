@@ -17,12 +17,17 @@ HIL_ACTIONS_CSV = os.path.join(os.path.dirname(__file__), '../../logs/hil_action
 def load_pending_escalations():
     """Load pending escalations from ai_interactions.csv."""
     df = pd.read_csv(ESCALATION_CSV)
-    # Aggressively normalize columns
-    for col in ['hil_action', 'rule_triggered', 'decision']:
-        if col in df.columns:
-            df[col] = df[col].fillna('').astype(str).str.strip().str.lower()
-        else:
+    # Ensure all expected columns exist
+    expected_cols = [
+        "timestamp", "user_role", "prompt", "response", "response_time_ms",
+        "confidence_score", "risk_level", "decision", "rule_triggered", "reason",
+        "required_controls", "hil_action", "hil_reviewer"
+    ]
+    for col in expected_cols:
+        if col not in df.columns:
             df[col] = ''
+    for col in ['hil_action', 'rule_triggered', 'decision']:
+        df[col] = df[col].fillna('').astype(str).str.strip().str.lower()
     # Print debug info
     print("[DEBUG] Escalation CSV shape:", df.shape)
     print("[DEBUG] Columns:", df.columns.tolist())

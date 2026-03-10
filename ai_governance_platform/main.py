@@ -43,7 +43,6 @@ def run_interactive():
     decision = policy_engine.apply_policy(context)
     entry = {
         "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
-        "user_id": user_id,
         "user_role": user_role,
         "prompt": prompt,
         "response": response if decision["decision"] == "allow" else "[REFUSAL] Access Denied.",
@@ -53,7 +52,9 @@ def run_interactive():
         "decision": decision["decision"],
         "rule_triggered": decision["rule_triggered"],
         "reason": decision["reason"],
-        "required_controls": ",".join(decision["required_controls"])
+        "required_controls": ",".join(decision["required_controls"]),
+        "hil_action": "",
+        "hil_reviewer": ""
     }
     audit_logger.log_interaction(entry)
     print(f"Prompt: {prompt}\nResponse: {entry['response']}\nDecision: {decision['decision']}")

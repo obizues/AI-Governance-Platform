@@ -15,11 +15,11 @@ def restore_csv(csv_path, old_header):
         reader = csv.reader(f)
         header = next(reader)
         for row in reader:
-            # Remove user_id (index 1) and pad/truncate to old header length
-            if len(row) > len(old_header):
-                row = [row[0]] + row[2:len(old_header)+1]
-            elif len(row) < len(old_header):
+            # Pad or truncate to old_header length
+            if len(row) < len(old_header):
                 row = row + ["" for _ in range(len(old_header) - len(row))]
+            elif len(row) > len(old_header):
+                row = row[:len(old_header)]
             rows.append(row)
     with open(csv_path, mode="w", newline='') as f:
         writer = csv.writer(f)

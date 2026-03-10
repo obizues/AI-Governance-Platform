@@ -22,11 +22,11 @@ POLICY_PATH = os.path.abspath(os.path.join(BASE_DIR, "..", "policy", "policy.yam
 st.sidebar.markdown("""
 <div style='background:#eaf6ff;border:1.5px solid #b3e5fc;padding:10px 12px 8px 12px;margin-bottom:12px;text-align:center;border-radius:8px;'>
     <span style='font-size:1.08em;font-weight:600;color:#1976d2;'>App version:</span><br>
-    <span style='font-size:1.05em;color:#222;'>v0.7.0 - Demo Files Sidebar, Escalation UI Improvements, Audit Log, Real-time Sync, Human Review Workflow, Document Extraction & Validation, UI/UX Enhancements</span>
+    <span style='font-size:1.05em;color:#222;'>v0.7.1 - Data Validation Escalation Fix, Demo Files Sidebar, Escalation UI Improvements, Audit Log, Real-time Sync, Human Review Workflow, Document Extraction & Validation, UI/UX Enhancements</span>
 </div>
 <div class='sidebar-card' style='background:#eaf6ff;font-size:0.93em;margin-bottom:16px;border:1.5px solid #b3e5fc;padding:8px 8px 6px 8px;'>
     <div style='font-weight:700;font-size:1em;line-height:1.2;margin-bottom:2px;text-align:center;'>
-        <span style="font-size:1.05em;vertical-align:middle;">🤖</span> AI Governance & Evaluation Platform v0.7.0
+        <span style="font-size:1.05em;vertical-align:middle;">🤖</span> AI Governance & Evaluation Platform v0.7.1
     </div>
     <div style='margin:0 0 0 0;font-size:0.91em;line-height:1.35;text-align:center;'>
         <div style='display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:2px;'>
@@ -238,7 +238,7 @@ personal_info_banner = """
 """
 st.markdown(personal_info_banner, unsafe_allow_html=True)
 
-st.set_page_config(page_title="AI Governance & Evaluation Platform v0.7.0", layout="wide")
+st.set_page_config(page_title="AI Governance & Evaluation Platform v0.7.1", layout="wide")
 
 
 
@@ -280,47 +280,54 @@ except ModuleNotFoundError:
         validate_tax_return = validation_module.validate_tax_return
         validate_closing_documents = validation_module.validate_closing_documents
 def parse_fields(text, doc_type):
+    import re
+    def to_snake_case(s):
+        s = s.replace('(', '').replace(')', '')
+        s = re.sub(r'[^a-zA-Z0-9 ]', '', s)
+        s = s.replace(' ', '_')
+        return s.lower()
     lines = [line.strip() for line in text.split('\n') if line.strip()]
     fields = {}
     for line in lines:
         if ':' in line:
             key, value = line.split(':', 1)
-            fields[key.strip()] = value.strip()
+            snake_key = to_snake_case(key.strip())
+            fields[snake_key] = value.strip()
     return fields
 
 def build_object(doc_type, fields):
     if doc_type == 'Loan Application':
         return LoanApplication(
-            fields.get('Applicant Name',''), fields.get('Property Address',''), fields.get('Loan Amount',''),
-            fields.get('Interest Rate',''), fields.get('Term (years)',''), fields.get('Signature',''))
+            fields.get('applicant_name',''), fields.get('property_address',''), fields.get('loan_amount',''),
+            fields.get('interest_rate',''), fields.get('term_years',''), fields.get('signature',''))
     elif doc_type == 'Disclosure':
         return Disclosure(
-            fields.get('Disclosure Date',''), fields.get('Loan Terms',''), fields.get('Interest Rate',''),
-            fields.get('Fees',''), fields.get('Signature',''))
+            fields.get('disclosure_date',''), fields.get('loan_terms',''), fields.get('interest_rate',''),
+            fields.get('fees',''), fields.get('signature',''))
     elif doc_type == 'Credit Report':
         return CreditReport(
-            fields.get('Applicant Name',''), fields.get('Credit Score',''), fields.get('Report Date',''),
-            fields.get('Accounts',''), fields.get('Signature',''))
+            fields.get('applicant_name',''), fields.get('credit_score',''), fields.get('report_date',''),
+            fields.get('accounts',''), fields.get('signature',''))
     elif doc_type == 'Appraisal Report':
         return AppraisalReport(
-            fields.get('Property Address',''), fields.get('Appraised Value',''), fields.get('Appraiser Name',''),
-            fields.get('Date',''), fields.get('Signature',''))
+            fields.get('property_address',''), fields.get('appraised_value',''), fields.get('appraiser_name',''),
+            fields.get('date',''), fields.get('signature',''))
     elif doc_type == 'Income Verification':
         return IncomeVerification(
-            fields.get('Applicant Name',''), fields.get('Employer',''), fields.get('Income',''),
-            fields.get('Tax Year',''), fields.get('Signature',''))
+            fields.get('applicant_name',''), fields.get('employer',''), fields.get('income',''),
+            fields.get('tax_year',''), fields.get('signature',''))
     elif doc_type == 'Bank Statement':
         return BankStatement(
-            fields.get('Account Holder',''), fields.get('Account Number',''), fields.get('Balance',''),
-            fields.get('Statement Date',''), fields.get('Signature',''))
+            fields.get('account_holder',''), fields.get('account_number',''), fields.get('balance',''),
+            fields.get('statement_date',''), fields.get('signature',''))
     elif doc_type == 'Tax Return':
         return TaxReturn(
-            fields.get('Taxpayer Name',''), fields.get('Year',''), fields.get('Income',''),
-            fields.get('Deductions',''), fields.get('Signature',''))
+            fields.get('taxpayer_name',''), fields.get('year',''), fields.get('income',''),
+            fields.get('deductions',''), fields.get('signature',''))
     elif doc_type == 'Closing Documents':
         return ClosingDocuments(
-            fields.get('Closing Date',''), fields.get('Property Address',''), fields.get('Loan Amount',''),
-            fields.get('Buyer',''), fields.get('Seller',''), fields.get('Signature',''))
+            fields.get('closing_date',''), fields.get('property_address',''), fields.get('loan_amount',''),
+            fields.get('buyer',''), fields.get('seller',''), fields.get('signature',''))
     else:
         return fields
 from ai_governance_platform.extraction.document_types import (
@@ -409,17 +416,25 @@ if uploaded_file:
                     error_msg = f"Error: .zip contains non-PDF files: {', '.join(non_pdf_files)}"
                 else:
                     for pdf_file in pdf_files:
-                        with z.open(pdf_file) as pdf_f:
-                            pdf_bytes = pdf_f.read()
-                            pdf_contents[pdf_file] = extract_pdf_text(pdf_bytes, pdf_file)
-                            pdf_files_bytes[pdf_file] = pdf_bytes
+                        try:
+                            with z.open(pdf_file) as pdf_f:
+                                pdf_bytes = pdf_f.read()
+                                pdf_contents[pdf_file] = extract_pdf_text(pdf_bytes, pdf_file)
+                                pdf_files_bytes[pdf_file] = pdf_bytes
+                        except Exception as e:
+                            error_msg = f"Error extracting {pdf_file}: {str(e)}"
+                            st.error(error_msg)
         except zipfile.BadZipFile:
             error_msg = "Error: Invalid .zip file."
+        except Exception as e:
+            error_msg = f"Unexpected error during zip extraction: {str(e)}"
+            st.error(error_msg)
     else:
         error_msg = "Error: Unsupported file type."
 
 if error_msg:
     st.error(error_msg)
+    st.stop()
 elif pdf_contents:
     st.success(f"Extracted {len(pdf_contents)} PDF(s). Displaying extracted data:")
     def doc_type_from_name(name):
@@ -463,45 +478,56 @@ elif pdf_contents:
         # Confidence scoring
         def score_confidence(fields):
             score = 100
-            # Penalize missing fields
+            missing = False
             for k, v in fields.items():
                 if not v or v.strip() == "":
-                    score -= 10
-            # Penalize short names
-            if "Applicant Name" in fields and len(fields["Applicant Name"]) < 3:
-                score -= 15
-            # Penalize weird date formats
-            for k in fields:
-                if "Date" in k:
-                    import re
-                    if not re.match(r"\d{4}-\d{2}-\d{2}", fields[k]):
-                        score -= 10
-            # Penalize suspicious values
-            if "Loan Amount" in fields and fields["Loan Amount"] in ["0", "", None]:
-                score -= 20
+                    missing = True
+            # Other penalties (optional, but not for red)
+            if not missing:
+                if "applicant_name" in fields and len(fields["applicant_name"]) < 3:
+                    score -= 15
+                for k in fields:
+                    if "date" in k:
+                        import re
+                        if not re.match(r"\d{4}-\d{2}-\d{2}", fields[k]):
+                            score -= 10
+                if "loan_amount" in fields and fields["loan_amount"] in ["0", "", None]:
+                    score -= 20
+            if missing:
+                score = 50  # Always red if any missing field
             return max(score, 0)
         confidence_scores.append(score_confidence(fields))
     df = pd.DataFrame(data)
     df = df.sort_values("Document Type")
     st.session_state["pdf_metadata"] = pdf_metadata
 
-    tab1, tab2, tab3, tab4, tab5 = st.tabs(["Document Extraction & Review", "Extracted Objects & Fields", "Confidence Scoring", "Escalation Required", "Audit Log"])
-    with tab5:
-        import csv, os
-        audit_log_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../logs/human_review_log.csv'))
-        st.header("Audit Log: Loan Review Status")
-        audit_entries = []
-        if os.path.exists(audit_log_path):
-            with open(audit_log_path, mode="r", encoding="utf-8") as f:
-                reader = csv.DictReader(f)
-                for row in reader:
-                    audit_entries.append(row)
-        # Show all entries from human_review_log.csv
-        if audit_entries:
-            st.write("Below is the audit log for all loans:")
-            st.dataframe(audit_entries, use_container_width=True)
-        else:
-            st.info("No audit log entries found.")
+    try:
+        tab1, tab2, tab3, tab4, tab5 = st.tabs(["Document Extraction & Review", "Extracted Objects & Fields", "Confidence Scoring", "Escalation Required", "Audit Log"])
+        with tab5:
+            audit_log_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../logs/human_review_log.csv'))
+            st.header("Audit Log: Loan Review Status")
+            import pandas as pd
+            if os.path.exists(audit_log_path):
+                df_audit = pd.read_csv(audit_log_path)
+                # Ensure all expected columns exist
+                expected_cols = [
+                    "timestamp", "user_role", "prompt", "response", "response_time_ms",
+                    "confidence_score", "risk_level", "decision", "rule_triggered", "reason",
+                    "required_controls", "hil_action", "hil_reviewer"
+                ]
+                for col in expected_cols:
+                    if col not in df_audit.columns:
+                        df_audit[col] = ''
+                if not df_audit.empty:
+                    st.write("Below is the audit log for all loans:")
+                    st.dataframe(df_audit, width='stretch')
+                else:
+                    st.info("No audit log entries found.")
+            else:
+                st.info("No audit log entries found.")
+    except Exception as e:
+        st.error(f"Error rendering tabs: {str(e)}")
+        st.stop()
 
     with tab1:
         st.dataframe(df)
@@ -510,68 +536,71 @@ elif pdf_contents:
         st.session_state["extracted_objects"] = objects
         st.session_state["validation_results"] = validation_results
         st.session_state["extraction_summary"] = "All data valid." if all(len(r["errors"]) == 0 for r in validation_results) else "Validation errors found."
-        st.info("Extraction completed automatically. Switch to the 'Extracted Objects & Fields' tab to view detailed results.")
+        try:
+            st.info("Extraction completed automatically. Switch to the 'Extracted Objects & Fields' tab to view detailed results.")
+        except Exception as e:
+            st.error(f"Error displaying extraction info: {str(e)}")
+            st.stop()
 
     with tab2:
         if st.session_state.get("show_extraction_results"):
-            all_errors = []
-            for idx, result in enumerate(st.session_state["validation_results"]):
-                if result["errors"]:
-                    all_errors.append(f"{st.session_state['extracted_objects'][idx][0]}: {result['errors']}")
-            if not all_errors:
-                st.success("🟢 Extraction Summary: All data valid.")
-            else:
-                error_details = '\n'.join([f"- {err}" for err in all_errors])
-                st.error(f"🔴 Extraction Summary: Validation errors found.\n\n**Details:**\n{error_details}")
-            with st.expander("Object Details", expanded=False):
-                for idx, (doc_type, obj) in enumerate(st.session_state["extracted_objects"]):
-                    st.write(f"### {doc_type}")
-                    st.json(obj.__dict__)
-                    errors = st.session_state["validation_results"][idx]["errors"]
-                    score = confidence_scores[idx] if idx < len(confidence_scores) else None
-                    if errors:
-                        st.warning(f"Validation errors: {errors}")
-                    else:
-                        st.success("All fields valid.")
-                    # Confidence score not shown in this tab
+            try:
+                all_errors = []
+                for idx, result in enumerate(st.session_state["validation_results"]):
+                    if result["errors"]:
+                        all_errors.append(f"{st.session_state['extracted_objects'][idx][0]}: {result['errors']}")
+                if not all_errors:
+                    st.success("🟢 Extraction Summary: All data valid.")
+                else:
+                    error_details = '\n'.join([f"- {err}" for err in all_errors])
+                    st.error(f"🔴 Extraction Summary: Validation errors found.\n\n**Details:**\n{error_details}")
+                with st.expander("Object Details", expanded=False):
+                    for idx, (doc_type, obj) in enumerate(st.session_state["extracted_objects"]):
+                        st.write(f"### {doc_type}")
+                        st.json(obj.__dict__)
+                        errors = st.session_state["validation_results"][idx]["errors"]
+                        score = confidence_scores[idx] if idx < len(confidence_scores) else None
+                        if errors:
+                            st.warning(f"Validation errors: {errors}")
+                        else:
+                            st.success("All fields valid.")
+                        # Confidence score not shown in this tab
+            except Exception as e:
+                st.error(f"Error displaying extraction results: {str(e)}")
+                st.stop()
 
     with tab3:
         if st.session_state.get("show_extraction_results"):
             st.write("## Confidence Scoring Results")
             for idx, (doc_type, obj) in enumerate(st.session_state["extracted_objects"]):
                 score = confidence_scores[idx] if idx < len(confidence_scores) else None
-                reasons = []
                 fields = obj.__dict__ if hasattr(obj, '__dict__') else obj
-                # Re-run confidence scoring logic for reasons
                 reasons = []
-                if score is not None and score < 100:
+                if score is not None:
                     for k, v in fields.items():
                         if not v or v.strip() == "":
                             reasons.append(f"{k} missing")
-                    if "Applicant Name" in fields and len(fields["Applicant Name"]) < 3:
-                        reasons.append("Applicant Name too short")
+                    if "applicant_name" in fields and len(fields["applicant_name"]) < 3 and fields["applicant_name"].strip() != "":
+                        reasons.append("Applicant name too short")
                     for k in fields:
-                        if "Date" in k:
+                        if "date" in k:
                             import re
-                            if not re.match(r"\d{4}-\d{2}-\d{2}", fields[k]):
+                            if fields[k].strip() != "" and not re.match(r"\d{4}-\d{2}-\d{2}", fields[k]):
                                 reasons.append(f"{k} format invalid")
-                    if "Loan Amount" in fields and fields["Loan Amount"] in ["0", "", None]:
-                        reasons.append("Loan Amount not positive")
-                if score is not None:
+                    if "loan_amount" in fields and fields["loan_amount"] in ["0", "", None]:
+                        reasons.append("Loan amount not positive")
                     if score == 100:
-                        st.success(f"{doc_type}: Confidence Score {score}/100 (Perfect)")
+                        st.success(f"**{doc_type}: Confidence Score {score}/100 (Perfect)**")
                     elif score >= 90:
-                        st.warning(f"{doc_type}: Confidence Score {score}/100")
+                        st.warning(f"**{doc_type}: Confidence Score {score}/100**")
                         if reasons:
-                            st.write("**Reasons for minor issues:**")
-                            for r in reasons:
-                                st.write(f"- {r}")
+                            st.markdown("<span style='color:#666;font-weight:bold;'>Reasons for minor issues:</span>", unsafe_allow_html=True)
+                            st.markdown("\n".join([f"- {r}" for r in reasons]))
                     else:
-                        st.error(f"{doc_type}: Confidence Score {score}/100")
+                        st.error(f"**{doc_type}: Confidence Score {score}/100**")
                         if reasons:
-                            st.write("**Reasons for major issues:**")
-                            for r in reasons:
-                                st.write(f"- {r}")
+                            st.markdown("<span style='color:#b00;font-weight:bold;'>Reasons for major issues:</span>", unsafe_allow_html=True)
+                            st.markdown("\n".join([f"- {r}" for r in reasons]))
     with tab4:
         if st.session_state.get("show_extraction_results"):
             import csv, os, datetime
@@ -652,8 +681,19 @@ elif pdf_contents:
                         st.write("### Reasons for escalation:")
                         for doc in docs:
                             st.write(f"**{doc['doc_type']}**:")
-                            for r in doc['reasons']:
-                                st.write(f"- {r}")
+                            # Deduplicate reasons and sort for clarity
+                            # Only show missing fields as data validation errors
+                            doc_fields = doc['obj'].__dict__ if hasattr(doc['obj'], '__dict__') else doc['obj']
+                            validation_reasons = []
+                            for field, value in doc_fields.items():
+                                if value == "":
+                                    validation_reasons.append(f"Validation error ({doc['doc_type']}): {field.replace('_',' ').title()} missing")
+                            # Add other validation errors
+                            for reason in doc['reasons']:
+                                if reason.startswith("Validation error") and reason not in validation_reasons:
+                                    validation_reasons.append(reason)
+                            validation_reasons = sorted(set(validation_reasons))
+                            st.markdown("<ul style='margin-left:1em;'>" + "".join([f"<li style='margin-bottom:4px;'>{r}</li>" for r in validation_reasons]) + "</ul>", unsafe_allow_html=True)
                         st.write("---")
                         st.write("### Object and variable views:")
                         for doc in docs:

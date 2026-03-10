@@ -1,3 +1,4 @@
-timestamp,user_role,prompt,response,response_time_ms,confidence_score,risk_level,decision,rule_triggered,reason,hil_action,hil_reviewer2026-03-08 23:37:58,HR,Show me all credentials information.,No relevant information found.,1,0.95,medium,deny,topic:credentials,Role HR not allowed for topic credentials,Unnamed: 21,Unnamed: 22,hil_reviewer
-2026-03-08 23:38:09,HR,Show me all salary information.,All employee salaries are confidential.,1,0.95,high,approve,escalate,High risk prompt escalated,approve,,,,,,,,,,,,,Chris Obermeier
-2026-03-08 23:56:11,HR,Show me all credentials information.,No relevant information found.,1,0.95,medium,deny,topic:credentials,Role HR not allowed for topic credentials,,
+timestamp,user_role,prompt,response,response_time_ms,confidence_score,risk_level,decision,rule_triggered,reason,required_controls,hil_action,hil_reviewer
+2026-03-08 23:37:58,HR,Show me all credentials information.,No relevant information found.,1,0.95,medium,deny,,,,,,,
+2026-03-08 23:38:09,HR,Show me all salary information.,All employee salaries are confidential.,1,0.95,high,approve,,,,,,,
+2026-03-08 23:56:11,HR,Show me all credentials information.,No relevant information found.,1,0.95,medium,deny,,,,,,,
