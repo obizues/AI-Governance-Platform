@@ -427,58 +427,62 @@ elif pdf_contents:
     confidence_scores = []
     pdf_metadata = []
     for idx, (pdf_name, text) in enumerate(pdf_contents.items(), 1):
-        doc_type = doc_type_from_name(pdf_name)
-        fields = parse_fields(text, doc_type)
-        obj = build_object(doc_type, fields)
-        data.append({"Document #": idx, "Document Type": doc_type, "PDF Name": pdf_name, "Extracted Text": text})
-        objects.append((doc_type, obj))
-        # Store PDF metadata for later download/view
-        pdf_bytes = None
-        if pdf_name in pdf_files_bytes:
-            pdf_bytes = pdf_files_bytes[pdf_name]
-        pdf_metadata.append((idx, doc_type, pdf_name, pdf_bytes))
-        # Validation
-        if doc_type == 'Loan Application':
-            errors = validate_loan_application(obj)
-        elif doc_type == 'Disclosure':
-            errors = validate_disclosure(obj)
-        elif doc_type == 'Credit Report':
-            errors = validate_credit_report(obj)
-        elif doc_type == 'Appraisal Report':
-            errors = validate_appraisal_report(obj)
-        elif doc_type == 'Income Verification':
-            errors = validate_income_verification(obj)
-        elif doc_type == 'Bank Statement':
-            errors = validate_bank_statement(obj)
-        elif doc_type == 'Tax Return':
-            errors = validate_tax_return(obj)
-        elif doc_type == 'Closing Documents':
-            errors = validate_closing_documents(obj)
-        else:
-            errors = []
-        validation_results.append({"doc_type": doc_type, "errors": errors})
-        # Confidence scoring
-        def score_confidence(fields):
-            score = 100
-            missing = False
-            for k, v in fields.items():
-                if not v or v.strip() == "":
-                    missing = True
-            # Other penalties (optional, but not for red)
-            if not missing:
-                if "applicant_name" in fields and len(fields["applicant_name"]) < 3:
-                    score -= 15
-                for k in fields:
-                    if "date" in k:
-                        import re
-                        if not re.match(r"\d{4}-\d{2}-\d{2}", fields[k]):
-                            score -= 10
-                if "loan_amount" in fields and fields["loan_amount"] in ["0", "", None]:
-                    score -= 20
-            if missing:
-                score = 50  # Always red if any missing field
-            return max(score, 0)
-        confidence_scores.append(score_confidence(fields))
+        try:
+            doc_type = doc_type_from_name(pdf_name)
+            fields = parse_fields(text, doc_type)
+            obj = build_object(doc_type, fields)
+            data.append({"Document #": idx, "Document Type": doc_type, "PDF Name": pdf_name, "Extracted Text": text})
+            objects.append((doc_type, obj))
+            # Store PDF metadata for later download/view
+            pdf_bytes = None
+            if pdf_name in pdf_files_bytes:
+                pdf_bytes = pdf_files_bytes[pdf_name]
+            pdf_metadata.append((idx, doc_type, pdf_name, pdf_bytes))
+            # Validation
+            if doc_type == 'Loan Application':
+                errors = validate_loan_application(obj)
+            elif doc_type == 'Disclosure':
+                errors = validate_disclosure(obj)
+            elif doc_type == 'Credit Report':
+                errors = validate_credit_report(obj)
+            elif doc_type == 'Appraisal Report':
+                errors = validate_appraisal_report(obj)
+            elif doc_type == 'Income Verification':
+                errors = validate_income_verification(obj)
+            elif doc_type == 'Bank Statement':
+                errors = validate_bank_statement(obj)
+            elif doc_type == 'Tax Return':
+                errors = validate_tax_return(obj)
+            elif doc_type == 'Closing Documents':
+                errors = validate_closing_documents(obj)
+            else:
+                errors = []
+            validation_results.append({"doc_type": doc_type, "errors": errors})
+            # Confidence scoring
+            def score_confidence(fields):
+                score = 100
+                missing = False
+                for k, v in fields.items():
+                    if not v or v.strip() == "":
+                        missing = True
+                # Other penalties (optional, but not for red)
+                if not missing:
+                    if "applicant_name" in fields and len(fields["applicant_name"]) < 3:
+                        score -= 15
+                    for k in fields:
+                        if "date" in k:
+                            import re
+                            if not re.match(r"\d{4}-\d{2}-\d{2}", fields[k]):
+                                score -= 10
+                    if "loan_amount" in fields and fields["loan_amount"] in ["0", "", None]:
+                        score -= 20
+                if missing:
+                    score = 50  # Always red if any missing field
+                return max(score, 0)
+            confidence_scores.append(score_confidence(fields))
+        except Exception as e:
+            st.error(f"Error processing {pdf_name}: {str(e)}")
+            print(f"Streamlit error processing {pdf_name}: {str(e)}")
     df = pd.DataFrame(data)
     df = df.sort_values("Document Type")
     st.session_state["pdf_metadata"] = pdf_metadata
@@ -504,8 +508,13 @@ elif pdf_contents:
                     st.write("Below is the audit log for all loans:")
                     # Only show columns up to and including pdf_name
                     if 'pdf_name' in df_audit.columns:
-                        cols_to_show = list(df_audit.columns[:df_audit.columns.get_loc('pdf_name')+1])
-                        st.dataframe(df_audit[cols_to_show], width='stretch')
+                        pdf_idx = df_audit.columns.get_loc('pdf_name')
+                        if isinstance(pdf_idx, int):
+                            col_list = list(df_audit.columns)
+                            cols_to_show = col_list[:pdf_idx+1]
+                            st.dataframe(df_audit[cols_to_show], width='stretch')
+                        else:
+                            st.dataframe(df_audit, width='stretch')
                     else:
                         st.dataframe(df_audit, width='stretch')
                 else:
@@ -516,7 +525,8 @@ elif pdf_contents:
         st.error(f"Error rendering tabs: {str(e)}")
         print(f"Streamlit error: {str(e)}")
 
-    with tab1:
+    tab1_container = tab1
+    with tab1_container:
         st.dataframe(df)
         # Automatically extract and show results when upload completes
         st.session_state["show_extraction_results"] = True
@@ -529,7 +539,8 @@ elif pdf_contents:
             st.error(f"Error displaying extraction info: {str(e)}")
             print(f"Streamlit error: {str(e)}")
 
-    with tab2:
+    tab2_container = tab2
+    with tab2_container:
         if st.session_state.get("show_extraction_results"):
             try:
                 all_errors = []
@@ -556,7 +567,8 @@ elif pdf_contents:
                 st.error(f"Error displaying extraction results: {str(e)}")
                 print(f"Streamlit error: {str(e)}")
 
-    with tab3:
+    tab3_container = tab3
+    with tab3_container:
         if st.session_state.get("show_extraction_results"):
             st.write("## Confidence Scoring Results")
             for idx, (doc_type, obj) in enumerate(st.session_state["extracted_objects"]):
@@ -588,7 +600,8 @@ elif pdf_contents:
                         if reasons:
                             st.markdown("<span style='color:#b00;font-weight:bold;'>Reasons for major issues:</span>", unsafe_allow_html=True)
                             st.markdown("\n".join([f"- {r}" for r in reasons]))
-    with tab4:
+    tab4_container = tab4
+    with tab4_container:
         if st.session_state.get("show_extraction_results"):
             import csv, os, datetime
             audit_log_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../logs/human_review_log.csv'))
