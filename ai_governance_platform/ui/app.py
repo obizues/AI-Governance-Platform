@@ -1,7 +1,12 @@
 def main():
     # All Streamlit app logic goes here
     # ...existing code...
-    pass  # Placeholder for now; move Streamlit logic here if needed
+        try:
+            # ...existing code...
+            pass  # Placeholder for now; move Streamlit logic here if needed
+        except Exception as e:
+            st.error(f"A fatal error occurred: {str(e)}")
+            print(f"Streamlit fatal error: {str(e)}")
 __all__ = ["main"]
 import os
 import json
