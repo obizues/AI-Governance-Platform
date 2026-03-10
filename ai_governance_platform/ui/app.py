@@ -21,6 +21,7 @@ POLICY_PATH = os.path.abspath(os.path.join(BASE_DIR, "..", "policy", "policy.yam
 __all__ = ["main"]
 
 def main():
+            
     try:
         # All Streamlit UI logic below
         import os
@@ -43,6 +44,16 @@ def main():
         FEEDBACK_SUMMARY_PATH = os.path.abspath(os.path.join(BASE_DIR, "..", "..", "logs", "feedback_summary.json"))
         POLICY_PATH = os.path.abspath(os.path.join(BASE_DIR, "..", "policy", "policy.yaml"))
         
+        # Ensure log files exist and are initialized for Streamlit Cloud
+        log_files = [LOG_PATH, os.path.abspath(os.path.join(BASE_DIR, "..", "..", "logs", "hil_actions.csv"))]
+        for lf in log_files:
+            if not os.path.exists(lf):
+                with open(lf, "w", encoding="utf-8") as f:
+                    if "ai_interactions.csv" in lf:
+                        f.write("timestamp,loan_id,action,details\n")
+                    elif "hil_actions.csv" in lf:
+                        f.write("timestamp,loan_id,reviewer,action,notes\n")
+
         # Render banners only once at the top
         st.markdown("""
         <style>
@@ -172,11 +183,11 @@ def main():
     st.sidebar.markdown("""
     <div style='background:#eaf6ff;border:1.5px solid #b3e5fc;padding:10px 12px 8px 12px;margin-bottom:12px;text-align:center;border-radius:8px;'>
         <span style='font-size:1.08em;font-weight:600;color:#1976d2;'>App version:</span><br>
-        <span style='font-size:1.05em;color:#222;'>v0.8.1 - Demo Files Sidebar, Dynamic Listing, UI/UX Improvements, Audit Log, Real-time Sync, Human Review Workflow, Document Extraction & Validation</span>
+        <span style='font-size:1.05em;color:#222;'>v0.8.2 - Demo Files Sidebar, Dynamic Listing, UI/UX Improvements, Audit Log, Real-time Sync, Human Review Workflow, Document Extraction & Validation</span>
     </div>
     <div class='sidebar-card' style='background:#eaf6ff;font-size:0.93em;margin-bottom:16px;border:1.5px solid #b3e5fc;padding:8px 8px 6px 8px;'>
         <div style='font-weight:700;font-size:1em;line-height:1.2;margin-bottom:2px;text-align:center;'>
-            <span style="font-size:1.05em;vertical-align:middle;">🤖</span> AI Governance & Evaluation Platform v0.8.1
+            <span style="font-size:1.05em;vertical-align:middle;">🤖</span> AI Governance & Evaluation Platform v0.8.2
         </div>
         <div style='margin:0 0 0 0;font-size:0.91em;line-height:1.35;text-align:center;'>
             <div style='display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:2px;'>
