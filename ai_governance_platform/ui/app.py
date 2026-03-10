@@ -1,3 +1,7 @@
+def main():
+    # All Streamlit app logic goes here
+    # ...existing code...
+    pass  # Placeholder for now; move Streamlit logic here if needed
 __all__ = ["main"]
 import os
 import json
@@ -60,29 +64,6 @@ st.sidebar.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# --- Demo Files dropdown at the bottom of the sidebar ---
-import streamlit as st
-import os
-demo_files = [
-    "home_loan_docs_1.zip",
-    "home_loan_docs_2.zip",
-    "home_loan_docs_3.zip",
-    "home_loan_docs_4.zip",
-    "home_loan_docs_5.zip"
-]
-demo_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../sample_zips'))
-with st.sidebar.expander("📦 Demo Files", expanded=False):
-    st.markdown("Download sample zip files for demo/testing:")
-    for fname in demo_files:
-        fpath = os.path.join(demo_dir, fname)
-        if os.path.exists(fpath):
-            with open(fpath, "rb") as f:
-                st.download_button(
-                    label=f"Download {fname}",
-                    data=f.read(),
-                    file_name=fname,
-                    mime="application/zip"
-                )
 
 
 with st.sidebar.expander("ℹ️ About This Project", expanded=False):
@@ -520,7 +501,12 @@ elif pdf_contents:
                         df_audit[col] = ''
                 if not df_audit.empty:
                     st.write("Below is the audit log for all loans:")
-                    st.dataframe(df_audit, width='stretch')
+                    # Only show columns up to and including pdf_name
+                    if 'pdf_name' in df_audit.columns:
+                        cols_to_show = list(df_audit.columns[:df_audit.columns.get_loc('pdf_name')+1])
+                        st.dataframe(df_audit[cols_to_show], width='stretch')
+                    else:
+                        st.dataframe(df_audit, width='stretch')
                 else:
                     st.info("No audit log entries found.")
             else:
