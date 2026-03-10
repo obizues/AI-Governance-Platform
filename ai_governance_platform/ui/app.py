@@ -1,12 +1,48 @@
 def main():
-    # All Streamlit app logic goes here
-    # ...existing code...
-        try:
-            # ...existing code...
-            pass  # Placeholder for now; move Streamlit logic here if needed
-        except Exception as e:
-            st.error(f"A fatal error occurred: {str(e)}")
-            print(f"Streamlit fatal error: {str(e)}")
+    try:
+        # All Streamlit UI logic below
+        import os
+        import json
+        import sys
+        from ai_governance_platform.audit_logging.audit_logger import AuditLogger
+        from ai_governance_platform.feedback.feedback_logger import FeedbackLogger
+        from ai_governance_platform.feedback.summary import FeedbackSummary
+        from ai_governance_platform.metrics.kpis import compute_kpis
+        from ai_governance_platform.policy.policy_engine import PolicyEngine
+        from ai_governance_platform.policy.feedback_gate import FeedbackGate
+        from ai_governance_platform.providers.provider_interface import StubProvider
+        from ai_governance_platform.evaluation.evaluation_runner import EvaluationRunner
+        import yaml
+        import streamlit as st
+        BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+        LOG_PATH = os.path.abspath(os.path.join(BASE_DIR, "..", "..", "logs", "ai_interactions.csv"))
+        FEEDBACK_PATH = os.path.abspath(os.path.join(BASE_DIR, "..", "..", "logs", "feedback_log.csv"))
+        FEEDBACK_SUMMARY_PATH = os.path.abspath(os.path.join(BASE_DIR, "..", "..", "logs", "feedback_summary.json"))
+        POLICY_PATH = os.path.abspath(os.path.join(BASE_DIR, "..", "policy", "policy.yaml"))
+        st.sidebar.markdown("""...existing sidebar markdown...""", unsafe_allow_html=True)
+        with st.sidebar.expander("ℹ️ About This Project", expanded=False):
+            st.markdown("""...existing about markdown...""", unsafe_allow_html=True)
+        with st.sidebar.expander("&#128193; Project Documentation", expanded=False):
+            st.markdown("**Project Documentation**")
+            st.markdown("<span style='font-size:1.05em;'>🌐</span> [GitHub Repository](https://github.com/obizues/AI-Governance-Platform)", unsafe_allow_html=True)
+            st.markdown("<span style='font-size:1.05em;'>📄</span> **Documentation**", unsafe_allow_html=True)
+            st.markdown("- <span style='font-size:1.05em;'>📘</span> [README.md](https://github.com/obizues/AI-Governance-Platform/blob/main/README.md): Platform overview, setup, features", unsafe_allow_html=True)
+            st.markdown("- <span style='font-size:1.05em;'>📝</span> [CHANGELOG.md](https://github.com/obizues/AI-Governance-Platform/blob/main/CHANGELOG.md): Release notes and updates", unsafe_allow_html=True)
+            st.markdown("- <span style='font-size:1.05em;'>🗂️</span> [System Architecture](https://github.com/obizues/AI-Governance-Platform/blob/main/docs/architecture.md): Design and flow diagrams", unsafe_allow_html=True)
+            st.markdown("**Key Sections:**\n- Audit Logging\n- Policy Engine\n- Feedback & Evaluation\n- System Health KPIs\n- Deployment & Usage Guide")
+        with st.sidebar.expander("&#128295; Tech Stack", expanded=False):
+            st.markdown("""...existing tech stack markdown...""", unsafe_allow_html=True)
+            with st.sidebar.expander("📝 System Design Notes", expanded=False):
+                st.markdown("""...existing design notes markdown...""", unsafe_allow_html=True)
+        st.markdown("""...existing main title banner...""", unsafe_allow_html=True)
+        personal_info_banner = """...existing personal info banner..."""
+        st.markdown(personal_info_banner, unsafe_allow_html=True)
+        st.set_page_config(page_title="AI Governance & Evaluation Platform v0.7.1", layout="wide")
+        # ...existing Streamlit UI logic (tabs, file upload, extraction, etc.)...
+        # (Move all code from global scope here)
+    except Exception as e:
+        st.error(f"A fatal error occurred: {str(e)}")
+        print(f"Streamlit fatal error: {str(e)}")
 __all__ = ["main"]
 import os
 import json
