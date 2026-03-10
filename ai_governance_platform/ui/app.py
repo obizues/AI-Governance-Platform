@@ -415,7 +415,8 @@ if uploaded_file:
 
 if error_msg:
     st.error(error_msg)
-    st.stop()
+    print(f"Streamlit error: {error_msg}")
+    # Instead of stopping, show error and continue rendering the rest of the app
 elif pdf_contents:
     st.success(f"Extracted {len(pdf_contents)} PDF(s). Displaying extracted data:")
     def doc_type_from_name(name):
@@ -513,7 +514,7 @@ elif pdf_contents:
                 st.info("No audit log entries found.")
     except Exception as e:
         st.error(f"Error rendering tabs: {str(e)}")
-        st.stop()
+        print(f"Streamlit error: {str(e)}")
 
     with tab1:
         st.dataframe(df)
@@ -526,7 +527,7 @@ elif pdf_contents:
             st.info("Extraction completed automatically. Switch to the 'Extracted Objects & Fields' tab to view detailed results.")
         except Exception as e:
             st.error(f"Error displaying extraction info: {str(e)}")
-            st.stop()
+            print(f"Streamlit error: {str(e)}")
 
     with tab2:
         if st.session_state.get("show_extraction_results"):
@@ -553,7 +554,7 @@ elif pdf_contents:
                         # Confidence score not shown in this tab
             except Exception as e:
                 st.error(f"Error displaying extraction results: {str(e)}")
-                st.stop()
+                print(f"Streamlit error: {str(e)}")
 
     with tab3:
         if st.session_state.get("show_extraction_results"):
