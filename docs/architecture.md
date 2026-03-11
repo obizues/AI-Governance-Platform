@@ -1,7 +1,7 @@
 ---
 # AI Governance & Evaluation Platform Architecture
 
-## Version: v0.9.0
+## Version: v0.9.1
 
 ### Key Features
 
@@ -21,19 +21,38 @@
 - Designed for CTOs, CEOs, hiring managers, and PE operators
 ...existing code...
 
+
 ## Component Diagram
 
-```
-User
-   |
-   v
-Streamlit UI (app.py)
-   |
-   v
-Service Modules (Extraction, Validation, Audit Logging, Feedback, File Management, Metrics, Policy, Provider)
-   |
-   v
-Config/Data/Logs
+```mermaid
+graph TD
+  User -->|Interacts| Streamlit_UI
+  Streamlit_UI -->|Calls| Extraction_Service
+  Streamlit_UI -->|Calls| Validation_Service
+  Streamlit_UI -->|Calls| Audit_Logging_Service
+  Streamlit_UI -->|Calls| Feedback_Service
+  Streamlit_UI -->|Calls| Metrics_Service
+  Streamlit_UI -->|Calls| Policy_Service
+  Streamlit_UI -->|Calls| Provider_Service
+  Extraction_Service --> Data
+  Validation_Service --> Data
+  Audit_Logging_Service --> Logs
+  Feedback_Service --> Logs
+  Metrics_Service --> Logs
+  Policy_Service --> Config
+  Provider_Service --> Data
+  Streamlit_UI -->|Displays| UI_Tabs
+  UI_Tabs --> Audit_Log
+  UI_Tabs --> Escalation_Review
+  UI_Tabs --> Document_Extraction
+  UI_Tabs --> Confidence_Scoring
+  UI_Tabs --> Feedback
+  UI_Tabs --> KPIs
+  Config -->|Policy| Policy_Service
+  Data -->|Documents| Extraction_Service
+  Logs -->|Audit| Audit_Logging_Service
+  Logs -->|Feedback| Feedback_Service
+  Logs -->|Metrics| Metrics_Service
 ```
 
 ## Data Flow

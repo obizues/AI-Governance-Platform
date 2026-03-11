@@ -1,4 +1,12 @@
 
+## [v0.9.1] - 2026-03-10
+### Updates
+- Version bump to v0.9.1
+- Audit log and escalation CSV parsing fixes
+- UI error message standardization
+- Documentation and README updates
+- Requirements.txt reviewed
+
 # [v0.9.0] - 2026-03-10
 ### Major Updates
 - Modularized all business logic into service modules

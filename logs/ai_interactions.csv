@@ -1,2 +1,2 @@
 timestamp,loan_id,action,details
-,,,
+2026-03-11T04:42:39.801198,validation,system,1,"[{'doc_type': 'Appraisal Report', 'errors': []}, {'doc_type': 'Bank Statement', 'errors': []}, {'doc_type': 'Closing Documents', 'errors': []}, {'doc_type': 'Credit Report', 'errors': []}, {'doc_type': 'Disclosure', 'errors': []}, {'doc_type': 'Income Verification', 'errors': []}, {'doc_type': 'Loan Application', 'errors': ['Applicant name missing']}, {'doc_type': 'Tax Return', 'errors': []}]"

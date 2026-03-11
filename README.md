@@ -1,5 +1,5 @@
 
-## 🤖 AI Governance & Evaluation Platform v0.9.0
+## 🤖 AI Governance & Evaluation Platform v0.9.1
 
 📝 Audit Logging for all AI interactions
 ⚖️ Policy Engine for query risk assessment
@@ -58,6 +58,7 @@ requirements.txt   # Python dependencies
    ```sh
    pip install -r requirements.txt
    ```
+2. Version: v0.9.1
 2. Run CLI demo:
    ```sh
    python ai_governance_platform/main.py
