@@ -1,18 +1,16 @@
 ---
 # AI Governance & Evaluation Platform Architecture
 
-## Version: v0.8.0
+## Version: v0.9.0
 
 ### Key Features
 
-### Key Features
-
-- Real-time escalation review count updates
-- Prompt/session state fixes for accurate query context
-- CSV audit log flush for immediate sync
-- UI bug fixes for escalation navigation and count
-- Modular audit logging for all AI interactions
-- Policy engine for risk assessment and controls
+- Modularized business logic into service modules (extraction, validation, audit logging, feedback, file management, metrics, policy, provider)
+- Centralized config, data, and logs folders
+- Real-time escalation review and human-in-the-loop workflow
+- Document extraction, validation, and confidence scoring
+- Audit log tab with full review history
+- Sequential loan numbering and improved UI/UX
 - Feedback logging and summary for continuous improvement
 - System Health KPIs for operational visibility
 - Streamlit-based modern UI for business users
@@ -20,7 +18,6 @@
 - Demo Files sidebar expander with download buttons
 - Dynamic listing of sample_zips files
 - Streamlit download buttons for demo files
-- Improved sidebar layout and UI/UX
 - Designed for CTOs, CEOs, hiring managers, and PE operators
 ...existing code...
 
@@ -33,13 +30,10 @@ User
 Streamlit UI (app.py)
    |
    v
-Audit Logger <----> Policy Engine <----> Feedback Logger
+Service Modules (Extraction, Validation, Audit Logging, Feedback, File Management, Metrics, Policy, Provider)
    |
    v
-Metrics/KPIs
-   |
-   v
-Logs (CSV, JSON)
+Config/Data/Logs
 ```
 
 ## Data Flow
@@ -51,9 +45,9 @@ Logs (CSV, JSON)
 - All logs are stored in CSV/JSON for compliance and reporting
 
 ## Extensibility
-- Add new policy rules in `policy/policy.yaml`
-- Extend feedback logic in `feedback/`
-- Add new metrics in `metrics/`
+- Add new policy rules in `config/policy.yaml`
+- Extend feedback logic in `services/feedback_service.py`
+- Add new metrics in `services/metrics_service.py`
 - UI enhancements via Streamlit components
 
 ## Deployment

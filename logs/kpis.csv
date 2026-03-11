@@ -1,0 +1,101 @@
+timestamp,kpi_name,value
+2026-03-11T04:11:28.307420,validation_count,0
+2026-03-11T04:12:52.573369,confidence_score,50,Appraisal Report,Appraisal_Report.pdf
+2026-03-11T04:12:52.574642,validation_count,1
+2026-03-11T04:13:41.584387,confidence_score,50,Appraisal Report,Appraisal_Report.pdf
+2026-03-11T04:13:41.585957,validation_count,1
+2026-03-11T04:14:56.979260,validation_count,0
+2026-03-11T04:23:18.116163,confidence_score,50,Appraisal Report,Appraisal_Report.pdf
+2026-03-11T04:23:18.116880,validation_count,1
+2026-03-11T04:24:01.463112,confidence_score,50,Appraisal Report,Appraisal_Report.pdf
+2026-03-11T04:24:01.464118,validation_count,1
+2026-03-11T04:24:57.638464,confidence_score,90,Appraisal Report,Appraisal_Report.pdf
+2026-03-11T04:24:57.641633,confidence_score,90,Bank Statement,Bank_Statement.pdf
+2026-03-11T04:24:57.642329,confidence_score,90,Closing Documents,Closing_Documents.pdf
+2026-03-11T04:24:57.643111,confidence_score,90,Credit Report,Credit_Report.pdf
+2026-03-11T04:24:57.643657,confidence_score,90,Disclosure,Disclosure.pdf
+2026-03-11T04:24:57.643944,confidence_score,100,Income Verification,Income_Verification.pdf
+2026-03-11T04:24:57.644169,confidence_score,50,Loan Application,Loan_Application.pdf
+2026-03-11T04:24:57.644876,confidence_score,100,Tax Return,Tax_Return.pdf
+2026-03-11T04:24:57.645820,validation_count,8
+2026-03-11T04:26:52.171285,confidence_score,90,Appraisal Report,Appraisal_Report.pdf
+2026-03-11T04:26:52.171805,confidence_score,90,Bank Statement,Bank_Statement.pdf
+2026-03-11T04:26:52.172344,confidence_score,90,Closing Documents,Closing_Documents.pdf
+2026-03-11T04:26:52.172796,confidence_score,90,Credit Report,Credit_Report.pdf
+2026-03-11T04:26:52.173326,confidence_score,90,Disclosure,Disclosure.pdf
+2026-03-11T04:26:52.173653,confidence_score,100,Income Verification,Income_Verification.pdf
+2026-03-11T04:26:52.174210,confidence_score,50,Loan Application,Loan_Application.pdf
+2026-03-11T04:26:52.174763,confidence_score,100,Tax Return,Tax_Return.pdf
+2026-03-11T04:26:52.175231,validation_count,8
+2026-03-11T04:27:32.977844,confidence_score,90,Appraisal Report,Appraisal_Report.pdf
+2026-03-11T04:27:32.978970,confidence_score,90,Bank Statement,Bank_Statement.pdf
+2026-03-11T04:27:32.979962,confidence_score,90,Closing Documents,Closing_Documents.pdf
+2026-03-11T04:27:32.980826,confidence_score,90,Credit Report,Credit_Report.pdf
+2026-03-11T04:27:32.981726,confidence_score,90,Disclosure,Disclosure.pdf
+2026-03-11T04:27:32.982503,confidence_score,100,Income Verification,Income_Verification.pdf
+2026-03-11T04:27:32.983265,confidence_score,50,Loan Application,Loan_Application.pdf
+2026-03-11T04:27:32.984249,confidence_score,100,Tax Return,Tax_Return.pdf
+2026-03-11T04:27:32.984993,validation_count,8
+2026-03-11T04:29:22.462123,confidence_score,90,Appraisal Report,Appraisal_Report.pdf
+2026-03-11T04:29:22.463113,confidence_score,90,Bank Statement,Bank_Statement.pdf
+2026-03-11T04:29:22.464018,confidence_score,90,Closing Documents,Closing_Documents.pdf
+2026-03-11T04:29:22.464840,confidence_score,90,Credit Report,Credit_Report.pdf
+2026-03-11T04:29:22.465524,confidence_score,90,Disclosure,Disclosure.pdf
+2026-03-11T04:29:22.466188,confidence_score,100,Income Verification,Income_Verification.pdf
+2026-03-11T04:29:22.466732,confidence_score,50,Loan Application,Loan_Application.pdf
+2026-03-11T04:29:22.467261,confidence_score,100,Tax Return,Tax_Return.pdf
+2026-03-11T04:29:22.467850,validation_count,8
+2026-03-11T04:32:01.198125,confidence_score,90,Appraisal Report,Appraisal_Report.pdf
+2026-03-11T04:32:01.199390,confidence_score,90,Bank Statement,Bank_Statement.pdf
+2026-03-11T04:32:01.200243,confidence_score,90,Closing Documents,Closing_Documents.pdf
+2026-03-11T04:32:01.200805,confidence_score,90,Credit Report,Credit_Report.pdf
+2026-03-11T04:32:01.201271,confidence_score,90,Disclosure,Disclosure.pdf
+2026-03-11T04:32:01.201912,confidence_score,100,Income Verification,Income_Verification.pdf
+2026-03-11T04:32:01.202651,confidence_score,50,Loan Application,Loan_Application.pdf
+2026-03-11T04:32:01.203201,confidence_score,100,Tax Return,Tax_Return.pdf
+2026-03-11T04:32:01.203725,validation_count,8
+2026-03-11T04:33:47.249625,confidence_score,90,Appraisal Report,Appraisal_Report.pdf
+2026-03-11T04:33:47.250375,confidence_score,90,Bank Statement,Bank_Statement.pdf
+2026-03-11T04:33:47.251022,confidence_score,90,Closing Documents,Closing_Documents.pdf
+2026-03-11T04:33:47.251340,confidence_score,90,Credit Report,Credit_Report.pdf
+2026-03-11T04:33:47.252065,confidence_score,90,Disclosure,Disclosure.pdf
+2026-03-11T04:33:47.252578,confidence_score,100,Income Verification,Income_Verification.pdf
+2026-03-11T04:33:47.253097,confidence_score,50,Loan Application,Loan_Application.pdf
+2026-03-11T04:33:47.253665,confidence_score,100,Tax Return,Tax_Return.pdf
+2026-03-11T04:33:47.254140,validation_count,8
+2026-03-11T04:34:46.142454,confidence_score,90,Appraisal Report,Appraisal_Report.pdf
+2026-03-11T04:34:46.143131,confidence_score,90,Bank Statement,Bank_Statement.pdf
+2026-03-11T04:34:46.143706,confidence_score,90,Closing Documents,Closing_Documents.pdf
+2026-03-11T04:34:46.144183,confidence_score,90,Credit Report,Credit_Report.pdf
+2026-03-11T04:34:46.144754,confidence_score,90,Disclosure,Disclosure.pdf
+2026-03-11T04:34:46.145435,confidence_score,100,Income Verification,Income_Verification.pdf
+2026-03-11T04:34:46.145994,confidence_score,50,Loan Application,Loan_Application.pdf
+2026-03-11T04:34:46.146483,confidence_score,100,Tax Return,Tax_Return.pdf
+2026-03-11T04:34:46.146981,validation_count,8
+2026-03-11T04:35:34.152550,confidence_score,90,Appraisal Report,Appraisal_Report.pdf
+2026-03-11T04:35:34.153487,confidence_score,90,Bank Statement,Bank_Statement.pdf
+2026-03-11T04:35:34.153991,confidence_score,90,Closing Documents,Closing_Documents.pdf
+2026-03-11T04:35:34.154584,confidence_score,90,Credit Report,Credit_Report.pdf
+2026-03-11T04:35:34.155052,confidence_score,90,Disclosure,Disclosure.pdf
+2026-03-11T04:35:34.155515,confidence_score,100,Income Verification,Income_Verification.pdf
+2026-03-11T04:35:34.156089,confidence_score,50,Loan Application,Loan_Application.pdf
+2026-03-11T04:35:34.156583,confidence_score,100,Tax Return,Tax_Return.pdf
+2026-03-11T04:35:34.157235,validation_count,8
+2026-03-11T04:37:09.388238,confidence_score,90,Appraisal Report,Appraisal_Report.pdf
+2026-03-11T04:37:09.389550,confidence_score,90,Bank Statement,Bank_Statement.pdf
+2026-03-11T04:37:09.390351,confidence_score,90,Closing Documents,Closing_Documents.pdf
+2026-03-11T04:37:09.391138,confidence_score,90,Credit Report,Credit_Report.pdf
+2026-03-11T04:37:09.391837,confidence_score,90,Disclosure,Disclosure.pdf
+2026-03-11T04:37:09.392844,confidence_score,100,Income Verification,Income_Verification.pdf
+2026-03-11T04:37:09.393545,confidence_score,50,Loan Application,Loan_Application.pdf
+2026-03-11T04:37:09.394148,confidence_score,100,Tax Return,Tax_Return.pdf
+2026-03-11T04:37:09.394744,validation_count,8
+2026-03-11T04:39:39.328741,confidence_score,90,Appraisal Report,Appraisal_Report.pdf
+2026-03-11T04:39:39.329288,confidence_score,90,Bank Statement,Bank_Statement.pdf
+2026-03-11T04:39:39.330181,confidence_score,90,Closing Documents,Closing_Documents.pdf
+2026-03-11T04:39:39.330551,confidence_score,90,Credit Report,Credit_Report.pdf
+2026-03-11T04:39:39.330998,confidence_score,90,Disclosure,Disclosure.pdf
+2026-03-11T04:39:39.331587,confidence_score,100,Income Verification,Income_Verification.pdf
+2026-03-11T04:39:39.332410,confidence_score,50,Loan Application,Loan_Application.pdf
+2026-03-11T04:39:39.333036,confidence_score,100,Tax Return,Tax_Return.pdf
+2026-03-11T04:39:39.333922,validation_count,8

@@ -1,36 +1,56 @@
 
-# AI Governance & Evaluation Platform 🤖
-**Version:** v0.8.0
-A modular, open-source platform for safe, observable, and governed AI operations in enterprise environments.
-- Real-time escalation sync and human review workflow
-- Document extraction, validation, and confidence scoring
-- Audit log tab with full review history
-- Sequential loan numbering and improved UI/UX
-- Feedback logging and summary for continuous improvement
-- System Health KPIs for operational visibility
-- Streamlit-based modern UI for business users
-- Open-source, extensible Python codebase
-- Demo Files sidebar expander with download buttons
-- Dynamic listing of sample_zips files
-- Streamlit download buttons for demo files
-- Improved sidebar layout and UI/UX
-- Designed for CTOs, CEOs, hiring managers, and PE operators
+## 🤖 AI Governance & Evaluation Platform v0.9.0
+
+📝 Audit Logging for all AI interactions
+⚖️ Policy Engine for query risk assessment
+💬 Feedback logging and summary
+🛑 Escalation Review & Human-in-the-Loop (HIL) for low-confidence or high-risk documents
+📊 System Health KPIs and metrics
+📄 Document Extraction, Validation, and Confidence Scoring
+🗂️ Audit Log Tab & Sequential Loan Numbering
+🖥️ Streamlit-based modern UI
+🌐 Open-source, modular Python codebase
+
+---
+
+## About this project
+This platform enables safe, observable, and governed AI operations for enterprise environments. It features modular business logic, real-time escalation review, document extraction and validation, audit logging, feedback collection, and system health metrics. Designed for CTOs, CEOs, hiring managers, and PE operators.
+
+## Project Documentation
+- docs/README.md: Documentation folder purpose
+- docs/architecture.md: System architecture and flow diagrams
+- docs/CHANGELOG.md: Release notes and updates
+- README.md: Project overview, setup, features
+
+## Tech Stack
+- Python 3.10+
+- Streamlit (UI)
+- pandas, pdfplumber (data extraction)
+- Modular service architecture
+- YAML for policy configuration
+- Pytest for testing
+
+## System Design Notes
+- All business logic is modularized in services/
+- Centralized config/, data/, and logs/ folders
+- UI is decoupled from core logic
+- Policy rules in config/policy.yaml
+- Feedback loop via services/feedback_service.py
+- KPIs and metrics via services/metrics_service.py
+
+---
 ```
-/ai_governance_platform
-  /app            # Entrypoints / minimal UI hooks
-  /audit_logging  # Audit logger (renamed from /logging)
-  /evaluation     # Dataset, runner, scoring, report
-  /feedback       # Feedback logging & summary
-  /policy         # policy.yaml, policy engine, feedback gate
-  /providers      # AI provider interface + stub provider
-  /metrics        # KPI calculations
-  /ui             # Streamlit app (with banners, sidebar, tabs)
-  /tests          # Pytest tests
-main.py           # CLI runner
-README.md         # Project documentation
-CHANGELOG.md      # Release notes
-requirements.txt  # Python dependencies
-/logs             # Audit and feedback logs
+ai_governance_platform/
+   services/        # Modular business logic (extraction, validation, audit logging, feedback, file management, metrics, policy, provider)
+   config/          # Centralized configuration files (policy.yaml, document_types.py)
+   data/            # Evaluation datasets, reports, summaries
+   logs/            # Audit and feedback logs
+   ui/              # Streamlit app (with banners, sidebar, tabs)
+   tests/           # Pytest tests
+docs/              # Project documentation (architecture, changelog, etc.)
+main.py            # CLI runner
+README.md          # Project documentation
+requirements.txt   # Python dependencies
 ```
 
 ## Quickstart
@@ -48,13 +68,13 @@ requirements.txt  # Python dependencies
    ```
 
 ## Governance Logic
-- All core logic is UI-agnostic and modular.
-- Policy rules are defined in `policy/policy.yaml`.
-- Feedback loop aggregates feedback and escalates problematic prompts.
+- All core logic is UI-agnostic and modular, implemented in service modules.
+- Policy rules are defined in `config/policy.yaml`.
+- Feedback loop aggregates feedback and escalates problematic prompts via `services/feedback_service.py`.
 
 ## Evaluation
-- Automated evaluation uses `evaluation/evaluation_dataset.json` and outputs `evaluation/evaluation_report.json`.
-- **Known Bug:** Running evaluation may result in a `FileNotFoundError` if the dataset file is missing. Ensure `evaluation/evaluation_dataset.json` exists.
+- Automated evaluation uses `data/evaluation_dataset.json` and outputs `data/evaluation_report.json`.
+- **Known Bug:** Running evaluation may result in a `FileNotFoundError` if the dataset file is missing. Ensure `data/evaluation_dataset.json` exists.
 
 ## System Health
 - KPIs: total queries, deny rate, escalation rate, avg latency, positive feedback rate, trust score.

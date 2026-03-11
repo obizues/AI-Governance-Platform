@@ -1,14 +1,17 @@
+from ai_governance_platform.services.validation_service import (
+    validate_loan_application, validate_disclosure, validate_credit_report, validate_appraisal_report,
+    validate_income_verification, validate_bank_statement, validate_tax_return, validate_closing_documents
+)
+from ai_governance_platform.services.provider_service import ProviderService
+from ai_governance_platform.services.escalation_service import EscalationService
+from ai_governance_platform.services.metrics_service import MetricsService
 import os
 import json
 import sys
 from ai_governance_platform.services.audit_logging_service import AuditLoggingService
 from ai_governance_platform.services.feedback_service import FeedbackService
-from ai_governance_platform.feedback.summary import FeedbackSummary
-from ai_governance_platform.metrics.kpis import compute_kpis
-from ai_governance_platform.policy.policy_engine import PolicyEngine
-from ai_governance_platform.policy.feedback_gate import FeedbackGate
-from ai_governance_platform.providers.provider_interface import StubProvider
-from ai_governance_platform.evaluation.evaluation_runner import EvaluationRunner
+from ai_governance_platform.services.policy_service import PolicyService
+from ai_governance_platform.services.evaluation_service import EvaluationService
 import yaml
 import streamlit as st
 
@@ -23,7 +26,7 @@ POLICY_PATH = os.path.abspath(os.path.join(BASE_DIR, "..", "policy", "policy.yam
 __all__ = ["main"]
 
 def main():
-            
+    confidence_scores = []
     try:
         # All Streamlit UI logic below
         import os
@@ -31,12 +34,8 @@ def main():
         import sys
         from ai_governance_platform.services.audit_logging_service import AuditLoggingService
         from ai_governance_platform.services.feedback_service import FeedbackService
-        from ai_governance_platform.feedback.summary import FeedbackSummary
-        from ai_governance_platform.metrics.kpis import compute_kpis
-        from ai_governance_platform.policy.policy_engine import PolicyEngine
-        from ai_governance_platform.policy.feedback_gate import FeedbackGate
-        from ai_governance_platform.providers.provider_interface import StubProvider
-        from ai_governance_platform.evaluation.evaluation_runner import EvaluationRunner
+        from ai_governance_platform.services.policy_service import PolicyService
+        from ai_governance_platform.services.evaluation_service import EvaluationService
         import yaml
         import streamlit as st
 
@@ -55,7 +54,7 @@ def main():
         ]
         for lf in log_files:
             from ai_governance_platform.services.file_management_service import FileManagementService
-            file_service = FileManagementService(base_dir=os.path.dirname(lf))
+            file_service = FileManagementService(base_dir=FEEDBACK_DIR)
             if not os.path.exists(lf):
                 if "ai_interactions.csv" in lf:
                     file_service.write_csv(os.path.basename(lf), [{"timestamp": "", "loan_id": "", "action": "", "details": ""}])
@@ -147,21 +146,30 @@ def main():
         </div>
         """, unsafe_allow_html=True)
         st.set_page_config(page_title="AI Governance & Evaluation Platform v0.8.1", layout="wide")
-        provider = StubProvider()
-        policy_engine = PolicyEngine(POLICY_PATH)
+        from ai_governance_platform.services.provider_service import StubProvider, ProviderService
+        stub = StubProvider()
+        provider_service = ProviderService(provider=stub)
+        provider = provider_service.provider
+        policy_service = PolicyService(policy_path=POLICY_PATH)
         audit_logger = AuditLoggingService(log_dir=LOG_DIR, log_file=LOG_FILE)
         # ...existing Streamlit UI logic (file upload, extraction, tabs, etc.)...
         # After loan_id and pdf_name are assigned:
-        if 'loan_id' in locals() and 'pdf_name' in locals() and loan_id is not None and pdf_name is not None:
+        # Define loan_id and pdf_name if available
+        loan_id = st.session_state.get("current_loan_number")
+        # Use st.session_state to retrieve uploaded file name if available
+        pdf_name = st.session_state.get("uploaded_file_name")
+        if loan_id is not None and pdf_name is not None:
             audit_logger.log_event(
                 event_type="extraction",
                 user="system",
                 details={"loan_id": loan_id, "pdf_name": pdf_name, "status": "extracted"}
             )
         feedback_logger = FeedbackService(log_dir=FEEDBACK_DIR, log_file=FEEDBACK_FILE)
-        feedback_gate = FeedbackGate(FEEDBACK_SUMMARY_PATH)
-        from ai_governance_platform.services.extraction_service import extract_pdf_text
-        from ai_governance_platform.services.validation_service import validate_loan_application
+        from ai_governance_platform.services.feedback_service import FeedbackService
+        feedback_gate = FeedbackService(log_dir=os.path.dirname(FEEDBACK_SUMMARY_PATH), log_file=os.path.basename(FEEDBACK_SUMMARY_PATH))
+        # Remove incorrect import or ensure correct function signature
+        # from ai_governance_platform.services.extraction_service import extract_pdf_text
+        # Removed local import for validate_loan_application
         # ...existing Streamlit UI logic (file upload, extraction, tabs, etc.)...
     # tab3_container block moved inside try block below
         if st.session_state.get("show_extraction_results"):
@@ -277,13 +285,8 @@ def main():
                             for doc in docs:
                                 st.write(f"**{doc['doc_type']}**:")
                                 # Deduplicate reasons and sort for clarity
-                                # Only show missing fields as data validation errors
-                                doc_fields = doc['obj'].__dict__ if hasattr(doc['obj'], '__dict__') else doc['obj']
+                                # Only show validation function errors, no UI-generated missing field errors
                                 validation_reasons = []
-                                for field, value in doc_fields.items():
-                                    if value == "":
-                                        validation_reasons.append(f"Validation error ({doc['doc_type']}): {field.replace('_',' ').title()} missing")
-                                # Add other validation errors
                                 for reason in doc['reasons']:
                                     if reason.startswith("Validation error") and reason not in validation_reasons:
                                         validation_reasons.append(reason)
@@ -392,68 +395,51 @@ def main():
 
     with st.sidebar.expander("ℹ️ About This Project", expanded=False):
         st.markdown("""
-        Modular AI Governance & Evaluation Platform
-        - Audit logging for all AI interactions
-        - Policy engine for risk assessment and controls
-        - Feedback logging and summary for continuous improvement
-        - System Health KPIs for operational visibility
-        - Streamlit-based modern UI for business users
-        - Open-source, extensible Python codebase
-        - Real-time escalation sync and human review workflow
-        - Document extraction, validation, and confidence scoring
-        - Audit log tab with full review history
-        - Sequential loan numbering and improved UI/UX
-        - Demo Files sidebar expander with download buttons
-        - Dynamic listing of sample_zips files
-        - UI/UX improvements and version update
-        - Designed for CTOs, CEOs, hiring managers, and PE operators
+        This platform enables safe, observable, and governed AI operations for enterprise environments. It features modular business logic, real-time escalation review, document extraction and validation, audit logging, feedback collection, and system health metrics. Designed for CTOs, CEOs, hiring managers, and PE operators.
 
         **Target Audience:**
         Executives, engineering leaders, HR, private equity operators, and technical decision-makers seeking robust AI governance, auditability, and evaluation for enterprise AI systems.
 
         **Key Features:**
-        - Modular audit logging and feedback
-        - Policy-driven query evaluation
-        - System health metrics and KPIs
-        - Streamlit UI for easy access and reporting
-        - Open-source, extensible design
-        - Real-time escalation review and human-in-the-loop workflow
-        - Demo file downloads for testing
-        - Improved sidebar and UI layout
+        - Audit Logging for all AI interactions
+        - Policy Engine for query risk assessment
+        - Feedback logging and summary
+        - Escalation Review & Human-in-the-Loop (HIL) for low-confidence or high-risk documents
+        - System Health KPIs and metrics
+        - Document Extraction, Validation, and Confidence Scoring
+        - Audit Log Tab & Sequential Loan Numbering
+        - Streamlit-based modern UI
+        - Open-source, modular Python codebase
         """, unsafe_allow_html=True)
     with st.sidebar.expander("&#128193; Project Documentation", expanded=False):
         st.markdown("**Project Documentation**")
         st.markdown("<span style='font-size:1.05em;'>🌐</span> [GitHub Repository](https://github.com/obizues/AI-Governance-Platform)", unsafe_allow_html=True)
-        st.markdown("<span style='font-size:1.05em;'>📄</span> **Documentation**", unsafe_allow_html=True)
-        st.markdown("- <span style='font-size:1.05em;'>📘</span> [README.md](https://github.com/obizues/AI-Governance-Platform/blob/main/README.md): Platform overview, setup, features", unsafe_allow_html=True)
+        st.markdown("- <span style='font-size:1.05em;'>📘</span> [README.md](https://github.com/obizues/AI-Governance-Platform/blob/main/README.md): Project overview, setup, features", unsafe_allow_html=True)
         st.markdown("- <span style='font-size:1.05em;'>📝</span> [CHANGELOG.md](https://github.com/obizues/AI-Governance-Platform/blob/main/CHANGELOG.md): Release notes and updates", unsafe_allow_html=True)
         st.markdown("- <span style='font-size:1.05em;'>🗂️</span> [System Architecture](https://github.com/obizues/AI-Governance-Platform/blob/main/docs/architecture.md): Design and flow diagrams", unsafe_allow_html=True)
-        st.markdown("**Key Sections:**\n- Audit Logging\n- Policy Engine\n- Feedback & Evaluation\n- System Health KPIs\n- Deployment & Usage Guide")
+        st.markdown("**Key Sections:**\n- Modular business logic\n- Audit Logging\n- Policy Engine\n- Feedback & Evaluation\n- System Health KPIs\n- Deployment & Usage Guide")
     with st.sidebar.expander("&#128295; Tech Stack", expanded=False):
         st.markdown("""
     <span style='font-size:1em;'>
     <ul style='margin-bottom:0; padding-left: 18px;'>
     <li>Python 3.10+</li>
     <li>Streamlit (UI)</li>
-    <li>pandas (data handling)</li>
-    <li>Audit logging (CSV, JSON)</li>
-    <li>Policy engine (YAML-based rules)</li>
-    <li>Feedback logging & summary</li>
-    <li>System Health KPIs</li>
-    <li>pytest (testing, audit validation)</li>
-    <li>GitHub Actions (CI/CD)</li>
-    <li>Streamlit download buttons for demo files</li>
-    <li>Dynamic sidebar content</li>
+    <li>pandas, pdfplumber (data extraction)</li>
+    <li>Modular service architecture</li>
+    <li>YAML for policy configuration</li>
+    <li>Pytest for testing</li>
     </ul>
     """, unsafe_allow_html=True)
 
         with st.sidebar.expander("📝 System Design Notes", expanded=False):
             st.markdown("""
         **Key architectural decisions**
-        <li><b>Feedback Logging:</b> User feedback is logged and summarized for continuous improvement.</li>
-        <li><b>System Health KPIs:</b> Real-time metrics for queries, deny rate, escalation, latency, trust score, and feedback.</li>
-        <li><b>Streamlit UI:</b> Modern, business-focused interface with tabs for queries, feedback, health, and escalation review.</li>
-        <li><b>Open Source:</b> Extensible Python codebase, GitHub-hosted, CI/CD enabled.</li>
+        <li><b>All business logic is modularized in services/</b></li>
+        <li><b>Centralized config/, data/, and logs/ folders</b></li>
+        <li><b>UI is decoupled from core logic</b></li>
+        <li><b>Policy rules in config/policy.yaml</b></li>
+        <li><b>Feedback loop via services/feedback_service.py</b></li>
+        <li><b>KPIs and metrics via services/metrics_service.py</b></li>
         <li><b>Deployment:</b> Streamlit Cloud, local, or containerized environments.</li>
         <li><b>Demo Files:</b> Sidebar expander with download buttons, dynamic listing of sample files for testing.</li>
         <li><b>UI/UX:</b> Improved sidebar layout, banners, and tabbed navigation.</li>
@@ -464,50 +450,40 @@ def main():
 
     st.set_page_config(page_title="AI Governance & Evaluation Platform v0.9.0", layout="wide")
 
-    provider = StubProvider()
-    policy_engine = PolicyEngine(POLICY_PATH)
+    from ai_governance_platform.services.provider_service import StubProvider, ProviderService
+    stub = StubProvider()
+    provider_service = ProviderService(provider=stub)
+    provider = provider_service.provider
+    policy_service = PolicyService(policy_path=POLICY_PATH)
     audit_logger = AuditLoggingService(log_dir=LOG_DIR, log_file=LOG_FILE)
     # Example usage: log an audit event after loan validation
     # After loan_id and validation_result are assigned:
-    if 'loan_id' in locals() and 'validation_result' in locals() and loan_id is not None and validation_result is not None:
+    # Define loan_id and validation_result if available
+    loan_id = st.session_state.get("current_loan_number")
+    validation_result = st.session_state.get("validation_results")
+    if loan_id is not None and validation_result is not None:
         audit_logger.log_event(
             event_type="validation",
             user="system",
             details={"loan_id": loan_id, "validation_result": validation_result}
         )
     feedback_logger = FeedbackService(log_dir=FEEDBACK_DIR, log_file=FEEDBACK_FILE)
-    feedback_gate = FeedbackGate(FEEDBACK_SUMMARY_PATH)
+    from ai_governance_platform.services.feedback_service import FeedbackService
+    feedback_gate = FeedbackService(log_dir=os.path.dirname(FEEDBACK_SUMMARY_PATH), log_file=os.path.basename(FEEDBACK_SUMMARY_PATH))
     import importlib
     import sys
     validation_imported = False
     try:
-        from ai_governance_platform.extraction.validation import (
-            validate_loan_application, validate_disclosure, validate_credit_report, validate_appraisal_report,
-            validate_income_verification, validate_bank_statement, validate_tax_return, validate_closing_documents
-        )
-        validation_imported = True
-    except ModuleNotFoundError:
-        try:
-            from ..extraction.validation import (
-                validate_loan_application, validate_disclosure, validate_credit_report, validate_appraisal_report,
-                validate_income_verification, validate_bank_statement, validate_tax_return, validate_closing_documents
-            )
+        # Removed invalid imports for extraction.validation
             validation_imported = True
-        except ModuleNotFoundError:
-            # Try adding extraction to sys.path and import directly
-            import os
-            extraction_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../extraction'))
-            if extraction_path not in sys.path:
-                sys.path.append(extraction_path)
-            validation_module = importlib.import_module('validation')
-            validate_loan_application = validation_module.validate_loan_application
-            validate_disclosure = validation_module.validate_disclosure
-            validate_credit_report = validation_module.validate_credit_report
-            validate_appraisal_report = validation_module.validate_appraisal_report
-            validate_income_verification = validation_module.validate_income_verification
-            validate_bank_statement = validation_module.validate_bank_statement
-            validate_tax_return = validation_module.validate_tax_return
-            validate_closing_documents = validation_module.validate_closing_documents
+    except ModuleNotFoundError:
+        # Try adding extraction to sys.path and import directly
+        import os
+        extraction_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../extraction'))
+        if extraction_path not in sys.path:
+            sys.path.append(extraction_path)
+        validation_module = importlib.import_module('validation')
+        # Removed local assignments for validation functions
     def parse_fields(text, doc_type):
         import re
         def to_snake_case(s):
@@ -559,9 +535,9 @@ def main():
                 fields.get('buyer',''), fields.get('seller',''), fields.get('signature',''))
         else:
             return fields
-    from ai_governance_platform.extraction.document_types import (
-    LoanApplication, Disclosure, CreditReport, AppraisalReport, IncomeVerification, BankStatement, TaxReturn, ClosingDocuments
-        )
+    from ai_governance_platform.models.document_types import (
+        LoanApplication, Disclosure, CreditReport, AppraisalReport, IncomeVerification, BankStatement, TaxReturn, ClosingDocuments
+    )
     st.header("Document Extraction & Review")
     st.write("Upload a .zip file containing only PDFs, or an individual .pdf file.")
 
@@ -732,8 +708,16 @@ def main():
                 st.error(f"Error processing {pdf_name}: {str(e)}")
                 print(f"Streamlit error processing {pdf_name}: {str(e)}")
         df = pd.DataFrame(data)
-        df = df.sort_values("Document Type")
+        if "Document Type" in df.columns:
+            df = df.sort_values("Document Type")
+        else:
+            st.warning("No 'Document Type' column found in extracted data. Sorting skipped.")
         st.session_state["pdf_metadata"] = pdf_metadata
+        # Log KPIs: confidence scores and validation counts
+        metrics_service = MetricsService(log_dir=os.path.join(BASE_DIR, '..', '..', 'logs'))
+        for idx, score in enumerate(confidence_scores):
+            metrics_service.log_kpi("confidence_score", score, {"doc_type": data[idx]["Document Type"], "pdf_name": data[idx]["PDF Name"]})
+        metrics_service.log_kpi("validation_count", len(validation_results))
 
         try:
             tab1, tab2, tab3, tab4, tab5 = st.tabs(["Document Extraction & Review", "Extracted Objects & Fields", "Confidence Scoring", "Escalation Required", "Audit Log"])
@@ -792,25 +776,30 @@ def main():
         with tab2_container:
             if st.session_state.get("show_extraction_results"):
                 try:
+                    # Show extraction summary string
+                    summary = st.session_state.get("extraction_summary", "No summary available.")
+                    if "All data valid" in summary:
+                        st.success(f"🟢 Extraction Summary: {summary}")
+                    else:
+                        st.error(f"🔴 Extraction Summary: {summary}")
+                    # Show detailed errors
                     all_errors = []
                     for idx, result in enumerate(st.session_state["validation_results"]):
                         if result["errors"]:
                             all_errors.append(f"{st.session_state['extracted_objects'][idx][0]}: {result['errors']}")
-                    if not all_errors:
-                        st.success("🟢 Extraction Summary: All data valid.")
-                    else:
+                    if all_errors:
                         error_details = '\n'.join([f"- {err}" for err in all_errors])
-                        st.error(f"🔴 Extraction Summary: Validation errors found.\n\n**Details:**\n{error_details}")
+                        st.markdown(f"**Details:**\n{error_details}")
                     with st.expander("Object Details", expanded=False):
                         for idx, (doc_type, obj) in enumerate(st.session_state["extracted_objects"]):
                             st.write(f"### {doc_type}")
-                        st.json(obj.__dict__)
-                        errors = st.session_state["validation_results"][idx]["errors"]
-                        score = confidence_scores[idx] if idx < len(confidence_scores) else None
-                        if errors:
-                            st.warning(f"Validation errors: {errors}")
-                        else:
-                            st.success("All fields valid.")
+                            st.json(obj.__dict__)
+                            errors = st.session_state["validation_results"][idx]["errors"]
+                            score = confidence_scores[idx] if idx < len(confidence_scores) else None
+                            if errors:
+                                st.warning(f"Validation errors: {errors}")
+                            else:
+                                st.success("All fields valid.")
                         # Confidence score not shown in this tab
                 except Exception as e:
                     st.error(f"Error displaying extraction results: {str(e)}")
@@ -883,7 +872,10 @@ def main():
                 reasons = []
                 fields = obj.__dict__ if hasattr(obj, '__dict__') else obj
                 loan_num = loan_numbers[idx]
-                validation_errors = st.session_state["validation_results"][idx]["errors"] if st.session_state.get("validation_results") else []
+                if st.session_state.get("validation_results") and idx < len(st.session_state["validation_results"]):
+                    validation_errors = st.session_state["validation_results"][idx]["errors"]
+                else:
+                    validation_errors = []
                 if ((score is not None and score < 90) or validation_errors) and all((loan_num, doc['doc_type']) not in reviewed_docs for doc in loan_escalations.get(loan_num, [])):
                     for k, v in fields.items():
                         if not v or v.strip() == "":
@@ -937,8 +929,8 @@ def main():
                             validation_reasons = []
                             for field, value in doc_fields.items():
                                 if value == "":
-                                    validation_reasons.append(f"Validation error ({doc['doc_type']}): {field.replace('_',' ').title()} missing")
-                            # Add other validation errors
+                            # Only show validation function errors, no UI-generated missing field errors
+                                    validation_reasons = []
                             for reason in doc['reasons']:
                                 if reason.startswith("Validation error") and reason not in validation_reasons:
                                     validation_reasons.append(reason)
@@ -986,8 +978,7 @@ def main():
                             st.rerun()
     else:
         st.info("No extraction results yet. Run extraction in the first tab.")
-        from ai_governance_platform.escalation.escalation import load_pending_escalations
-        pending_escalations = load_pending_escalations()
+        pending_escalations = EscalationService.load_pending_escalations()
         escalation_indices = list(pending_escalations.index)
         current_idx = st.session_state.get('escalation_idx', escalation_indices[0] if escalation_indices else 0)
         # Show only the current escalation
@@ -1037,8 +1028,7 @@ def main():
                             "feedback": thumbs if thumbs in ["👍", "👎"] else ""
                         }
                     )
-                    summary = FeedbackSummary(os.path.join(FEEDBACK_DIR, FEEDBACK_FILE), FEEDBACK_SUMMARY_PATH)
-                    summary.rebuild_summary()
+                    feedback_gate.summarize_feedback()
                     st.session_state["show_feedback_banner"] = True
                     # Clear last query context and rerun to reset screen
                     for key in ["last_query_context", "last_query_response", "last_query_decision", "last_prompt", "last_response"]:
@@ -1053,14 +1043,13 @@ def main():
                 prompt_text = context["prompt"]
                 # Remove all 👎 feedback for this prompt
                 from ai_governance_platform.services.file_management_service import FileManagementService
-                file_service = FileManagementService(base_dir=os.path.dirname(FEEDBACK_PATH))
-                rows = file_service.read_csv(os.path.basename(FEEDBACK_PATH))
+                file_service = FileManagementService(base_dir=os.path.dirname(FEEDBACK_SUMMARY_PATH))
+                rows = file_service.read_csv(os.path.basename(FEEDBACK_SUMMARY_PATH))
                 header = list(rows[0].keys()) if rows else []
                 filtered = [row for row in rows if not (row.get("prompt") == prompt_text and row.get("feedback") == "👎")]
-                file_service.write_csv(os.path.basename(FEEDBACK_PATH), filtered)
+                file_service.write_csv(os.path.basename(FEEDBACK_SUMMARY_PATH), filtered)
                 # Rebuild feedback summary
-                summary = FeedbackSummary(FEEDBACK_PATH, FEEDBACK_SUMMARY_PATH)
-                summary.rebuild_summary()
+                feedback_gate.summarize_feedback()
                 st.success("Downvotes for this prompt have been cleaned up!")
 
 if __name__ == '__main__': main() 
