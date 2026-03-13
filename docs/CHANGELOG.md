@@ -1,7 +1,11 @@
 
-## [v0.9.1] - 2026-03-10
+## [v0.10.0] - 2026-03-11
 ### Updates
-- Version bump to v0.9.1
+- Extraction summary and prediction results only appear in tab 0, above the "Extraction & Validation" header
+- Bugfix: Removed duplicate extraction summary messages from other tabs
+- Refactor: Prediction display logic is modular and only called once per upload
+- Usability: Clear workflow for document review and action
+- Version bump to v0.10.0
 - Audit log and escalation CSV parsing fixes
 - UI error message standardization
 - Documentation and README updates

@@ -1,0 +1,7 @@
+Loan Application
+Applicant Name: John Doe
+Property Address: 123 Main St
+Loan Amount: $250,000
+Interest Rate: 4.5%
+Term Years: 30
+Signature: John Doe

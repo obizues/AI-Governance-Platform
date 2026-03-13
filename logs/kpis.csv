@@ -126,3 +126,213 @@ timestamp,kpi_name,value
 2026-03-11T04:43:56.046006,confidence_score,50,Loan Application,Loan_Application.pdf
 2026-03-11T04:43:56.046725,confidence_score,100,Tax Return,Tax_Return.pdf
 2026-03-11T04:43:56.047731,validation_count,8
+2026-03-11T04:50:16.997211,confidence_score,90,Appraisal Report,Appraisal_Report.pdf
+2026-03-11T04:50:16.998042,confidence_score,90,Bank Statement,Bank_Statement.pdf
+2026-03-11T04:50:16.998516,confidence_score,90,Closing Documents,Closing_Documents.pdf
+2026-03-11T04:50:16.998929,confidence_score,90,Credit Report,Credit_Report.pdf
+2026-03-11T04:50:16.999473,confidence_score,90,Disclosure,Disclosure.pdf
+2026-03-11T04:50:16.999907,confidence_score,100,Income Verification,Income_Verification.pdf
+2026-03-11T04:50:17.000296,confidence_score,50,Loan Application,Loan_Application.pdf
+2026-03-11T04:50:17.000691,confidence_score,100,Tax Return,Tax_Return.pdf
+2026-03-11T04:50:17.001528,validation_count,8
+2026-03-11T07:10:40.380053,validation_count,8
+2026-03-11T07:14:09.368401,validation_count,8
+2026-03-11T07:15:23.390671,validation_count,8
+2026-03-11T07:16:28.761066,validation_count,8
+2026-03-11T07:19:06.048031,validation_count,8
+2026-03-11T07:20:33.646774,validation_count,8
+2026-03-11T07:22:41.444517,validation_count,8
+2026-03-11T07:24:15.990844,validation_count,8
+2026-03-11T07:25:44.872952,validation_count,8
+2026-03-11T07:27:07.643150,validation_count,8
+2026-03-11T07:31:55.012102,validation_count,8
+2026-03-11T07:36:34.458781,validation_count,8
+2026-03-11T07:38:06.928670,validation_count,8
+2026-03-11T07:40:28.306375,validation_count,8
+2026-03-11T07:45:07.610197,validation_count,8
+2026-03-11T07:48:03.926040,validation_count,8
+2026-03-11T07:49:55.165539,validation_count,8
+2026-03-11T07:51:13.491696,validation_count,8
+2026-03-11T15:44:30.591311,confidence_score,50,Appraisal Report,Appraisal_Report.pdf
+2026-03-11T15:44:30.591791,confidence_score,50,Bank Statement,Bank_Statement.pdf
+2026-03-11T15:44:30.592239,confidence_score,50,Closing Documents,Closing_Documents.pdf
+2026-03-11T15:44:30.592668,confidence_score,50,Credit Report,Credit_Report.pdf
+2026-03-11T15:44:30.593097,confidence_score,50,Disclosure,Disclosure.pdf
+2026-03-11T15:44:30.593621,confidence_score,50,Income Verification,Income_Verification.pdf
+2026-03-11T15:44:30.594069,confidence_score,50,Loan Application,Loan_Application.pdf
+2026-03-11T15:44:30.594577,confidence_score,50,Tax Return,Tax_Return.pdf
+2026-03-11T15:44:30.595002,validation_count,8
+2026-03-11T15:45:15.473563,confidence_score,50,Appraisal Report,Appraisal_Report.pdf
+2026-03-11T15:45:15.474298,confidence_score,50,Bank Statement,Bank_Statement.pdf
+2026-03-11T15:45:15.474837,confidence_score,50,Closing Documents,Closing_Documents.pdf
+2026-03-11T15:45:15.475380,confidence_score,50,Credit Report,Credit_Report.pdf
+2026-03-11T15:45:15.475764,confidence_score,50,Disclosure,Disclosure.pdf
+2026-03-11T15:45:15.475979,confidence_score,50,Income Verification,Income_Verification.pdf
+2026-03-11T15:45:15.476703,confidence_score,50,Loan Application,Loan_Application.pdf
+2026-03-11T15:45:15.477159,confidence_score,50,Tax Return,Tax_Return.pdf
+2026-03-11T15:45:15.477623,validation_count,8
+2026-03-11T15:47:13.872022,confidence_score,50,Appraisal Report,Appraisal_Report.pdf
+2026-03-11T15:47:13.873189,confidence_score,50,Bank Statement,Bank_Statement.pdf
+2026-03-11T15:47:13.874047,confidence_score,50,Closing Documents,Closing_Documents.pdf
+2026-03-11T15:47:13.874419,confidence_score,50,Credit Report,Credit_Report.pdf
+2026-03-11T15:47:13.874777,confidence_score,50,Disclosure,Disclosure.pdf
+2026-03-11T15:47:13.875160,confidence_score,50,Income Verification,Income_Verification.pdf
+2026-03-11T15:47:13.875516,confidence_score,50,Loan Application,Loan_Application.pdf
+2026-03-11T15:47:13.875918,confidence_score,50,Tax Return,Tax_Return.pdf
+2026-03-11T15:47:13.876296,validation_count,8
+2026-03-11T15:47:37.469883,confidence_score,90,Appraisal Report,Appraisal_Report.pdf
+2026-03-11T15:47:37.472376,confidence_score,90,Bank Statement,Bank_Statement.pdf
+2026-03-11T15:47:37.474982,confidence_score,90,Closing Documents,Closing_Documents.pdf
+2026-03-11T15:47:37.476892,confidence_score,90,Credit Report,Credit_Report.pdf
+2026-03-11T15:47:37.479377,confidence_score,90,Disclosure,Disclosure.pdf
+2026-03-11T15:47:37.480141,confidence_score,100,Income Verification,Income_Verification.pdf
+2026-03-11T15:47:37.483726,confidence_score,100,Loan Application,Loan_Application.pdf
+2026-03-11T15:47:37.484768,confidence_score,100,Tax Return,Tax_Return.pdf
+2026-03-11T15:47:37.485334,validation_count,8
+2026-03-11T15:48:20.694032,confidence_score,50,Appraisal Report,Appraisal_Report.pdf
+2026-03-11T15:48:20.695293,confidence_score,50,Bank Statement,Bank_Statement.pdf
+2026-03-11T15:48:20.696201,confidence_score,50,Closing Documents,Closing_Documents.pdf
+2026-03-11T15:48:20.696814,confidence_score,50,Credit Report,Credit_Report.pdf
+2026-03-11T15:48:20.697250,confidence_score,50,Disclosure,Disclosure.pdf
+2026-03-11T15:48:20.697604,confidence_score,50,Income Verification,Income_Verification.pdf
+2026-03-11T15:48:20.697951,confidence_score,50,Loan Application,Loan_Application.pdf
+2026-03-11T15:48:20.698285,confidence_score,50,Tax Return,Tax_Return.pdf
+2026-03-11T15:48:20.698799,validation_count,8
+2026-03-11T15:50:02.205731,confidence_score,50,Appraisal Report,Appraisal_Report.pdf
+2026-03-11T15:50:02.206220,confidence_score,50,Bank Statement,Bank_Statement.pdf
+2026-03-11T15:50:02.206714,confidence_score,50,Closing Documents,Closing_Documents.pdf
+2026-03-11T15:50:02.207431,confidence_score,50,Credit Report,Credit_Report.pdf
+2026-03-11T15:50:02.207978,confidence_score,50,Disclosure,Disclosure.pdf
+2026-03-11T15:50:02.208508,confidence_score,50,Income Verification,Income_Verification.pdf
+2026-03-11T15:50:02.209061,confidence_score,50,Loan Application,Loan_Application.pdf
+2026-03-11T15:50:02.209739,confidence_score,50,Tax Return,Tax_Return.pdf
+2026-03-11T15:50:02.210522,validation_count,8
+2026-03-11T15:50:55.400908,confidence_score,50,Appraisal Report,Appraisal_Report.pdf
+2026-03-11T15:50:55.401338,confidence_score,50,Bank Statement,Bank_Statement.pdf
+2026-03-11T15:50:55.401666,confidence_score,50,Closing Documents,Closing_Documents.pdf
+2026-03-11T15:50:55.401874,confidence_score,50,Credit Report,Credit_Report.pdf
+2026-03-11T15:50:55.402077,confidence_score,50,Disclosure,Disclosure.pdf
+2026-03-11T15:50:55.402443,confidence_score,50,Income Verification,Income_Verification.pdf
+2026-03-11T15:50:55.402716,confidence_score,50,Loan Application,Loan_Application.pdf
+2026-03-11T15:50:55.403005,confidence_score,50,Tax Return,Tax_Return.pdf
+2026-03-11T15:50:55.403537,validation_count,8
+2026-03-11T15:52:09.586284,confidence_score,50,Appraisal Report,Appraisal_Report.pdf
+2026-03-11T15:52:09.586588,confidence_score,50,Bank Statement,Bank_Statement.pdf
+2026-03-11T15:52:09.586988,confidence_score,50,Closing Documents,Closing_Documents.pdf
+2026-03-11T15:52:09.587725,confidence_score,50,Credit Report,Credit_Report.pdf
+2026-03-11T15:52:09.587945,confidence_score,50,Disclosure,Disclosure.pdf
+2026-03-11T15:52:09.588106,confidence_score,50,Income Verification,Income_Verification.pdf
+2026-03-11T15:52:09.588474,confidence_score,50,Loan Application,Loan_Application.pdf
+2026-03-11T15:52:09.588658,confidence_score,50,Tax Return,Tax_Return.pdf
+2026-03-11T15:52:09.588888,validation_count,8
+2026-03-11T15:53:11.852440,validation_count,8
+2026-03-11T15:54:25.714896,validation_count,8
+2026-03-11T15:59:15.904768,validation_count,8
+2026-03-11T16:02:08.381608,validation_count,8
+2026-03-11T16:03:10.880873,validation_count,8
+2026-03-11T16:03:57.654365,validation_count,8
+2026-03-11T16:22:05.177124,validation_count,8
+2026-03-11T16:26:05.994797,validation_count,8
+2026-03-11T16:30:30.915971,validation_count,8
+2026-03-11T16:36:30.936783,validation_count,8
+2026-03-11T16:41:25.841825,validation_count,8
+2026-03-11T16:42:59.198396,validation_count,8
+2026-03-11T16:44:47.615342,validation_count,8
+2026-03-11T17:16:18.796082,validation_count,8
+2026-03-11T17:29:22.091166,validation_count,8
+2026-03-11T18:13:45.329865,validation_count,8
+2026-03-11T18:14:38.929493,validation_count,8
+2026-03-11T18:15:39.425898,validation_count,8
+2026-03-11T18:16:18.807332,validation_count,8
+2026-03-11T18:16:25.393928,validation_count,8
+2026-03-11T18:16:44.165426,validation_count,8
+2026-03-11T18:24:04.796945,validation_count,8
+2026-03-11T18:26:19.153833,validation_count,8
+2026-03-11T18:28:51.141710,validation_count,8
+2026-03-11T18:29:41.888881,validation_count,8
+2026-03-11T18:31:51.215955,validation_count,8
+2026-03-11T18:32:34.534661,validation_count,8
+2026-03-11T19:19:57.784911,validation_count,8
+2026-03-11T19:27:21.890661,validation_count,8
+2026-03-11T19:31:47.641976,validation_count,8
+2026-03-11T19:32:54.657858,validation_count,8
+2026-03-11T19:34:03.795840,validation_count,8
+2026-03-11T19:40:06.438999,validation_count,8
+2026-03-11T19:40:45.191082,validation_count,8
+2026-03-11T19:41:19.859379,validation_count,8
+2026-03-11T19:43:02.292469,validation_count,8
+2026-03-11T19:43:48.157097,validation_count,8
+2026-03-11T19:47:34.322916,validation_count,8
+2026-03-11T19:49:04.728816,validation_count,8
+2026-03-11T19:49:34.057163,validation_count,8
+2026-03-11T19:50:57.381594,validation_count,8
+2026-03-11T19:51:11.984654,validation_count,8
+2026-03-11T19:51:54.896102,validation_count,8
+2026-03-11T19:52:30.019252,validation_count,8
+2026-03-11T19:53:25.841751,validation_count,8
+2026-03-11T19:54:17.279444,validation_count,8
+2026-03-11T19:59:20.748612,validation_count,8
+2026-03-11T20:03:41.664433,validation_count,8
+2026-03-11T20:10:52.900789,validation_count,8
+2026-03-11T20:12:45.365845,validation_count,8
+2026-03-11T20:19:11.193168,validation_count,8
+2026-03-11T20:20:48.469325,validation_count,8
+2026-03-11T20:22:54.018536,validation_count,8
+2026-03-11T20:24:47.339734,validation_count,8
+2026-03-11T20:26:37.124334,validation_count,8
+2026-03-11T20:26:38.461460,validation_count,8
+2026-03-11T21:03:04.425676,validation_count,8
+2026-03-11T21:03:31.523210,validation_count,8
+2026-03-11T21:03:33.403652,validation_count,8
+2026-03-11T21:44:36.300656,validation_count,8
+2026-03-11T21:45:08.031961,validation_count,8
+2026-03-11T21:53:11.969278,validation_count,8
+2026-03-11T21:54:31.815587,validation_count,8
+2026-03-11T21:55:16.608126,validation_count,8
+2026-03-11T21:56:08.417469,validation_count,8
+2026-03-11T21:57:15.779052,validation_count,8
+2026-03-11T21:58:42.092550,validation_count,8
+2026-03-11T21:59:36.904886,validation_count,8
+2026-03-11T22:02:59.999294,validation_count,8
+2026-03-11T22:03:21.169835,validation_count,8
+2026-03-11T22:04:01.351734,validation_count,8
+2026-03-11T22:04:52.479143,validation_count,8
+2026-03-11T22:07:31.574642,validation_count,8
+2026-03-11T22:09:24.375808,validation_count,8
+2026-03-11T22:10:47.105104,validation_count,8
+2026-03-11T22:11:39.323494,validation_count,8
+2026-03-11T22:13:22.503088,validation_count,8
+2026-03-11T22:14:13.119689,validation_count,8
+2026-03-11T22:14:49.185751,validation_count,8
+2026-03-11T22:15:12.103091,validation_count,8
+2026-03-11T22:16:11.204886,validation_count,8
+2026-03-12T00:24:04.977157,validation_count,8
+2026-03-12T00:25:18.968833,validation_count,8
+2026-03-12T00:26:28.119722,validation_count,8
+2026-03-12T00:27:08.385679,validation_count,8
+2026-03-12T00:31:57.465928,validation_count,8
+2026-03-12T00:34:09.749079,validation_count,8
+2026-03-12T00:36:07.343431,validation_count,8
+2026-03-12T00:37:33.936080,validation_count,8
+2026-03-12T00:38:52.608663,validation_count,8
+2026-03-12T00:42:20.699970,validation_count,8
+2026-03-12T00:49:29.337619,validation_count,8
+2026-03-12T00:52:35.750653,validation_count,8
+2026-03-12T00:56:53.297351,validation_count,8
+2026-03-12T01:00:15.449333,validation_count,8
+2026-03-12T01:07:32.402740,validation_count,8
+2026-03-12T01:10:58.146444,validation_count,8
+2026-03-12T01:13:15.708358,validation_count,8
+2026-03-12T01:28:02.226754,validation_count,8
+2026-03-12T01:33:54.624824,validation_count,8
+2026-03-12T01:35:33.647290,validation_count,8
+2026-03-12T01:38:13.674561,validation_count,8
+2026-03-12T01:47:18.329423,validation_count,8
+2026-03-12T01:49:24.694295,validation_count,8
+2026-03-12T02:17:01.327931,validation_count,8
+2026-03-12T02:26:22.518405,validation_count,8
+2026-03-12T02:34:29.058572,validation_count,8
+2026-03-12T02:37:35.681055,validation_count,8
+2026-03-12T02:49:25.207192,validation_count,8
+2026-03-12T02:52:00.870568,validation_count,8
+2026-03-12T02:54:51.354814,validation_count,8

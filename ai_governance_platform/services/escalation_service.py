@@ -54,3 +54,8 @@ class EscalationService:
     @staticmethod
     def get_unique_key(row):
         return f"{row['timestamp']}_{hash(row['prompt'])}"
+
+    @staticmethod
+    def escalate_review(document):
+        # Escalation review logic stub
+        return {'status': 'escalated', 'reason': 'Low confidence'}

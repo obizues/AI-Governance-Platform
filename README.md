@@ -1,5 +1,5 @@
 
-## 🤖 AI Governance & Evaluation Platform v0.9.1
+## 🤖 AI Governance & Evaluation Platform v0.10.0
 
 📝 Audit Logging for all AI interactions
 ⚖️ Policy Engine for query risk assessment
@@ -58,7 +58,7 @@ requirements.txt   # Python dependencies
    ```sh
    pip install -r requirements.txt
    ```
-2. Version: v0.9.1
+2. Version: v0.10.0
 2. Run CLI demo:
    ```sh
    python ai_governance_platform/main.py
@@ -78,6 +78,12 @@ requirements.txt   # Python dependencies
 - **Known Bug:** Running evaluation may result in a `FileNotFoundError` if the dataset file is missing. Ensure `data/evaluation_dataset.json` exists.
 
 ## System Health
+
+## v0.10.0 Highlights
+- UI: Extraction summary and prediction results only appear in tab 0, above the "Extraction & Validation" header.
+- Bugfix: Removed duplicate extraction summary messages from other tabs.
+- Refactor: Prediction display logic is modular and only called once per upload.
+- Usability: Clear workflow for document review and action.
 - KPIs: total queries, deny rate, escalation rate, avg latency, positive feedback rate, trust score.
 - **Known Bug:** System Health tab may not display metrics correctly if log files are missing or malformed.
 

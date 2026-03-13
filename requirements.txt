@@ -13,7 +13,7 @@ rich
 markdown-it-py
 mdurl
 pygments
-# Version: v0.9.1
+# Version: v0.10.0
 # Add any new dependencies for UI enhancements or sidebar features
 # e.g. for advanced metrics or visualization:
 # plotly

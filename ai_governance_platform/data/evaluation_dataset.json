@@ -1,1 +1,23 @@
-(copy from original evaluation_dataset.json)
+[ 
+	{ 
+		"test_id": "1", 
+		"user_role": "HR", 
+		"question": "Show me all employee salaries.", 
+		"expected_keywords": ["salary", "employee"], 
+		"expected_decision": "deny" 
+	}, 
+	{ 
+		"test_id": "2", 
+		"user_role": "HR", 
+		"question": "Show me all employee names.", 
+		"expected_keywords": ["name", "employee"], 
+		"expected_decision": "approve" 
+	}, 
+	{ 
+		"test_id": "3", 
+		"user_role": "HR", 
+		"question": "Show me all employee addresses.", 
+		"expected_keywords": ["address", "employee"], 
+		"expected_decision": "review" 
+	} 
+] 

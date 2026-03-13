@@ -1,0 +1,57 @@
+loan_amount,"$250,000",Loan Application,1,1.0,auto_processed
+loan_amount,"$250,000",Loan Application,1,1.0,auto_processed
+income,"$135,926",Income Verification,1,1.0,auto_processed
+credit_score,750,Credit Report,1,1.0,auto_processed
+loan_amount,-50000,Loan Application,1,1.0,auto_processed
+income,"-135,926",Income Verification,1,1.0,auto_processed
+credit_score,500,Credit Report,1,1.0,auto_processed
+property_address,,Loan Application,1,1.0,auto_processed
+application_date,32/13/2026,Loan Application,1,1.0,auto_processed
+balance,-1000,Bank Statement,1,1.0,auto_processed
+account_number,123abc,Bank Statement,1,1.0,auto_processed
+appraiser_name,,Appraisal Report,1,1.0,auto_processed
+deductions,-5000,Tax Return,1,1.0,auto_processed
+interest_rate,-5.55%,Disclosure,1,1.0,auto_processed
+loan_terms,nonsense,Disclosure,1,1.0,auto_processed
+loan_amount,"$250,000",Loan Application,1,1.0,auto_processed
+income,"$135,926",Income Verification,1,1.0,auto_processed
+credit_score,750,Credit Report,1,1.0,auto_processed
+loan_amount,-50000,Loan Application,1,1.0,auto_processed
+income,"-135,926",Income Verification,1,1.0,auto_processed
+credit_score,500,Credit Report,1,1.0,auto_processed
+property_address,,Loan Application,1,1.0,auto_processed
+application_date,32/13/2026,Loan Application,1,1.0,auto_processed
+balance,-1000,Bank Statement,1,1.0,auto_processed
+account_number,123abc,Bank Statement,1,1.0,auto_processed
+appraiser_name,,Appraisal Report,1,1.0,auto_processed
+deductions,-5000,Tax Return,1,1.0,auto_processed
+interest_rate,-5.55%,Disclosure,1,1.0,auto_processed
+loan_terms,nonsense,Disclosure,1,1.0,auto_processed
+loan_amount,"$250,000",Loan Application,1,0.8940533009252732,auto_processed
+income,"$135,926",Income Verification,1,0.8940533009252732,auto_processed
+credit_score,750,Credit Report,1,0.9416652139875282,auto_processed
+loan_amount,-50000,Loan Application,0,0.8085097007913593,auto_processed
+income,"-135,926",Income Verification,0,0.8085097007913593,auto_processed
+credit_score,500,Credit Report,1,0.9416652139875282,auto_processed
+property_address,,Loan Application,0,0.8537988736000677,auto_processed
+application_date,32/13/2026,Loan Application,1,0.9416652139875282,auto_processed
+balance,-1000,Bank Statement,1,0.6979861672028298,human_review
+account_number,123abc,Bank Statement,1,0.9416652139875282,auto_processed
+appraiser_name,,Appraisal Report,0,0.8537988736000677,auto_processed
+deductions,-5000,Tax Return,1,0.6979861672028298,human_review
+interest_rate,-5.55%,Disclosure,0,0.536249470247049,human_review
+loan_terms,nonsense,Disclosure,1,0.9416652139875282,auto_processed
+loan_amount,"$250,000",Loan Application,1,0.9825822510822511,auto_processed
+income,"$135,926",Income Verification,1,0.9825822510822511,auto_processed
+credit_score,750,Credit Report,1,0.9224741647241648,auto_processed
+loan_amount,-50000,Loan Application,0,0.9427272727272729,auto_processed
+income,"-135,926",Income Verification,0,0.9427272727272729,auto_processed
+credit_score,500,Credit Report,1,0.9224741647241648,auto_processed
+property_address,,Loan Application,0,0.9925,auto_processed
+application_date,32/13/2026,Loan Application,1,0.9224741647241648,auto_processed
+balance,-1000,Bank Statement,0,0.587417748917749,human_review
+account_number,123abc,Bank Statement,1,0.9224741647241648,auto_processed
+appraiser_name,,Appraisal Report,0,0.9925,auto_processed
+deductions,-5000,Tax Return,0,0.587417748917749,human_review
+interest_rate,-5.55%,Disclosure,0,0.7627272727272728,human_review
+loan_terms,nonsense,Disclosure,1,0.9224741647241648,auto_processed

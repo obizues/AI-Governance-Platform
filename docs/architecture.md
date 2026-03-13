@@ -1,16 +1,20 @@
 ---
 # AI Governance & Evaluation Platform Architecture
 
-## Version: v0.9.1
+## Version: v0.10.0
 
-### Key Features
+### Key Features (v0.10.0)
 
 - Modularized business logic into service modules (extraction, validation, audit logging, feedback, file management, metrics, policy, provider)
 - Centralized config, data, and logs folders
 - Real-time escalation review and human-in-the-loop workflow
 - Document extraction, validation, and confidence scoring
 - Audit log tab with full review history
-- Sequential loan numbering and improved UI/UX
+  - Sequential loan numbering and improved UI/UX
+  - Extraction summary and prediction results only appear in tab 0, above the "Extraction & Validation" header
+  - Bugfix: Removed duplicate extraction summary messages from other tabs
+  - Refactor: Prediction display logic is modular and only called once per upload
+  - Usability: Clear workflow for document review and action
 - Feedback logging and summary for continuous improvement
 - System Health KPIs for operational visibility
 - Streamlit-based modern UI for business users

@@ -65,3 +65,7 @@ class FeedbackService:
             ftype = fb.get("feedback_type", "unknown")
             summary[ftype] = summary.get(ftype, 0) + 1
         return summary
+
+def collect_feedback(document):
+    # Human feedback logic stub
+    return {'status': 'feedback_collected', 'feedback': 'Sample feedback'}
