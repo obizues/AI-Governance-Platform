@@ -1,3 +1,9 @@
+## [v0.10.1.0] - 2026-03-12
+### Updates
+- UI improvements: validation error cards, icons, improved layout, demo files recreated
+- Validation errors grouped visually, icons for error types, empty values shown in grey
+- Demo files updated for confidence failures
+- Version bump to v0.10.1.0
 
 ## [v0.10.0] - 2026-03-11
 ### Updates

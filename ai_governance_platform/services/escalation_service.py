@@ -28,8 +28,8 @@ class EscalationService:
                 df[col] = ''
         for col in ['hil_action', 'rule_triggered', 'decision']:
             df[col] = df[col].fillna('').astype(str).str.strip().str.lower()
-        escalate_rows = df[df['rule_triggered'].str.contains('escalate') | df['decision'].str.contains('escalate')]
-        pending = df[df['rule_triggered'].str.contains('escalate') & (df['decision'] == 'escalate') & (df['hil_action'] == '')]
+        # Show all rows with rule_triggered == 'escalate' and hil_action == ''
+        pending = df[(df['rule_triggered'] == 'escalate') & (df['hil_action'] == '')]
         return pending
 
     @staticmethod
@@ -44,7 +44,14 @@ class EscalationService:
         if 'hil_reviewer' not in df.columns:
             df['hil_reviewer'] = ''
         df = df.astype({'hil_reviewer': 'object'})
-        mask = (df['timestamp'].astype(str) == str(timestamp))
+        # Mark only the specific escalation row as reviewed
+        mask = (
+            df['timestamp'].astype(str) == str(timestamp)
+        ) & (
+            df['prompt'].astype(str) == str(prompt)
+        ) & (
+            df['loan_package'].astype(str) == str(risk_level)
+        )
         df.loc[mask, 'hil_action'] = action.lower()
         df.loc[mask, 'hil_reviewer'] = str(reviewer)
         if action.lower() in ['approve', 'deny']:

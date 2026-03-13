@@ -1,6 +1,0 @@
-Bank Statement
-Account Holder: Jane Smith
-Account Number: 13500684
-Balance: 1000
-Statement Date: 03/14/2022
-Signature: Jane Smith

@@ -1,2 +1,10 @@
 timestamp,loan_id,reviewer,action,notes
-,,,,
+2026-03-13T00:05:01.587603,Alice Smith,Approve
+2026-03-13T00:09:40.105805,Alice Smith,Approve
+2026-03-13T00:13:14.756466,Alice Smith,Approve
+2026-03-13T00:13:57.469649,Alice Smith,Approve
+2026-03-13T00:14:39.901836,Alice Smith,Approve
+2026-03-13T00:15:08.531251,Alice Smith,Approve
+2026-03-13T00:16:45.859123,Alice Smith,Approve
+2026-03-13T00:20:17.638865,Alice Smith,Approve
+2026-03-13T00:21:02.939962,Alice Smith,Approve

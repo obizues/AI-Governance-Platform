@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import streamlit as st
 from ai_governance_platform.services.extraction_service import extract_and_validate
 from ai_governance_platform.services.evaluation_service import EvaluationService
+from ai_governance_platform.services.escalation_service import EscalationService
 import zipfile
 import io
 import json
@@ -76,7 +77,15 @@ class ClosingDocuments:
         self.seller = seller
         self.signature = signature
 
+# ...existing code...
+
+def _init_session_state():
+    st.session_state.setdefault("reviewed_escalations", set())
+    st.session_state.setdefault("current_escalation_idx", 0)
+
 def main():
+    _init_session_state()  # MUST be first in main()
+    # ...existing code...
     import streamlit as st
     import pandas as pd
     # Title banner
@@ -286,92 +295,252 @@ v0.10.0 - Modular workflow, robust UI, document extraction, validation, escalati
 """, unsafe_allow_html=True)
         uploaded_file = st.file_uploader("Upload a ZIP file containing PDFs", type=["zip"])
         if uploaded_file:
-            zip_bytes = uploaded_file.read()
-            with zipfile.ZipFile(io.BytesIO(zip_bytes)) as z:
-                pdf_files = [f for f in z.namelist() if f.lower().endswith('.pdf')]
-                summary = {}
-                for pdf_name in pdf_files:
-                    pdf_bytes = z.read(pdf_name)
-                    result = extract_and_validate(pdf_bytes)
-                    # Confidence scoring per field using EvaluationService
-                    # Example: load expected keywords from a dataset or config
-                    expected_keywords = list(result.get('fields', {}).keys())
-                    eval_service = EvaluationService(dataset_path='ai_governance_platform/data/evaluation_dataset.json', report_path='ai_governance_platform/data/evaluation_report.json')
-                    import joblib
-                    import sys
-                    import os
-                    script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'scripts'))
-                    if script_path not in sys.path:
-                        sys.path.append(script_path)
-                    from predict_field_validation import load_model, predict_validity
-                    model_path = 'ai_governance_platform/models/field_validation_rf_encoded_model.joblib'
-                    model = load_model(model_path)
-                    model_features = ['is_empty', 'is_negative', 'is_nonsensical', 'is_out_of_range', 'field_encoded', 'doc_type_encoded']
-                    field_confidences = {}
-                    for field, value in result.get('fields', {}).items():
-                        pred, prob = predict_validity(model, model_features, field, value, result.get('doc_type', 'Unknown'))
-                        field_confidences[field] = prob
-                    result['field_confidences'] = field_confidences
-                    # Augment errors with model confidence threshold
-                    CONFIDENCE_THRESHOLD = 0.8
-                    for field, conf in field_confidences.items():
-                        if isinstance(conf, float) and conf < CONFIDENCE_THRESHOLD:
-                            error_msg = f"{field.replace('_', ' ')} below confidence threshold ({conf:.2f})"
-                            if 'errors' in result:
-                                result['errors'].append(error_msg)
-                            else:
-                                result['errors'] = [error_msg]
-                    summary[pdf_name] = result
-                for fname, res in summary.items():
-                    st.markdown(f"### {fname}")
-                    st.markdown(f"<div style='background:#eaf6ff;padding:8px 0 8px 0;text-align:center;font-size:1.08em;font-weight:500;border-radius:8px;margin-bottom:8px;'>Document Type: <b>{res.get('doc_type', 'Unknown')}</b></div>", unsafe_allow_html=True)
-                    # Display validation errors grouped in a card with icons
-                    if res.get('errors'):
-                        error_items = ""
-                        for err in res['errors']:
-                            # Icon for error type
-                            if ' missing' in err:
-                                icon = '⚠️'
-                                base_field = err.split(' missing')[0].replace(' ', '_')
-                            elif ' below confidence threshold' in err:
-                                icon = '🔒'
-                                base_field = err.split(' below confidence threshold')[0].replace(' ', '_')
-                            else:
-                                icon = '❗'
-                                base_field = err.split(':')[0].replace(' ', '_')
-                            confidence = res['field_confidences'].get(base_field, 'N/A')
-                            if isinstance(confidence, float):
-                                conf_str = f"{confidence:.2f}"
-                            elif confidence == 'N/A':
-                                conf_str = ''
-                            else:
-                                conf_str = str(confidence)
-                            field_value = res['fields'].get(base_field, '')
-                            if not field_value:
-                                display_value = "<span style='color:#888'>(empty)</span>"
-                            else:
-                                display_value = f"{field_value}"
-                            error_items += f"<li style='margin-bottom:8px;'><span style='font-size:1.2em'>{icon}</span> <b>{base_field}</b>: <span style='color:#d32f2f'>{err}</span><br>Value: {display_value} {'<br>Confidence: <b>' + conf_str + '</b>' if conf_str else ''}</li>"
-                        st.markdown(f"""
+            if 'extraction_done' not in st.session_state or st.session_state['extraction_done'] != uploaded_file.name:
+                # Clear history
+                ai_interactions_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'logs', 'ai_interactions.csv'))
+                import csv
+                with open(ai_interactions_path, 'w', newline='') as csvfile:
+                    fieldnames = [
+                        "timestamp", "user_role", "loan_package", "prompt", "response", "response_time_ms",
+                        "confidence_score", "risk_level", "decision", "rule_triggered", "reason",
+                        "required_controls", "hil_action", "hil_reviewer"
+                    ]
+                    writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+                    writer.writeheader()
+                import datetime
+                import uuid
+                import os
+                import zipfile
+                import io
+                loan_package = str(uuid.uuid4())[:8]
+                pdf_output_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'sample_zips', loan_package))
+                os.makedirs(pdf_output_dir, exist_ok=True)
+                zip_bytes = uploaded_file.read()
+                with zipfile.ZipFile(io.BytesIO(zip_bytes)) as z:
+                    pdf_files = [f for f in z.namelist() if f.lower().endswith('.pdf')]
+                    summary = {}
+                    for pdf_name in pdf_files:
+                        pdf_bytes = z.read(pdf_name)
+                        result = extract_and_validate(pdf_bytes)
+                        expected_keywords = list(result.get('fields', {}).keys())
+                        eval_service = EvaluationService(dataset_path='ai_governance_platform/data/evaluation_dataset.json', report_path='ai_governance_platform/data/evaluation_report.json')
+                        import joblib
+                        import sys
+                        script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'scripts'))
+                        if script_path not in sys.path:
+                            sys.path.append(script_path)
+                        from predict_field_validation import load_model, predict_validity
+                        model_path = 'ai_governance_platform/models/field_validation_rf_encoded_model.joblib'
+                        model = load_model(model_path)
+                        model_features = ['is_empty', 'is_negative', 'is_nonsensical', 'is_out_of_range', 'field_encoded', 'doc_type_encoded']
+                        field_confidences = {}
+                        for field, value in result.get('fields', {}).items():
+                            pred, prob = predict_validity(model, model_features, field, value, result.get('doc_type', 'Unknown'))
+                            field_confidences[field] = prob
+                        result['field_confidences'] = field_confidences
+                        CONFIDENCE_THRESHOLD = 0.8
+                        escalate_fields = [field for field, conf in field_confidences.items() if isinstance(conf, float) and conf < CONFIDENCE_THRESHOLD]
+                        escalate = bool(escalate_fields)
+                        for field, conf in field_confidences.items():
+                            if isinstance(conf, float) and conf < CONFIDENCE_THRESHOLD:
+                                error_msg = f"{field.replace('_', ' ')} below confidence threshold ({conf:.2f})"
+                                if 'errors' in result:
+                                    result['errors'].append(error_msg)
+                                else:
+                                    result['errors'] = [error_msg]
+                        summary[pdf_name] = result
+                        now = datetime.datetime.now().isoformat()
+                        # Log each field needing review as a separate escalation row
+                        if escalate:
+                            for field in escalate_fields:
+                                row = {
+                                    "timestamp": now,
+                                    "user_role": "system",
+                                    "loan_package": loan_package,
+                                    "prompt": pdf_name,
+                                    "response": json.dumps(result['fields']),
+                                    "response_time_ms": "",
+                                    "confidence_score": f"{field_confidences[field]:.2f}",
+                                    "risk_level": "high",
+                                    "decision": "escalate",
+                                    "rule_triggered": "escalate",
+                                    "reason": f"{field.replace('_', ' ')} below confidence threshold ({field_confidences[field]:.2f})",
+                                    "required_controls": "",
+                                    "hil_action": "",
+                                    "hil_reviewer": ""
+                                }
+                                with open(ai_interactions_path, 'a', newline='') as csvfile:
+                                    writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+                                    writer.writerow(row)
+                            # Save PDF only if escalated
+                            escalated_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'sample_zips', 'escalated'))
+                            os.makedirs(escalated_dir, exist_ok=True)
+                            pdf_path = os.path.join(escalated_dir, f"{loan_package}_{pdf_name}")
+                            with open(pdf_path, 'wb') as f:
+                                f.write(pdf_bytes)
+                        else:
+                            # Log non-escalated document as a single row
+                            row = {
+                                "timestamp": now,
+                                "user_role": "system",
+                                "loan_package": loan_package,
+                                "prompt": pdf_name,
+                                "response": json.dumps(result['fields']),
+                                "response_time_ms": "",
+                                "confidence_score": f"{sum([c for c in field_confidences.values() if isinstance(c, float)]) / len([c for c in field_confidences.values() if isinstance(c, float)]) if field_confidences else 0:.2f}",
+                                "risk_level": "low",
+                                "decision": "approve",
+                                "rule_triggered": "",
+                                "reason": ", ".join(result.get('errors', [])),
+                                "required_controls": "",
+                                "hil_action": "",
+                                "hil_reviewer": ""
+                            }
+                            with open(ai_interactions_path, 'a', newline='') as csvfile:
+                                writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+                                writer.writerow(row)
+                    for fname, res in summary.items():
+                        st.markdown(f"### {fname}")
+                        st.markdown(f"<div style='background:#eaf6ff;padding:8px 0 8px 0;text-align:center;font-size:1.08em;font-weight:500;border-radius:8px;margin-bottom:8px;'>Document Type: <b>{res.get('doc_type', 'Unknown')}</b></div>", unsafe_allow_html=True)
+                        # Display validation errors grouped in a card with icons
+                        if res.get('errors'):
+                            error_items = ""
+                            for err in res['errors']:
+                                # Icon for error type
+                                if ' missing' in err:
+                                    icon = '⚠️'
+                                    base_field = err.split(' missing')[0].replace(' ', '_')
+                                elif ' below confidence threshold' in err:
+                                    icon = '🔒'
+                                    base_field = err.split(' below confidence threshold')[0].replace(' ', '_')
+                                else:
+                                    icon = '❗'
+                                    base_field = err.split(':')[0].replace(' ', '_')
+                                confidence = res['field_confidences'].get(base_field, 'N/A')
+                                if isinstance(confidence, float):
+                                    conf_str = f"{confidence:.2f}"
+                                elif confidence == 'N/A':
+                                    conf_str = ''
+                                else:
+                                    conf_str = str(confidence)
+                                field_value = res['fields'].get(base_field, '')
+                                if not field_value:
+                                    display_value = "<span style='color:#888'>(empty)</span>"
+                                else:
+                                    display_value = f"{field_value}"
+                                error_items += f"<li style='margin-bottom:8px;'><span style='font-size:1.2em'>{icon}</span> <b>{base_field}</b>: <span style='color:#d32f2f'>{err}</span><br>Value: {display_value} {'<br>Confidence: <b>' + conf_str + '</b>' if conf_str else ''}</li>"
+                            st.markdown(f"""
 <div style='background:#fff;border:1.5px solid #f8bdbd;padding:18px 18px 10px 18px;border-radius:14px;margin-bottom:24px;box-shadow:0 4px 16px #f8bdbd33;'>
 <div style='background:#ffe0e0;padding:8px 0 8px 0;border-radius:8px;margin-bottom:12px;text-align:center;font-weight:600;font-size:1.08em;'>Validation Errors</div>
 <ul style='padding-left:18px;margin-bottom:0;'>
 {error_items}
 </ul></div>
 """, unsafe_allow_html=True)
-                    # Show overall confidence as average of field confidences
-                    field_confidences = list(res.get('field_confidences', {}).values())
-                    if field_confidences:
-                        avg_conf = sum([c for c in field_confidences if isinstance(c, float)]) / len([c for c in field_confidences if isinstance(c, float)])
-                        st.markdown(f"<div style='background:#fff3e0;padding:8px;border-radius:8px;margin-bottom:8px;text-align:center;'><b>Overall Confidence:</b> {avg_conf:.2f}</div>", unsafe_allow_html=True)
-                    else:
-                        st.markdown(f"<div style='background:#fff3e0;padding:8px;border-radius:8px;margin-bottom:8px;text-align:center;'><b>Overall Confidence:</b> N/A</div>", unsafe_allow_html=True)
+                        # Show overall confidence as average of field confidences
+                        field_confidences = list(res.get('field_confidences', {}).values())
+                        if field_confidences:
+                            avg_conf = sum([c for c in field_confidences if isinstance(c, float)]) / len([c for c in field_confidences if isinstance(c, float)])
+                            st.markdown(f"<div style='background:#fff3e0;padding:8px;border-radius:8px;margin-bottom:8px;text-align:center;'><b>Overall Confidence:</b> {avg_conf:.2f}</div>", unsafe_allow_html=True)
+                        else:
+                            st.markdown(f"<div style='background:#fff3e0;padding:8px;border-radius:8px;margin-bottom:8px;text-align:center;'><b>Overall Confidence:</b> N/A</div>", unsafe_allow_html=True)
+                st.session_state['extraction_done'] = uploaded_file.name
     with tabs[1]:
         st.markdown("""
 <div style='background:#fff3e0;padding:8px 0 8px 0;text-align:center;font-size:1.08em;font-weight:500;border-radius:8px;margin-bottom:8px;'>
 <b>Step 2: Error Detection & Escalation Review</b>
 </div>
 """, unsafe_allow_html=True)
+        from ai_governance_platform.services.escalation_service import EscalationService
+        import time
+        pending_escalations = EscalationService.load_pending_escalations()
+        reviewed_count = 0
+        reviewer_names = ["Alice Smith", "Bob Johnson", "Chris Obermeier", "Dana Lee", "Evan Kim"]
+        start_time = time.time()
+        if not pending_escalations.empty:
+            st.markdown("<div style='background:#fff8e1;border:1.5px solid #ffd54f;padding:18px 18px 10px 18px;border-radius:14px;margin-bottom:24px;box-shadow:0 4px 16px #ffd54f33;text-align:center;font-size:1.1em;font-weight:600;'>Escalated Issues Pending Review</div>", unsafe_allow_html=True)
+            avg_review_time = (time.time() - start_time) / max(reviewed_count, 1)
+            st.markdown(f"<div style='background:#e3f2fd;padding:8px 0 8px 0;text-align:center;font-size:1.05em;font-weight:500;border-radius:8px;margin-bottom:12px;'>Pending: <b>{len(pending_escalations)}</b> | Reviewed: <b>{reviewed_count}</b> | Average Review Time: <b>{avg_review_time:.2f} sec</b></div>", unsafe_allow_html=True)
+            import streamlit as st
+            import time
+            from ai_governance_platform.services.escalation_service import EscalationService
+            # Use session state to track reviewed documents (loan + prompt)
+            if 'reviewed_docs' not in st.session_state:
+                st.session_state['reviewed_docs'] = set()
+
+            # Build pending list excluding already reviewed docs
+            pending_list = []
+            for idx, row in pending_escalations.iterrows():
+                doc_key = f"{row['loan_package']}_{row['prompt']}"
+                if doc_key not in st.session_state['reviewed_docs']:
+                    pending_list.append((idx, row))
+
+            if not pending_list:
+                st.markdown("<div style='background:#e0e0e0;color:#888;font-size:1.1em;text-align:center;padding:16px;border-radius:12px;margin-bottom:18px;'>Nothing to review</div>", unsafe_allow_html=True)
+            else:
+                if 'current_escalation_idx' not in st.session_state:
+                    st.session_state['current_escalation_idx'] = 0
+
+                # Clamp index after reruns/reviews
+                st.session_state['current_escalation_idx'] = min(
+                    st.session_state['current_escalation_idx'],
+                    len(pending_list) - 1
+                )
+
+                # Navigation controls
+                st.markdown("<div style='text-align:center;margin-bottom:16px;'><b>Navigate Issues:</b></div>", unsafe_allow_html=True)
+                col1, col2, col3 = st.columns([1,2,1])
+                with col1:
+                    if st.button("Previous Issue"):
+                        st.session_state['current_escalation_idx'] = max(0, st.session_state['current_escalation_idx'] - 1)
+                with col3:
+                    if st.button("Next Issue"):
+                        st.session_state['current_escalation_idx'] = min(len(pending_list)-1, st.session_state['current_escalation_idx'] + 1)
+
+                idx, row = pending_list[st.session_state['current_escalation_idx']]
+                doc_key = f"{row['loan_package']}_{row['prompt']}"
+                st.markdown(f"""
+<div style='background:#1976d2;border:2px solid #1976d2;padding:32px 32px 24px 32px;border-radius:24px;margin-bottom:32px;box-shadow:0 6px 24px #1976d233;width:100%;max-width:900px;margin-left:auto;margin-right:auto;'>
+    <b style='font-size:1.25em;color:#fff;'>Escalation Review</b><br>
+    <div style='color:#fff;font-size:1.08em;margin-top:12px;'>
+        <b>Document:</b> {row['prompt']}<br>
+        <b>Reason:</b> {row['reason']}<br>
+        <b>Confidence Score:</b> {row['confidence_score']}<br>
+        <b>Risk Level:</b> {row['risk_level']}<br>
+        <b>Decision:</b> {row['decision']}
+    </div>
+</div>
+""", unsafe_allow_html=True)
+                escalated_pdf_path = os.path.join("sample_zips", "escalated", f"{row['loan_package']}_{row['prompt']}")
+                if os.path.exists(escalated_pdf_path):
+                    with open(escalated_pdf_path, "rb") as pdf_file:
+                        st.download_button(label="Download Source Document", data=pdf_file.read(), file_name=row['prompt'], mime="application/pdf", key=f"download_{idx}")
+                else:
+                    st.markdown(f"<span style='color:#d32f2f;'>PDF not found for {row['prompt']}</span>", unsafe_allow_html=True)
+                with st.form(key=f"review_form_{idx}"):
+                    reviewer = st.selectbox(f"Reviewer name for {row['prompt']}", reviewer_names, key=f"reviewer_{idx}")
+                    action = st.selectbox(f"Decision for {row['prompt']}", ["Approve", "Deny"], key=f"action_{idx}")
+                    comment_required = action == "Approve" and (float(row['confidence_score']) < 0.8 if row['confidence_score'] else False)
+                    comment = st.text_area(f"Comment for {row['prompt']}", key=f"comment_{idx}")
+                    submit_clicked = st.form_submit_button(f"Submit review for {row['prompt']}")
+                    if submit_clicked:
+                        if not reviewer:
+                            st.error("Reviewer name is required.")
+                        elif comment_required and not comment.strip():
+                            st.error("Comment is required for approval of low confidence issues.")
+                        else:
+                            EscalationService.log_hil_action(row['timestamp'], reviewer, action, row['prompt'], row['loan_package'])
+                            reviewed_count += 1
+                            # Mark all matching pending rows (same prompt and loan_package) as reviewed
+                            for i, r in pending_escalations.iterrows():
+                                if r['prompt'] == row['prompt'] and r['loan_package'] == row['loan_package']:
+                                    match_key = f"{r['timestamp']}_{r['loan_package']}_{r['prompt']}"
+                                    st.session_state.setdefault("reviewed_escalations", set()).add(match_key)
+                            unique_key = f"{row['loan_package']}_{row['prompt']}"
+                            st.session_state['just_reviewed'] = unique_key
+                            st.success(f"Review submitted: {action} by {reviewer}")
+                            st.rerun()
+        else:
+            st.markdown("<div style='background:#e0e0e0;color:#888;font-size:1.1em;text-align:center;padding:16px;border-radius:12px;margin-bottom:18px;'>Nothing to review</div>", unsafe_allow_html=True)
         # Escalation review logic
     with tabs[2]:
         st.markdown("""

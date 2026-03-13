@@ -1,7 +1,0 @@
-Loan Application
-Applicant Name: Jane Smith
-Property Address: 456 Oak Ave
-Loan Amount: $250,000
-Interest Rate: 4.5%
-Term Years: 30
-Signature: Jane Smith
