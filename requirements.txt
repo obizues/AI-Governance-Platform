@@ -1,20 +1,22 @@
 streamlit
 pandas
+numpy
 pyyaml
 pdfplumber
 plotly
-numpy
-jinja2
-requests
 altair
+matplotlib
+scikit-learn
+joblib
+requests
+jinja2
 python-dateutil
 pydeck
 rich
 markdown-it-py
 mdurl
 pygments
-# Version: v0.10.0
-# Add any new dependencies for UI enhancements or sidebar features
-# e.g. for advanced metrics or visualization:
-# plotly
-# streamlit-extras
+pytest
+# Version: v0.11.1
+# Requirements updated to reflect the current UI, training, retraining,
+# KPI monitoring, and test workflow used by the application.

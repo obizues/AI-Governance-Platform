@@ -1,124 +1,146 @@
+# 🤖 AI Governance & Evaluation Platform v0.11.1
 
-## 🤖 AI Governance & Evaluation Platform v0.10.0
+An enterprise-style AI governance demo for document extraction with:
 
-📝 Audit Logging for all AI interactions
-⚖️ Policy Engine for query risk assessment
-💬 Feedback logging and summary
-🛑 Escalation Review & Human-in-the-Loop (HIL) for low-confidence or high-risk documents
-📊 System Health KPIs and metrics
-📄 Document Extraction, Validation, and Confidence Scoring
-🗂️ Audit Log Tab & Sequential Loan Numbering
-🖥️ Streamlit-based modern UI
-🌐 Open-source, modular Python codebase
+- document extraction and field-level confidence scoring
+- escalation decisions for low-confidence or risky outputs
+- human training labels for supervised feedback
+- governed retraining with model versioning
+- KPI monitoring that prioritizes safety and balance, not just accuracy
+- audit and governance history for reviewers and model changes
 
 ---
 
-## About this project
-This platform enables safe, observable, and governed AI operations for enterprise environments. It features modular business logic, real-time escalation review, document extraction and validation, audit logging, feedback collection, and system health metrics. Designed for CTOs, CEOs, hiring managers, and PE operators.
+## What this app demonstrates
 
-## Project Documentation
-- docs/README.md: Documentation folder purpose
-- docs/architecture.md: System architecture and flow diagrams
-- docs/CHANGELOG.md: Release notes and updates
-- README.md: Project overview, setup, features
+The app now supports a full human-in-the-loop loop:
 
-## Tech Stack
-- Python 3.10+
-- Streamlit (UI)
-- pandas, pdfplumber (data extraction)
-- Modular service architecture
-- YAML for policy configuration
-- Pytest for testing
+1. **Extract & Validate** — upload a ZIP of PDFs, extract fields, score field confidence, and escalate low-confidence outputs.
+2. **Escalation Decisions** — reviewers decide whether an escalated extraction can proceed operationally.
+3. **Human Training Labels** — reviewers compare model output to the source document and submit ground-truth labels.
+4. **Model Monitoring** — pending labels, retrain controls, model version history, and KPI trends.
+5. **Governance & Audit** — full human feedback history plus escalation decision history.
 
-## System Design Notes
-- All business logic is modularized in services/
-- Centralized config/, data/, and logs/ folders
-- UI is decoupled from core logic
-- Policy rules in config/policy.yaml
-- Feedback loop via services/feedback_service.py
-- KPIs and metrics via services/metrics_service.py
+This enables a realistic demo of:
+
+- a bad/low-confidence extraction being escalated,
+- a human reviewer confirming the true value,
+- retraining the model with governed feedback,
+- re-running the same package under a newer model version,
+- and observing whether the issue is no longer escalated.
 
 ---
-```
+
+## Version
+
+Current application version: **v0.11.1**
+
+Baseline model version for demo reset: **v0.11.1**
+
+---
+
+## Core capabilities in v0.11.1
+
+- **Field-level confidence scoring** with escalation threshold visibility in the UI
+- **Operational HIL decisions** separated from **training labels**
+- **Training-eligible label export** limited to known-ground-truth human feedback
+- **Retraining with model versioning** and active model overwrite for immediate use in extraction
+- **Baseline reset** to replay the before/after demo loop
+- **KPI monitoring** focused on:
+  - invalid recall
+  - macro F1
+  - escalation review rate
+  - pending training label ratio
+- **Governance visibility** for both:
+  - escalation review history
+  - human training label history
+
+---
+
+## Project structure
+
+```text
 ai_governance_platform/
-   services/        # Modular business logic (extraction, validation, audit logging, feedback, file management, metrics, policy, provider)
-   config/          # Centralized configuration files (policy.yaml, document_types.py)
-   data/            # Evaluation datasets, reports, summaries
-   logs/            # Audit and feedback logs
-   ui/              # Streamlit app (with banners, sidebar, tabs)
-   tests/           # Pytest tests
-docs/              # Project documentation (architecture, changelog, etc.)
-main.py            # CLI runner
-README.md          # Project documentation
-requirements.txt   # Python dependencies
+  config/           # Policy and document-type configuration
+  data/             # Training data, evaluation data, generated reports
+  logs/             # Feedback logs, HIL logs, training manifest, KPIs
+  models/           # Active model + timestamped versioned backups
+  services/         # Extraction, escalation, feedback, policy, metrics, file services
+  tests/            # Service-level tests
+  ui/               # Streamlit application
+docs/               # Architecture and release documentation
+scripts/            # Training, retraining, prediction utilities
+README.md           # Product overview and setup
+requirements.txt    # Python dependencies
 ```
+
+---
 
 ## Quickstart
-1. Install dependencies:
+
+1. Install dependencies
+
    ```sh
    pip install -r requirements.txt
    ```
-2. Version: v0.10.0
-2. Run CLI demo:
+
+2. Launch the app
+
    ```sh
-   python ai_governance_platform/main.py
+   python launcher.py
    ```
-3. Run Streamlit UI:
+
+   or
+
    ```sh
    streamlit run ai_governance_platform/ui/app.py
    ```
 
-## Governance Logic
-- All core logic is UI-agnostic and modular, implemented in service modules.
-- Policy rules are defined in `config/policy.yaml`.
-- Feedback loop aggregates feedback and escalates problematic prompts via `services/feedback_service.py`.
+3. Demo the loop
 
-## Evaluation
-- Automated evaluation uses `data/evaluation_dataset.json` and outputs `data/evaluation_report.json`.
-- **Known Bug:** Running evaluation may result in a `FileNotFoundError` if the dataset file is missing. Ensure `data/evaluation_dataset.json` exists.
+   - Reset to baseline model in **Model Monitoring**
+   - Upload a package in **Extract & Validate**
+   - Review the escalated issue in **Escalation Decisions**
+   - Submit a source-document label in **Human Training Labels**
+   - Retrain the model in **Model Monitoring**
+   - Re-run extraction and compare the outcome under the new model version
 
-## System Health
+---
 
-## v0.10.0 Highlights
-- UI: Extraction summary and prediction results only appear in tab 0, above the "Extraction & Validation" header.
-- Bugfix: Removed duplicate extraction summary messages from other tabs.
-- Refactor: Prediction display logic is modular and only called once per upload.
-- Usability: Clear workflow for document review and action.
-- KPIs: total queries, deny rate, escalation rate, avg latency, positive feedback rate, trust score.
-- **Known Bug:** System Health tab may not display metrics correctly if log files are missing or malformed.
+## KPI interpretation
 
-## Documentation & Links
-- 🌐 [GitHub Repository](https://github.com/obizues/AI-Governance-Platform)
-- 📘 [README.md](https://github.com/obizues/AI-Governance-Platform/blob/main/README.md): Platform overview, setup, features
-- 📝 [CHANGELOG.md](https://github.com/obizues/AI-Governance-Platform/blob/main/CHANGELOG.md): Release notes and updates
-- 🗂️ [System Architecture](https://github.com/obizues/AI-Governance-Platform/blob/main/docs/architecture.md): Design and flow diagrams
+- **Invalid Recall**: higher is better; measures how many truly bad values are caught
+- **Macro F1**: higher is better; balances valid and invalid classes
+- **Accuracy**: useful, but not sufficient on its own
+- **Pending Label Ratio**: operational KPI showing how much new human feedback is still waiting to be learned from
 
-## Contributing
-- Fork, branch, and submit PRs.
-- See CHANGELOG.md for release history.
+The app intentionally distinguishes:
 
-## v0.5.0 Updates
+- **local improvement** on a targeted use case
+- from **global model quality** across all patterns
 
-### Added
-- Real-time escalation review count updates after query submission
-- Prompt/session state fixes for accurate query context
-- CSV audit log flush for immediate sync
-- UI bug fixes for escalation navigation and count
-- Robust escalation workflow and audit logging
+That is why retrain outcomes are labeled as **Improved**, **Mixed**, or **Regressed** rather than assuming all retrains are beneficial.
 
-### Changed
-- Escalation review logic now guarantees immediate visibility of escalated queries
-- Audit logger flushes CSV after every write
-- Session state always uses prompt at button press
+---
 
-### Fixed
-- Escalation count not updating on first query
-- Session state mismatches for prompt/response
-- TypeError in escalation navigation
-- UI/UX improvements for Live Query tab, banners, sidebar, and documentation links
-- Info messages now reliably show when no query is present or after feedback
-- Feedback submission and cleanup logic improved
-- Indentation, import, and session state bugs fixed
-- Audit logging refactored to avoid shadowing standard library
-- All __init__.py files added for package structure
-- Evaluation and KPI logic clarified in documentation
+## Documentation
+
+- [docs/README.md](docs/README.md) — documentation index
+- [docs/architecture.md](docs/architecture.md) — architecture, flow, and diagrams
+- [docs/CHANGELOG.md](docs/CHANGELOG.md) — release history
+- [docs/CHANGELOG-v0.11.1.md](docs/CHANGELOG-v0.11.1.md) — v0.11.1 release notes
+
+---
+
+## Why this is a strong HIL governance demo
+
+This app now demonstrates the full governance pattern:
+
+- AI output is observable
+- risky/low-confidence output is escalated
+- humans make operational decisions separately from training labels
+- only eligible labels flow into retraining
+- retrained models are versioned and monitored
+- broader safety/performance KPIs can prevent overclaiming improvement
+
+That makes it a credible demo of AI oversight, human feedback, and controlled accuracy improvement.

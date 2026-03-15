@@ -1,64 +1,59 @@
-## [v0.10.1.0] - 2026-03-12
-### Updates
-- UI improvements: validation error cards, icons, improved layout, demo files recreated
-- Validation errors grouped visually, icons for error types, empty values shown in grey
-- Demo files updated for confidence failures
-- Version bump to v0.10.1.0
-
-## [v0.10.0] - 2026-03-11
-### Updates
-- Extraction summary and prediction results only appear in tab 0, above the "Extraction & Validation" header
-- Bugfix: Removed duplicate extraction summary messages from other tabs
-- Refactor: Prediction display logic is modular and only called once per upload
-- Usability: Clear workflow for document review and action
-- Version bump to v0.10.0
-- Audit log and escalation CSV parsing fixes
-- UI error message standardization
-- Documentation and README updates
-- Requirements.txt reviewed
-
-# [v0.9.0] - 2026-03-10
-### Major Updates
-- Modularized all business logic into service modules
-- Centralized config, data, and logs folders
-- Refactored app.py to use service modules
-- Removed legacy and duplicate files/folders
-- Cleaned up project structure for maintainability
-- Updated documentation and tests
-- Demo Files sidebar expander with download buttons
-- Dynamic listing of sample_zips files
-- Streamlit download buttons for demo files
-- Improved sidebar layout and UI/UX
-- Real-time escalation review and human-in-the-loop workflow
-- Modular audit logging, policy engine, feedback, and metrics
-- All documentation and sidebar content up to date
-
-# [v0.4.0] - 2026-03-08
-# [v0.5.0] - 2026-03-08
-### Major Updates
-- Real-time escalation review count updates after query submission
-- Prompt/session state fixes for accurate query context
-- CSV audit log flush for immediate sync
-- UI bug fixes for escalation navigation and count
-- Robust escalation workflow and audit logging
-
 # Changelog
 
-## [v0.5.0] - 2026-03-08
-### Added
-- Real-time escalation review count updates after query submission
-- Prompt/session state fixes for accurate query context
-- CSV audit log flush for immediate sync
-- UI bug fixes for escalation navigation and count
-- Robust escalation workflow and audit logging
+## [v0.11.1] - 2026-03-15
 
 ### Changed
-- Escalation review logic now guarantees immediate visibility of escalated queries
-- Audit logger flushes CSV after every write
-- Session state always uses prompt at button press
+- Sidebar "About This Project" copy rewritten to match final HIL + retraining workflow tone
+- Sidebar "Tech Stack" updated to list all actual stack components (scikit-learn, joblib, pdfplumber, etc.)
+- Sidebar "System Design Notes" updated to describe actual architectural choices for governance separation, manifest-driven retraining, and baseline reset
+- Sidebar summary bullets updated to drop legacy wording (Audit Log Tab, System Health KPIs, Sequential Loan Numbering)
 
 ### Fixed
-- Escalation count not updating on first query
-- Session state mismatches for prompt/response
-- TypeError in escalation navigation
+- Active model sidebar badge now correctly labels baseline resets (vs feedback retrains) and avoids showing legacy v0.10.0 metadata after a v0.11.0 upgrade
+- Governance & Audit tab escalation history now reads persistent structured escalation-review records from `feedback_log.csv` instead of the session-only interaction log (which was reset on each new upload)
+- Pending escalation count in the Governance tab now reflects the current interaction log state separately from the governance history rows
+
+## [v0.11.0] - 2026-03-15
+
+### Added
+- Separation between **Escalation Decisions** and **Human Training Labels**
+- Governed retraining with active-model overwrite and model version history
+- Baseline reset flow for replaying the full before/after HIL demo
+- KPI monitoring for invalid recall, macro F1, escalation review rate, and pending label ratio
+- Retrain outcome label (`Improved`, `Mixed`, `Regressed`, `Baseline`)
+- Governance & Audit view with separate escalation-review history and human-feedback history
+- Active model/version visibility directly in the UI
+
+### Changed
+- Tab wording updated to better reflect the actual workflow
+- Retraining now treats contradictory labels as learnable new evidence
+- Pending labels are based on unapplied training labels rather than total historical feedback
+- Model Monitoring now trends KPIs by model version, not raw retrain order
+- Human feedback now records the active model version instead of a hardcoded value
+
+### Fixed
+- Legacy and new feedback decision vocabularies are both accepted and canonicalized
+- Prevented meaningless retrains when no learnable new records exist
+- Added KPI backfill for older manifest entries so historical runs no longer render as 0.0%
+- Removed accidental inclusion of escalation-review decisions in training label export
+
+## [v0.10.1.0] - 2026-03-12
+
+### Updates
+- Validation error cards, icons, improved layout, demo files recreated
+- Demo files updated for confidence-failure scenarios
+
+## [v0.10.0] - 2026-03-11
+
+### Updates
+- Extraction summary and prediction results limited to the extraction tab
+- Prediction display logic modularized and called once per upload
+- Clearer workflow for document review and action
+
+## [v0.9.0] - 2026-03-10
+
 ### Major Updates
+- Modularized business logic into service modules
+- Centralized config, data, and logs folders
+- Improved sidebar layout and UI/UX
+- Real-time escalation review and human-in-the-loop workflow

@@ -30,11 +30,12 @@ class FileManagementService:
             writer.writeheader()
             writer.writerows(rows)
 
-    def append_csv(self, filename: str, row: Dict[str, Any]):
+    def append_csv(self, filename: str, row: Dict[str, Any], fieldnames: List[str] = None):
         path = os.path.join(self.base_dir, filename)
         write_header = not os.path.exists(path)
+        headers = fieldnames or list(row.keys())
         with open(path, mode="a", newline="", encoding="utf-8") as f:
-            writer = csv.DictWriter(f, fieldnames=row.keys())
+            writer = csv.DictWriter(f, fieldnames=headers)
             if write_header:
                 writer.writeheader()
             writer.writerow(row)

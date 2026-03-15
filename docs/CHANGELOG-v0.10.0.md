@@ -1,17 +1,15 @@
 ## AI Governance Platform v0.10.0
 
-### Release Highlights
-- UI: Extraction summary and prediction results now only appear in tab 0, above the "Extraction & Validation" header.
-- Bugfix: Removed duplicate extraction summary messages from other tabs.
-- Refactor: Prediction display logic is modular and only called once per upload.
-- Usability: Clear workflow for document review and action.
+Archived release note for the first streamlined extraction / escalation UI cleanup release.
 
-### Upgrade Instructions
-1. Pull latest changes from main branch.
-2. Launch Streamlit app as usual.
+### Historical highlights
+- Extraction summary and prediction results limited to the extraction tab
+- Duplicate messages removed from other tabs
+- Prediction display logic modularized
+- Clearer workflow for review and action
 
-### Contributors
-- @obizues
+For the current workflow and architecture, see:
 
----
-For feedback or issues, please use the GitHub repository issue tracker.
+- [../README.md](../README.md)
+- [architecture.md](architecture.md)
+- [CHANGELOG-v0.11.1.md](CHANGELOG-v0.11.1.md)

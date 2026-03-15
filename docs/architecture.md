@@ -1,78 +1,128 @@
----
 # AI Governance & Evaluation Platform Architecture
 
-## Version: v0.10.0
+## Version: v0.11.1
 
-### Key Features (v0.10.0)
+## Architectural intent
 
-- Modularized business logic into service modules (extraction, validation, audit logging, feedback, file management, metrics, policy, provider)
-- Centralized config, data, and logs folders
-- Real-time escalation review and human-in-the-loop workflow
-- Document extraction, validation, and confidence scoring
-- Audit log tab with full review history
-  - Sequential loan numbering and improved UI/UX
-  - Extraction summary and prediction results only appear in tab 0, above the "Extraction & Validation" header
-  - Bugfix: Removed duplicate extraction summary messages from other tabs
-  - Refactor: Prediction display logic is modular and only called once per upload
-  - Usability: Clear workflow for document review and action
-- Feedback logging and summary for continuous improvement
-- System Health KPIs for operational visibility
-- Streamlit-based modern UI for business users
-- Open-source, extensible Python codebase
-- Demo Files sidebar expander with download buttons
-- Dynamic listing of sample_zips files
-- Streamlit download buttons for demo files
-- Designed for CTOs, CEOs, hiring managers, and PE operators
-...existing code...
+This platform demonstrates a governed AI document-extraction loop where:
 
+1. extraction outputs are scored for confidence,
+2. low-confidence results are escalated,
+3. human reviewers make operational decisions,
+4. separate human training labels are collected,
+5. only training-eligible labels flow into retraining,
+6. retrained models are versioned, monitored, and auditable.
 
-## Component Diagram
+---
+
+## Primary tabs and responsibilities
+
+- **Extract & Validate** — document upload, extraction, confidence scoring, escalation triggering
+- **Escalation Decisions** — operational HIL review (`approve` / `deny`)
+- **Human Training Labels** — source-of-truth labels (`matches_document`, `does_not_match`, `cannot_verify`)
+- **Model Monitoring** — pending labels, retrain controls, model version KPIs, baseline reset
+- **Governance & Audit** — human label history and escalation decision history
+
+---
+
+## Component diagram
 
 ```mermaid
 graph TD
-  User -->|Interacts| Streamlit_UI
-  Streamlit_UI -->|Calls| Extraction_Service
-  Streamlit_UI -->|Calls| Validation_Service
-  Streamlit_UI -->|Calls| Audit_Logging_Service
-  Streamlit_UI -->|Calls| Feedback_Service
-  Streamlit_UI -->|Calls| Metrics_Service
-  Streamlit_UI -->|Calls| Policy_Service
-  Streamlit_UI -->|Calls| Provider_Service
-  Extraction_Service --> Data
-  Validation_Service --> Data
-  Audit_Logging_Service --> Logs
-  Feedback_Service --> Logs
-  Metrics_Service --> Logs
-  Policy_Service --> Config
-  Provider_Service --> Data
-  Streamlit_UI -->|Displays| UI_Tabs
-  UI_Tabs --> Audit_Log
-  UI_Tabs --> Escalation_Review
-  UI_Tabs --> Document_Extraction
-  UI_Tabs --> Confidence_Scoring
-  UI_Tabs --> Feedback
-  UI_Tabs --> KPIs
-  Config -->|Policy| Policy_Service
-  Data -->|Documents| Extraction_Service
-  Logs -->|Audit| Audit_Logging_Service
-  Logs -->|Feedback| Feedback_Service
-  Logs -->|Metrics| Metrics_Service
+  User --> StreamlitUI
+  StreamlitUI --> ExtractionService
+  StreamlitUI --> EscalationService
+  StreamlitUI --> FeedbackService
+  StreamlitUI --> EvaluationService
+  StreamlitUI --> MetricsService
+  ExtractionService --> Models
+  ExtractionService --> Data
+  ExtractionService --> Logs
+  EscalationService --> Logs
+  FeedbackService --> Logs
+  MetricsService --> Logs
+  RetrainScript[demo_retrain_with_feedback.py] --> FeedbackService
+  RetrainScript --> Data
+  RetrainScript --> Models
+  RetrainScript --> Logs
+  Logs --> GovernanceAudit[Governance & Audit Views]
+  Models --> StreamlitUI
 ```
 
-## Data Flow
-- User submits query via UI
-- Policy engine evaluates risk and applies controls
-- Audit logger records interaction
-- Feedback logger captures user feedback
-- Metrics module computes KPIs
-- All logs are stored in CSV/JSON for compliance and reporting
+---
 
-## Extensibility
-- Add new policy rules in `config/policy.yaml`
-- Extend feedback logic in `services/feedback_service.py`
-- Add new metrics in `services/metrics_service.py`
-- UI enhancements via Streamlit components
+## Human-in-the-loop flow
 
-## Deployment
-- Streamlit Cloud, local, or containerized environments
-- All processing is local; no data leaves the user's environment
+```mermaid
+flowchart LR
+  A[Upload ZIP of PDFs] --> B[Extract fields]
+  B --> C[Score field confidence]
+  C --> D{Confidence < 0.80?}
+  D -- No --> E[Return validated extraction]
+  D -- Yes --> F[Escalate field]
+  F --> G[Escalation Decisions tab]
+  G --> H{Approve or Deny operational use?}
+  H --> I[Governance log]
+  F --> J[Human Training Labels tab]
+  J --> K{Matches / Does not match / Cannot verify}
+  K --> L[Training-eligible label export]
+  L --> M[Retrain model]
+  M --> N[Versioned model + active model overwrite]
+  N --> O[Re-run extraction under newer model version]
+```
+
+---
+
+## Retraining flow
+
+```mermaid
+sequenceDiagram
+  participant Reviewer
+  participant UI as Streamlit UI
+  participant FB as FeedbackService
+  participant RT as Retrain Script
+  participant M as Models Directory
+  participant Mon as Monitoring UI
+
+  Reviewer->>UI: Submit human training label
+  UI->>FB: submit_feedback(..., source_tab='human_feedback')
+  Reviewer->>UI: Click Retrain with Human Feedback
+  UI->>RT: retrain_with_feedback(label_weight=n)
+  RT->>FB: export_training_labels(source_tab='human_feedback')
+  RT->>RT: build learnable records + apply weighting
+  RT->>M: save versioned backup model
+  RT->>M: overwrite active model file
+  RT->>Mon: append manifest entry with KPIs
+  Reviewer->>UI: Re-run extraction
+  UI->>M: load active model
+```
+
+---
+
+## Key logs and artifacts
+
+- `logs/ai_interactions.csv` — extraction and escalation interaction log
+- `logs/hil_actions.csv` — escalation review action log
+- `logs/feedback_log.csv` — structured human feedback and training labels
+- `logs/retrain_manifest.json` — model version history and KPI history
+- `models/field_validation_rf_encoded_model.joblib` — active deployed model
+- `models/field_validation_rf_v*_*.joblib` — versioned model backups
+
+---
+
+## KPI philosophy
+
+Primary KPIs:
+
+- **Invalid Recall** — are bad extractions being caught?
+- **Macro F1** — is class balance improving or degrading?
+- **Escalation Review Rate** — are governance decisions being completed?
+- **Pending Label Ratio** — is human feedback waiting to be learned from?
+
+Retrain results are labeled as `Improved`, `Mixed`, `Regressed`, or `Baseline` to avoid overclaiming success.
+
+---
+
+## Demo reset capability
+
+The app includes a baseline reset to restore the active model to **v0.11.1 baseline** so the before/after HIL demo can be replayed reliably.
