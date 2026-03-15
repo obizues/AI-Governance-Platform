@@ -1,190 +1,49 @@
+import csv  # noqa: F401 (kept for any residual usage)
+import datetime  # noqa: F401
+import io
+import json
 import os
 import sys
-import glob
-import re
+import uuid  # noqa: F401
+import zipfile  # noqa: F401
+
 import pandas as pd
-import matplotlib.pyplot as plt
 import streamlit as st
-from ai_governance_platform.services.extraction_service import extract_and_validate
-from ai_governance_platform.services.evaluation_service import EvaluationService
+
 from ai_governance_platform.services.escalation_service import EscalationService
+from ai_governance_platform.services.evaluation_service import EvaluationService
+from ai_governance_platform.services.extraction_orchestration_service import ExtractionOrchestrationService
 from ai_governance_platform.services.feedback_service import FeedbackService
+from ai_governance_platform.services.model_monitoring_service import ModelMonitoringService
 
 _scripts_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "scripts"))
 if _scripts_path not in sys.path:
     sys.path.insert(0, _scripts_path)
 from demo_retrain_with_feedback import retrain_with_feedback, reset_active_model_to_baseline
-import zipfile
-import io
-import json
 
 
 APP_VERSION = "v0.11.1"
 BASELINE_MODEL_VERSION = "v0.11.1"
 
+MANIFEST_PATH = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..", "..", "ai_governance_platform", "logs", "retrain_manifest.json")
+)
 
+# Thin wrappers kept so existing call-sites inside main() work with no change.
 def _extract_report_metric(report_text, label, metric_name):
-    if not report_text:
-        return None
-    lines = str(report_text).splitlines()
-    for line in lines:
-        stripped = line.strip()
-        if not stripped:
-            continue
-        tokens = stripped.split()
-        if label == "macro avg":
-            if len(tokens) >= 5 and tokens[0] == "macro" and tokens[1] == "avg":
-                mapping = {"precision": 2, "recall": 3, "f1-score": 4}
-                idx = mapping.get(metric_name)
-                if idx is not None:
-                    try:
-                        return float(tokens[idx])
-                    except Exception:
-                        return None
-        else:
-            if len(tokens) >= 5 and tokens[0] == label:
-                mapping = {"precision": 1, "recall": 2, "f1-score": 3}
-                idx = mapping.get(metric_name)
-                if idx is not None:
-                    try:
-                        return float(tokens[idx])
-                    except Exception:
-                        return None
-    return None
-
+    return ModelMonitoringService.extract_report_metric(report_text, label, metric_name)
 
 def _parse_semver(version):
-    match = re.match(r"^v(\d+)\.(\d+)\.(\d+)$", str(version or "").strip())
-    if not match:
-        return None
-    return tuple(int(match.group(i)) for i in range(1, 4))
-
+    return ModelMonitoringService.parse_semver(version)
 
 def _is_older_version(version, reference):
-    parsed_version = _parse_semver(version)
-    parsed_reference = _parse_semver(reference)
-    if not parsed_version or not parsed_reference:
-        return False
-    return parsed_version < parsed_reference
-
+    return ModelMonitoringService.is_older_version(version, reference)
 
 def _load_active_model_metadata():
-    manifest_path = os.path.abspath(
-        os.path.join(os.path.dirname(__file__), "..", "..", "ai_governance_platform", "logs", "retrain_manifest.json")
-    )
-
-    metadata = {
-        "version": BASELINE_MODEL_VERSION,
-        "label": "field_validation_rf_encoded_model.joblib (baseline deployment)",
-        "color": "#e3f2fd",
-        "border": "#90caf9",
-        "text": "#0d47a1",
-    }
-
-    if not os.path.exists(manifest_path):
-        return metadata
-
-    try:
-        with open(manifest_path) as manifest_file:
-            history = json.load(manifest_file)
-    except Exception:
-        return metadata
-
-    if not isinstance(history, list) or not history:
-        return metadata
-
-    latest = history[-1] or {}
-    latest_version = str(latest.get("model_version") or BASELINE_MODEL_VERSION).strip() or BASELINE_MODEL_VERSION
-    latest_model_file = str(latest.get("model_file") or "field_validation_rf_encoded_model.joblib").strip() or "field_validation_rf_encoded_model.joblib"
-    latest_date = str(latest.get("retrained_at") or "").strip()[:10]
-    reset_to_baseline = bool(latest.get("reset_to_baseline"))
-
-    if reset_to_baseline:
-        status_text = f"baseline reset {latest_date}" if latest_date else "baseline reset"
-    else:
-        status_text = f"feedback-retrained {latest_date}" if latest_date else "feedback-retrained"
-
-    if reset_to_baseline and _is_older_version(latest_version, BASELINE_MODEL_VERSION):
-        status_text = f"legacy baseline reset {latest_date}" if latest_date else "legacy baseline reset"
-
-    metadata.update(
-        {
-            "version": latest_version,
-            "label": f"{latest_version} | {latest_model_file} ({status_text})",
-            "color": "#f6fff8",
-            "border": "#b7e4c7",
-            "text": "#1b5e20",
-        }
-    )
-    return metadata
+    return ModelMonitoringService.load_active_model_metadata(MANIFEST_PATH)
         
-class LoanApplication:
-    def __init__(self, applicant_name, property_address, loan_amount, interest_rate, term_years, signature):
-        self.applicant_name = applicant_name
-        self.property_address = property_address
-        self.loan_amount = loan_amount
-        self.interest_rate = interest_rate
-        self.term_years = term_years
-        self.signature = signature
+REVIEWER_NAMES = ["Alice Smith", "Bob Johnson", "Chris Obermeier", "Dana Lee", "Evan Kim"]
 
-class Disclosure:
-    def __init__(self, disclosure_date, loan_terms, interest_rate, fees, signature):
-        self.disclosure_date = disclosure_date
-        self.loan_terms = loan_terms
-        self.interest_rate = interest_rate
-        self.fees = fees
-        self.signature = signature
-
-class CreditReport:
-    def __init__(self, applicant_name, credit_score, report_date, accounts, signature):
-        self.applicant_name = applicant_name
-        self.credit_score = credit_score
-        self.report_date = report_date
-        self.accounts = accounts
-        self.signature = signature
-
-class AppraisalReport:
-    def __init__(self, property_address, appraised_value, appraiser_name, date, signature):
-        self.property_address = property_address
-        self.appraised_value = appraised_value
-        self.appraiser_name = appraiser_name
-        self.date = date
-        self.signature = signature
-
-class IncomeVerification:
-    def __init__(self, applicant_name, employer, income, tax_year, signature):
-        self.applicant_name = applicant_name
-        self.employer = employer
-        self.income = income
-        self.tax_year = tax_year
-        self.signature = signature
-
-class BankStatement:
-    def __init__(self, account_holder, account_number, balance, statement_date, signature):
-        self.account_holder = account_holder
-        self.account_number = account_number
-        self.balance = balance
-        self.statement_date = statement_date
-        self.signature = signature
-
-class TaxReturn:
-    def __init__(self, taxpayer_name, year, income, deductions, signature):
-        self.taxpayer_name = taxpayer_name
-        self.year = year
-        self.income = income
-        self.deductions = deductions
-        self.signature = signature
-
-class ClosingDocuments:
-    def __init__(self, closing_date, property_address, loan_amount, buyer, seller, signature):
-        self.closing_date = closing_date
-        self.property_address = property_address
-        self.loan_amount = loan_amount
-        self.buyer = buyer
-        self.seller = seller
-        self.signature = signature
-
-# ...existing code...
 
 def _init_session_state():
     st.session_state.setdefault("reviewed_escalations", set())
@@ -433,153 +292,56 @@ v0.11.1 - HIL governance, training labels, retraining, KPI monitoring, and model
         uploaded_file = st.file_uploader("Upload a ZIP file containing PDFs", type=["zip"])
         if uploaded_file:
             if 'extraction_done' not in st.session_state or st.session_state['extraction_done'] != uploaded_file.name:
-                # Clear history
-                ai_interactions_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'logs', 'ai_interactions.csv'))
-                import csv
-                with open(ai_interactions_path, 'w', newline='') as csvfile:
-                    fieldnames = [
-                        "timestamp", "user_role", "loan_package", "prompt", "response", "response_time_ms",
-                        "confidence_score", "risk_level", "decision", "rule_triggered", "reason",
-                        "required_controls", "hil_action", "hil_reviewer"
-                    ]
-                    writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-                    writer.writeheader()
-                import datetime
-                import uuid
-                import os
-                import zipfile
-                import io
-                loan_package = str(uuid.uuid4())[:8]
-                pdf_output_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'sample_zips', loan_package))
-                os.makedirs(pdf_output_dir, exist_ok=True)
                 zip_bytes = uploaded_file.read()
-                with zipfile.ZipFile(io.BytesIO(zip_bytes)) as z:
-                    pdf_files = [f for f in z.namelist() if f.lower().endswith('.pdf')]
-                    summary = {}
-                    for pdf_name in pdf_files:
-                        pdf_bytes = z.read(pdf_name)
-                        result = extract_and_validate(pdf_bytes)
-                        expected_keywords = list(result.get('fields', {}).keys())
-                        eval_service = EvaluationService(dataset_path='ai_governance_platform/data/evaluation_dataset.json', report_path='ai_governance_platform/data/evaluation_report.json')
-                        import joblib
-                        import sys
-                        script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'scripts'))
-                        if script_path not in sys.path:
-                            sys.path.append(script_path)
-                        from predict_field_validation import load_model, predict_validity
-                        model_path = 'ai_governance_platform/models/field_validation_rf_encoded_model.joblib'
-                        model = load_model(model_path)
-                        model_features = ['is_empty', 'is_negative', 'is_nonsensical', 'is_out_of_range', 'field_encoded', 'doc_type_encoded']
-                        field_confidences = {}
-                        for field, value in result.get('fields', {}).items():
-                            pred, prob = predict_validity(model, model_features, field, value, result.get('doc_type', 'Unknown'))
-                            field_confidences[field] = prob
-                        result['field_confidences'] = field_confidences
-                        CONFIDENCE_THRESHOLD = 0.8
-                        escalate_fields = [field for field, conf in field_confidences.items() if isinstance(conf, float) and conf < CONFIDENCE_THRESHOLD]
-                        escalate = bool(escalate_fields)
-                        for field, conf in field_confidences.items():
-                            if isinstance(conf, float) and conf < CONFIDENCE_THRESHOLD:
-                                error_msg = f"{field.replace('_', ' ')} below confidence threshold ({conf:.2f})"
-                                if 'errors' in result:
-                                    result['errors'].append(error_msg)
-                                else:
-                                    result['errors'] = [error_msg]
-                        summary[pdf_name] = result
-                        now = datetime.datetime.now().isoformat()
-                        # Log each field needing review as a separate escalation row
-                        if escalate:
-                            for field in escalate_fields:
-                                row = {
-                                    "timestamp": now,
-                                    "user_role": "system",
-                                    "loan_package": loan_package,
-                                    "prompt": pdf_name,
-                                    "response": json.dumps(result['fields']),
-                                    "response_time_ms": "",
-                                    "confidence_score": f"{field_confidences[field]:.2f}",
-                                    "risk_level": "high",
-                                    "decision": "escalate",
-                                    "rule_triggered": "escalate",
-                                    "reason": f"{field.replace('_', ' ')} below confidence threshold ({field_confidences[field]:.2f})",
-                                    "required_controls": "",
-                                    "hil_action": "",
-                                    "hil_reviewer": ""
-                                }
-                                with open(ai_interactions_path, 'a', newline='') as csvfile:
-                                    writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-                                    writer.writerow(row)
-                            # Save PDF only if escalated
-                            escalated_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'sample_zips', 'escalated'))
-                            os.makedirs(escalated_dir, exist_ok=True)
-                            pdf_path = os.path.join(escalated_dir, f"{loan_package}_{pdf_name}")
-                            with open(pdf_path, 'wb') as f:
-                                f.write(pdf_bytes)
-                        else:
-                            # Log non-escalated document as a single row
-                            row = {
-                                "timestamp": now,
-                                "user_role": "system",
-                                "loan_package": loan_package,
-                                "prompt": pdf_name,
-                                "response": json.dumps(result['fields']),
-                                "response_time_ms": "",
-                                "confidence_score": f"{sum([c for c in field_confidences.values() if isinstance(c, float)]) / len([c for c in field_confidences.values() if isinstance(c, float)]) if field_confidences else 0:.2f}",
-                                "risk_level": "low",
-                                "decision": "approve",
-                                "rule_triggered": "",
-                                "reason": ", ".join(result.get('errors', [])),
-                                "required_controls": "",
-                                "hil_action": "",
-                                "hil_reviewer": ""
-                            }
-                            with open(ai_interactions_path, 'a', newline='') as csvfile:
-                                writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-                                writer.writerow(row)
-                    for fname, res in summary.items():
-                        st.markdown(f"### {fname}")
-                        st.markdown(f"<div style='background:#eaf6ff;padding:8px 0 8px 0;text-align:center;font-size:1.08em;font-weight:500;border-radius:8px;margin-bottom:8px;'>Document Type: <b>{res.get('doc_type', 'Unknown')}</b></div>", unsafe_allow_html=True)
-                        # Display validation errors grouped in a card with icons
-                        if res.get('errors'):
-                            error_items = ""
-                            for err in res['errors']:
-                                # Icon for error type
-                                if ' missing' in err:
-                                    icon = '⚠️'
-                                    base_field = err.split(' missing')[0].replace(' ', '_')
-                                elif ' below confidence threshold' in err:
-                                    icon = '🔒'
-                                    base_field = err.split(' below confidence threshold')[0].replace(' ', '_')
-                                else:
-                                    icon = '❗'
-                                    base_field = err.split(':')[0].replace(' ', '_')
-                                confidence = res['field_confidences'].get(base_field, 'N/A')
-                                if isinstance(confidence, float):
-                                    conf_str = f"{confidence:.2f}"
-                                elif confidence == 'N/A':
-                                    conf_str = ''
-                                else:
-                                    conf_str = str(confidence)
-                                field_value = res['fields'].get(base_field, '')
-                                if not field_value:
-                                    display_value = "<span style='color:#888'>(empty)</span>"
-                                else:
-                                    display_value = f"{field_value}"
-                                error_items += f"<li style='margin-bottom:8px;'><span style='font-size:1.2em'>{icon}</span> <b>{base_field}</b>: <span style='color:#d32f2f'>{err}</span><br>Value: {display_value} {'<br>Confidence: <b>' + conf_str + '</b>' if conf_str else ''}</li>"
-                            st.markdown(f"""
+                with st.spinner("Extracting documents, running inference, and logging results…"):
+                    orch_result = ExtractionOrchestrationService.process_zip(zip_bytes)
+                loan_package = orch_result["loan_package"]
+                summary = orch_result["summary"]
+
+                for fname, res in summary.items():
+                    st.markdown(f"### {fname}")
+                    st.markdown(f"<div style='background:#eaf6ff;padding:8px 0 8px 0;text-align:center;font-size:1.08em;font-weight:500;border-radius:8px;margin-bottom:8px;'>Document Type: <b>{res.get('doc_type', 'Unknown')}</b></div>", unsafe_allow_html=True)
+                    # Display validation errors grouped in a card with icons
+                    if res.get('errors'):
+                        error_items = ""
+                        for err in res['errors']:
+                            # Icon for error type
+                            if ' missing' in err:
+                                icon = '⚠️'
+                                base_field = err.split(' missing')[0].replace(' ', '_')
+                            elif ' below confidence threshold' in err:
+                                icon = '🔒'
+                                base_field = err.split(' below confidence threshold')[0].replace(' ', '_')
+                            else:
+                                icon = '❗'
+                                base_field = err.split(':')[0].replace(' ', '_')
+                            confidence = res['field_confidences'].get(base_field, 'N/A')
+                            if isinstance(confidence, float):
+                                conf_str = f"{confidence:.2f}"
+                            elif confidence == 'N/A':
+                                conf_str = ''
+                            else:
+                                conf_str = str(confidence)
+                            field_value = res['fields'].get(base_field, '')
+                            if not field_value:
+                                display_value = "<span style='color:#888'>(empty)</span>"
+                            else:
+                                display_value = f"{field_value}"
+                            error_items += f"<li style='margin-bottom:8px;'><span style='font-size:1.2em'>{icon}</span> <b>{base_field}</b>: <span style='color:#d32f2f'>{err}</span><br>Value: {display_value} {'<br>Confidence: <b>' + conf_str + '</b>' if conf_str else ''}</li>"
+                        st.markdown(f"""
 <div style='background:#fff;border:1.5px solid #f8bdbd;padding:18px 18px 10px 18px;border-radius:14px;margin-bottom:24px;box-shadow:0 4px 16px #f8bdbd33;'>
 <div style='background:#ffe0e0;padding:8px 0 8px 0;border-radius:8px;margin-bottom:12px;text-align:center;font-weight:600;font-size:1.08em;'>Validation Errors</div>
 <ul style='padding-left:18px;margin-bottom:0;'>
 {error_items}
 </ul></div>
 """, unsafe_allow_html=True)
-                        # Show overall confidence as average of field confidences
-                        field_confidences = list(res.get('field_confidences', {}).values())
-                        if field_confidences:
-                            avg_conf = sum([c for c in field_confidences if isinstance(c, float)]) / len([c for c in field_confidences if isinstance(c, float)])
-                            st.markdown(f"<div style='background:#fff3e0;padding:8px;border-radius:8px;margin-bottom:8px;text-align:center;'><b>Overall Confidence:</b> {avg_conf:.2f}</div>", unsafe_allow_html=True)
-                        else:
-                            st.markdown(f"<div style='background:#fff3e0;padding:8px;border-radius:8px;margin-bottom:8px;text-align:center;'><b>Overall Confidence:</b> N/A</div>", unsafe_allow_html=True)
+                    # Show overall confidence as average of field confidences
+                    field_confidences = list(res.get('field_confidences', {}).values())
+                    if field_confidences:
+                        avg_conf = sum([c for c in field_confidences if isinstance(c, float)]) / len([c for c in field_confidences if isinstance(c, float)])
+                        st.markdown(f"<div style='background:#fff3e0;padding:8px;border-radius:8px;margin-bottom:8px;text-align:center;'><b>Overall Confidence:</b> {avg_conf:.2f}</div>", unsafe_allow_html=True)
+                    else:
+                        st.markdown(f"<div style='background:#fff3e0;padding:8px;border-radius:8px;margin-bottom:8px;text-align:center;'><b>Overall Confidence:</b> N/A</div>", unsafe_allow_html=True)
                 st.session_state['extraction_done'] = uploaded_file.name
     with tabs[1]:
         st.markdown("""
@@ -591,18 +353,13 @@ v0.11.1 - HIL governance, training labels, retraining, KPI monitoring, and model
             "Escalation Review decides if a flagged document can proceed now (Approve/Deny). "
             "Use Human Feedback to capture structured corrections for model learning."
         )
-        from ai_governance_platform.services.escalation_service import EscalationService
         import time
         pending_escalations = EscalationService.load_pending_escalations()
         reviewed_count = 0
-        reviewer_names = ["Alice Smith", "Bob Johnson", "Chris Obermeier", "Dana Lee", "Evan Kim"]
         start_time = time.time()
         if not pending_escalations.empty:
             avg_review_time = (time.time() - start_time) / max(reviewed_count, 1)
             st.markdown(f"<div style='background:#e3f2fd;padding:8px 0 8px 0;text-align:center;font-size:1.05em;font-weight:500;border-radius:8px;margin-bottom:12px;'>Pending: <b>{len(pending_escalations)}</b> | Reviewed: <b>{reviewed_count}</b> | Average Review Time: <b>{avg_review_time:.2f} sec</b></div>", unsafe_allow_html=True)
-            import streamlit as st
-            import time
-            from ai_governance_platform.services.escalation_service import EscalationService
             # Use session state to track reviewed documents (loan + prompt)
             if 'reviewed_docs' not in st.session_state:
                 st.session_state['reviewed_docs'] = set()
@@ -640,9 +397,7 @@ v0.11.1 - HIL governance, training labels, retraining, KPI monitoring, and model
                 doc_key = f"{row['loan_package']}_{row['prompt']}"
 
                 reason_text = str(row.get("reason", "")).strip()
-                escalated_field = ""
-                if "below confidence threshold" in reason_text:
-                    escalated_field = reason_text.split("below confidence threshold")[0].strip().replace(" ", "_")
+                escalated_field = EscalationService.extract_escalated_field(reason_text)
 
                 extracted_fields = {}
                 response_text = row.get("response", "")
@@ -683,7 +438,7 @@ v0.11.1 - HIL governance, training labels, retraining, KPI monitoring, and model
                 else:
                     st.markdown(f"<span style='color:#d32f2f;'>PDF not found for {row['prompt']}</span>", unsafe_allow_html=True)
                 with st.form(key=f"review_form_{idx}"):
-                    reviewer = st.selectbox(f"Reviewer name for {row['prompt']}", reviewer_names, key=f"reviewer_{idx}")
+                    reviewer = st.selectbox(f"Reviewer name for {row['prompt']}", REVIEWER_NAMES, key=f"reviewer_{idx}")
                     action = st.selectbox(f"Decision for {row['prompt']}", ["Approve", "Deny"], key=f"action_{idx}")
                     comment_required = action == "Approve" and (float(row['confidence_score']) < 0.8 if row['confidence_score'] else False)
                     comment = st.text_area(f"Comment for {row['prompt']}", key=f"comment_{idx}")
@@ -696,25 +451,15 @@ v0.11.1 - HIL governance, training labels, retraining, KPI monitoring, and model
                         else:
                             EscalationService.log_hil_action(row['timestamp'], reviewer, action, row['prompt'], row['loan_package'])
                             escalation_feedback_service = FeedbackService(log_dir="logs")
-                            package_id = str(row.get("loan_package", "")).strip()
-                            document_name = str(row.get("prompt", "")).strip()
-                            document_type = document_name.replace(".pdf", "").replace(" ", "_").lower()
-                            feedback_payload = {
-                                "package_id": package_id,
-                                "loan_package": package_id,
-                                "document_type": document_type,
-                                "field_name": str(escalated_field or "unknown_field").strip() or "unknown_field",
-                                "model_prediction": str(escalated_value or "").strip(),
-                                "corrected_value": str(escalated_value or "").strip() if str(action).strip().lower() == "approve" else "",
-                                "decision": str(action).strip().lower(),
-                                "reason_code": "escalation_approved" if str(action).strip().lower() == "approve" else "escalation_denied",
-                                "comment": comment,
-                                "reviewer": reviewer,
-                                "timestamp": str(row.get("timestamp", "")).strip(),
-                                "model_version": _active_model_version,
-                                "run_id": f"{package_id}_{row.get('timestamp', '')}",
-                                "source_tab": "escalation_review",
-                            }
+                            feedback_payload = EscalationService.build_governance_feedback_payload(
+                                row,
+                                action=action,
+                                reviewer=reviewer,
+                                comment=comment,
+                                active_model_version=_active_model_version,
+                                escalated_field=escalated_field,
+                                escalated_value=escalated_value,
+                            )
                             governance_result = escalation_feedback_service.submit_feedback(feedback_payload)
                             if not governance_result.get("success"):
                                 st.warning(
@@ -745,7 +490,6 @@ v0.11.1 - HIL governance, training labels, retraining, KPI monitoring, and model
             "This tab writes structured labels for monitoring and retraining."
         )
         feedback_service = FeedbackService(log_dir="logs")
-        reviewer_names = ["Alice Smith", "Bob Johnson", "Chris Obermeier", "Dana Lee", "Evan Kim"]
 
         escalation_logs = EscalationService.load_all_escalation_logs()
         if escalation_logs.empty:
@@ -761,8 +505,7 @@ v0.11.1 - HIL governance, training labels, retraining, KPI monitoring, and model
                 reviewed_logs = reviewed_logs.copy()
                 reviewed_logs["reason_text"] = reviewed_logs["reason"].fillna("").astype(str)
                 reviewed_logs["escalated_field"] = reviewed_logs["reason_text"].apply(
-                    lambda value: value.split("below confidence threshold")[0].strip().replace(" ", "_")
-                    if "below confidence threshold" in value else ""
+                    EscalationService.extract_escalated_field
                 )
                 reviewed_logs["feedback_item_key"] = (
                     reviewed_logs["timestamp"].astype(str)
@@ -888,7 +631,7 @@ v0.11.1 - HIL governance, training labels, retraining, KPI monitoring, and model
                         key=f"human_feedback_reason_{selected_row.get('loan_package', '')}_{selected_row.get('prompt', '')}_{selected_field}",
                         )
                         comment = st.text_area("Reviewer comment (required when 'Does not match' — note the page/section in the document where you found the correct value)")
-                        reviewer = st.selectbox("Reviewer", reviewer_names, key="human_feedback_reviewer")
+                        reviewer = st.selectbox("Reviewer", REVIEWER_NAMES, key="human_feedback_reviewer")
                         model_version = st.text_input("Model version", value=_active_model_version, disabled=True)
                         run_id = st.text_input(
                         "Run ID",
@@ -910,7 +653,7 @@ v0.11.1 - HIL governance, training labels, retraining, KPI monitoring, and model
                         if submitted:
                             package_id = str(selected_row.get("loan_package", "")).strip()
                             document_name = str(selected_row.get("prompt", "")).strip()
-                            document_type = document_name.replace(".pdf", "").replace(" ", "_").lower()
+                            document_type = EscalationService.normalize_document_type(document_name)
                             submit_allowed = True
 
                             if not predicted_value and not corrected_value and decision != "cannot_verify":
@@ -968,7 +711,7 @@ v0.11.1 - HIL governance, training labels, retraining, KPI monitoring, and model
         )
 
         # ── Feedback readiness metrics ─────────────────────────────────────
-        feedback_service = FeedbackService()
+        feedback_service = FeedbackService(log_dir="logs")
         summary = feedback_service.feedback_summary(filters={"source_tab": "human_feedback"})
         by_decision = summary.get("by_decision", {})
 
@@ -979,23 +722,7 @@ v0.11.1 - HIL governance, training labels, retraining, KPI monitoring, and model
         col3.metric("Does Not Match", by_decision.get("does_not_match", 0))
         col4.metric("Cannot Verify", by_decision.get("cannot_verify", 0))
 
-        manifest_path = os.path.join(
-            os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")),
-            "ai_governance_platform", "logs", "retrain_manifest.json"
-        )
-
-        pending_filters = {"source_tab": "human_feedback"}
-        if os.path.exists(manifest_path):
-            try:
-                with open(manifest_path) as f:
-                    _history_for_pending = json.load(f)
-                if isinstance(_history_for_pending, list) and _history_for_pending:
-                    _last_retrained_at = str(_history_for_pending[-1].get("retrained_at", "")).strip()
-                    if _last_retrained_at:
-                        pending_filters["timestamp_from"] = _last_retrained_at
-            except Exception:
-                pass
-
+        pending_filters = ModelMonitoringService.get_pending_label_filters(MANIFEST_PATH)
         export_preview = feedback_service.export_training_labels(filters=pending_filters)
         eligible = export_preview.get("total_exported_labels", 0)
         skipped = export_preview.get("skipped", {})
@@ -1018,81 +745,53 @@ v0.11.1 - HIL governance, training labels, retraining, KPI monitoring, and model
             st.caption("Retrain button is disabled until at least 1 training-eligible label exists.")
 
         # ── Last retrain manifest ──────────────────────────────────────────
-        if os.path.exists(manifest_path):
-            try:
-                with open(manifest_path) as f:
-                    history = json.load(f)
-                if isinstance(history, list) and history:
-                    for run in history:
-                        if run.get("invalid_recall") is None:
-                            run["invalid_recall"] = _extract_report_metric(run.get("classification_report", ""), "0", "recall")
-                        if run.get("invalid_precision") is None:
-                            run["invalid_precision"] = _extract_report_metric(run.get("classification_report", ""), "0", "precision")
-                        if run.get("valid_recall") is None:
-                            run["valid_recall"] = _extract_report_metric(run.get("classification_report", ""), "1", "recall")
-                        if run.get("valid_precision") is None:
-                            run["valid_precision"] = _extract_report_metric(run.get("classification_report", ""), "1", "precision")
-                        if run.get("macro_f1") is None:
-                            run["macro_f1"] = _extract_report_metric(run.get("classification_report", ""), "macro avg", "f1-score")
+        history = ModelMonitoringService.load_manifest(MANIFEST_PATH)
+        if history:
+            history = ModelMonitoringService.enrich_history(history)
+            st.markdown("### KPI Snapshot (What Matters)")
+            latest_kpi = history[-1]
+            previous_kpi = history[-2] if len(history) > 1 else None
+            outcome_label, outcome_text, outcome_bg, outcome_reason = ModelMonitoringService.retrain_outcome(latest_kpi, previous_kpi)
+            pending_ratio = 0.0
+            if summary.get("total", 0):
+                pending_ratio = (eligible / summary.get("total", 0)) * 100
 
-                    def _retrain_outcome(current_run, previous_run=None):
-                        if not previous_run:
-                            return ("Baseline", "#0d47a1", "#e3f2fd", "First tracked model in history")
+            escalation_logs_kpi = EscalationService.load_all_escalation_logs()
+            total_escalations_kpi = len(escalation_logs_kpi) if escalation_logs_kpi is not None else 0
+            reviewed_escalations_kpi = 0
+            if escalation_logs_kpi is not None and not escalation_logs_kpi.empty and "hil_action" in escalation_logs_kpi.columns:
+                reviewed_escalations_kpi = int(
+                    escalation_logs_kpi["hil_action"].fillna("").astype(str).str.strip().str.lower().isin(["approve", "deny"]).sum()
+                )
 
-                        acc_delta = float(current_run.get("test_set_accuracy") or 0) - float(previous_run.get("test_set_accuracy") or 0)
-                        invalid_recall_delta = float(current_run.get("invalid_recall") or 0) - float(previous_run.get("invalid_recall") or 0)
-                        macro_f1_delta = float(current_run.get("macro_f1") or 0) - float(previous_run.get("macro_f1") or 0)
+            k1, k2, k3, k4 = st.columns(4)
+            invalid_recall_val = latest_kpi.get("invalid_recall")
+            macro_f1_val = latest_kpi.get("macro_f1")
+            k1.metric(
+                "Invalid Recall (Class 0)",
+                f"{round(float(invalid_recall_val) * 100, 1)}%" if invalid_recall_val is not None else "N/A"
+            )
+            k2.metric(
+                "Macro F1",
+                f"{round(float(macro_f1_val) * 100, 1)}%" if macro_f1_val is not None else "N/A"
+            )
+            k3.metric("Escalation Review Rate", f"{round((reviewed_escalations_kpi / total_escalations_kpi) * 100, 1) if total_escalations_kpi else 0}%")
+            k4.metric("Pending Label Ratio", f"{round(pending_ratio, 1)}%")
 
-                        if invalid_recall_delta >= 0 and macro_f1_delta >= 0 and acc_delta >= 0:
-                            return ("Improved", "#1b5e20", "#f6fff8", "Safety and overall balance improved or held")
-                        if invalid_recall_delta < 0 and macro_f1_delta < 0:
-                            return ("Regressed", "#b71c1c", "#ffebee", "Caught fewer invalid cases and overall balance got worse")
-                        return ("Mixed", "#8d6e00", "#fff8e1", "Some metrics improved while others declined")
-
-                    st.markdown("### KPI Snapshot (What Matters)")
-                    latest_kpi = history[-1]
-                    previous_kpi = history[-2] if len(history) > 1 else None
-                    outcome_label, outcome_text, outcome_bg, outcome_reason = _retrain_outcome(latest_kpi, previous_kpi)
-                    pending_ratio = 0.0
-                    if summary.get("total", 0):
-                        pending_ratio = (eligible / summary.get("total", 0)) * 100
-
-                    escalation_logs_kpi = EscalationService.load_all_escalation_logs()
-                    total_escalations_kpi = len(escalation_logs_kpi) if escalation_logs_kpi is not None else 0
-                    reviewed_escalations_kpi = 0
-                    if escalation_logs_kpi is not None and not escalation_logs_kpi.empty and "hil_action" in escalation_logs_kpi.columns:
-                        reviewed_escalations_kpi = int(
-                            escalation_logs_kpi["hil_action"].fillna("").astype(str).str.strip().str.lower().isin(["approve", "deny"]).sum()
-                        )
-
-                    k1, k2, k3, k4 = st.columns(4)
-                    invalid_recall_val = latest_kpi.get("invalid_recall")
-                    macro_f1_val = latest_kpi.get("macro_f1")
-                    k1.metric(
-                        "Invalid Recall (Class 0)",
-                        f"{round(float(invalid_recall_val) * 100, 1)}%" if invalid_recall_val is not None else "N/A"
-                    )
-                    k2.metric(
-                        "Macro F1",
-                        f"{round(float(macro_f1_val) * 100, 1)}%" if macro_f1_val is not None else "N/A"
-                    )
-                    k3.metric("Escalation Review Rate", f"{round((reviewed_escalations_kpi / total_escalations_kpi) * 100, 1) if total_escalations_kpi else 0}%")
-                    k4.metric("Pending Label Ratio", f"{round(pending_ratio, 1)}%")
-
-                    st.markdown(
-                        f"""
+            st.markdown(
+                f"""
 <div style='background:{outcome_bg};border:1px solid {outcome_text};border-radius:8px;padding:10px 14px;margin:8px 0 14px 0;'>
     <b style='color:{outcome_text};'>Retrain Outcome:</b>
     <span style='color:{outcome_text};font-weight:600;'>{outcome_label}</span><br>
     <span style='color:{outcome_text};font-size:0.9em;'>{outcome_reason}</span>
 </div>
 """,
-                        unsafe_allow_html=True,
-                    )
+                unsafe_allow_html=True,
+            )
 
-                    last = history[-1]
-                    st.markdown("### Last Retrain Run")
-                    st.markdown(f"""
+            last = history[-1]
+            st.markdown("### Last Retrain Run")
+            st.markdown(f"""
 <div style='background:#f6fff8;border:1px solid #b7e4c7;border-radius:8px;padding:12px 16px;color:#1b5e20;margin-bottom:8px;'>
 <b>Retrained at:</b> {last.get('retrained_at','—')}<br>
 <b>Model version:</b> {last.get('model_version','—')}<br>
@@ -1106,35 +805,15 @@ v0.11.1 - HIL governance, training labels, retraining, KPI monitoring, and model
 <b>Macro F1:</b> {f"{round(float(last.get('macro_f1')) * 100, 1)}%" if last.get('macro_f1') is not None else 'N/A'}
 </div>
 """, unsafe_allow_html=True)
-                    with st.expander("Classification report"):
-                        st.text(last.get("classification_report", ""))
-                    if len(history) > 1:
-                        st.caption(f"{len(history)} total retrain runs recorded in manifest.")
-                        trend_rows = []
-                        for idx, run in enumerate(history, start=1):
-                            prev_run = history[idx - 2] if idx > 1 else None
-                            run_outcome, _, _, _ = _retrain_outcome(run, prev_run)
-                            trend_rows.append(
-                                {
-                                    "run": idx,
-                                    "model_version": run.get("model_version", f"run-{idx}"),
-                                    "outcome": run_outcome,
-                                    "retrained_at": run.get("retrained_at", ""),
-                                    "model_file": run.get("model_file", ""),
-                                    "accuracy": round(float(run.get("test_set_accuracy", 0) or 0) * 100, 2),
-                                    "invalid_recall": round(float(run.get("invalid_recall", 0) or 0) * 100, 2),
-                                    "macro_f1": round(float(run.get("macro_f1", 0) or 0) * 100, 2),
-                                    "new_records": int(run.get("new_training_records_added", 0) or 0),
-                                    "weighted_records": int(run.get("weighted_records_added", 0) or 0),
-                                    "label_weight": int(run.get("label_weight", 1) or 1),
-                                }
-                            )
-                        trend_df = pd.DataFrame(trend_rows)
-                        st.markdown("### Retrain Performance by Model Version")
-                        st.line_chart(trend_df.set_index("model_version")[["accuracy", "invalid_recall", "macro_f1"]])
-                        st.dataframe(trend_df.sort_values("run", ascending=False), use_container_width=True)
-            except Exception:
-                pass
+            with st.expander("Classification report"):
+                st.text(last.get("classification_report", ""))
+            if len(history) > 1:
+                st.caption(f"{len(history)} total retrain runs recorded in manifest.")
+                trend_rows = ModelMonitoringService.build_trend_dataframe(history)
+                trend_df = pd.DataFrame(trend_rows)
+                st.markdown("### Retrain Performance by Model Version")
+                st.line_chart(trend_df.set_index("model_version")[["accuracy", "invalid_recall", "macro_f1"]])
+                st.dataframe(trend_df.sort_values("run", ascending=False), use_container_width=True)
 
         # ── Retrain button ─────────────────────────────────────────────────
         st.markdown("### Retrain Model")

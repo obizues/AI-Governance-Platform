@@ -66,3 +66,58 @@ class EscalationService:
     def escalate_review(document):
         # Escalation review logic stub
         return {'status': 'escalated', 'reason': 'Low confidence'}
+
+    # ── Utility helpers for app.py / feedback flow ────────────────────────
+
+    @staticmethod
+    def extract_escalated_field(reason: str) -> str:
+        """
+        Parse the field name from a reason string like
+        'balance below confidence threshold (0.62)'.
+        Returns the field name (with underscores) or empty string.
+        """
+        reason = str(reason or "").strip()
+        if "below confidence threshold" in reason:
+            return reason.split("below confidence threshold")[0].strip().replace(" ", "_")
+        return ""
+
+    @staticmethod
+    def normalize_document_type(document_name: str) -> str:
+        """Convert a PDF filename to a normalised document_type slug."""
+        return str(document_name or "").replace(".pdf", "").replace(" ", "_").lower()
+
+    @staticmethod
+    def build_governance_feedback_payload(
+        row,
+        action: str,
+        reviewer: str,
+        comment: str,
+        active_model_version: str,
+        escalated_field: str = "",
+        escalated_value: str = "",
+    ) -> dict:
+        """
+        Build the feedback_payload dict for escalation-review governance logging.
+        `row` is a pandas Series (one row from the pending escalations DataFrame).
+        """
+        package_id = str(row.get("loan_package", "")).strip()
+        document_name = str(row.get("prompt", "")).strip()
+        document_type = document_name.replace(".pdf", "").replace(" ", "_").lower()
+        field_name = str(escalated_field or "unknown_field").strip() or "unknown_field"
+        action_lower = str(action).strip().lower()
+        return {
+            "package_id": package_id,
+            "loan_package": package_id,
+            "document_type": document_type,
+            "field_name": field_name,
+            "model_prediction": str(escalated_value or "").strip(),
+            "corrected_value": str(escalated_value or "").strip() if action_lower == "approve" else "",
+            "decision": action_lower,
+            "reason_code": "escalation_approved" if action_lower == "approve" else "escalation_denied",
+            "comment": comment,
+            "reviewer": reviewer,
+            "timestamp": str(row.get("timestamp", "")).strip(),
+            "model_version": active_model_version,
+            "run_id": f"{package_id}_{row.get('timestamp', '')}",
+            "source_tab": "escalation_review",
+        }

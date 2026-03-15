@@ -1,5 +1,22 @@
 # Changelog
 
+## [v0.11.2] - 2026-03-15
+
+### Changed
+- **Architecture refactor**: moved all business logic out of `app.py` into dedicated service classes
+  - New `ModelMonitoringService` — manifest reading, metric extraction from classification reports, semver helpers, active model badge metadata, retrain outcome classification, KPI trend dataframe construction, pending label filter derivation
+  - New `ExtractionOrchestrationService` — full ZIP processing pipeline: interaction log reset, loan package UUID generation, per-PDF extraction + inference loop, escalation threshold decision, CSV row writing, escalated PDF saving
+  - Extended `EscalationService` — added `extract_escalated_field()`, `normalize_document_type()`, `build_governance_feedback_payload()` helper methods
+- Removed eight duplicate domain classes (`LoanApplication`, `Disclosure`, `CreditReport`, etc.) from `app.py`; canonical definitions remain in `extraction_service.py`
+- Consolidated `reviewer_names` list into a single module-level `REVIEWER_NAMES` constant
+- Unified `FeedbackService` instantiation across tabs (consistent `log_dir="logs"`)
+- Moved all inline `import` statements to the top-level import block
+- Replaced redundant inline manifest reading in the Model Monitoring tab with `ModelMonitoringService` method calls
+
+### Unchanged
+- All behaviour, UI, and API contracts identical to v0.11.1
+- 12/12 tests passing
+
 ## [v0.11.1] - 2026-03-15
 
 ### Changed

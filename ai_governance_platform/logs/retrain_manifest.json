@@ -1,34 +1,9 @@
 [
   {
-    "retrained_at": "2026-03-15T05:49:06.458554+00:00",
+    "retrained_at": "2026-03-15T06:05:27.396451+00:00",
     "model_version": "v0.10.0",
-    "model_file": "field_validation_rf_v0_10_0_baseline_20260315_054906.joblib",
-    "encoder_file": "field_validation_rf_v0_10_0_baseline_20260315_054906_encoder.joblib",
-    "base_records": 437,
-    "feedback_labels_exported": 0,
-    "new_training_records_added": 0,
-    "label_weight": 1,
-    "weighted_records_added": 0,
-    "skipped_duplicates": 0,
-    "total_augmented_records": 437,
-    "test_set_accuracy": 0.9431818181818182,
-    "invalid_recall": 0.7058823529411765,
-    "invalid_precision": 1.0,
-    "valid_recall": 1.0,
-    "valid_precision": 0.9342105263157895,
-    "macro_f1": 0.8967863007271875,
-    "weighted_f1": 0.9392499946687138,
-    "classification_report": "              precision    recall  f1-score   support\n\n           0       1.00      0.71      0.83        17\n           1       0.93      1.00      0.97        71\n\n    accuracy                           0.94        88\n   macro avg       0.97      0.85      0.90        88\nweighted avg       0.95      0.94      0.94        88\n",
-    "filters_applied": {
-      "source_tab": "human_feedback"
-    },
-    "reset_to_baseline": true
-  },
-  {
-    "retrained_at": "2026-03-15T05:54:15.706309+00:00",
-    "model_version": "v0.11.1",
-    "model_file": "field_validation_rf_v0_11_1_baseline_20260315_055415.joblib",
-    "encoder_file": "field_validation_rf_v0_11_1_baseline_20260315_055415_encoder.joblib",
+    "model_file": "field_validation_rf_v0_10_0_baseline_20260315_060527.joblib",
+    "encoder_file": "field_validation_rf_v0_10_0_baseline_20260315_060527_encoder.joblib",
     "base_records": 437,
     "feedback_labels_exported": 0,
     "new_training_records_added": 0,
