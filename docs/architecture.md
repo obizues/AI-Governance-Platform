@@ -1,6 +1,6 @@
 # AI Governance & Evaluation Platform Architecture
 
-## Version: v1.0.0
+## Version: v1.1.0
 
 ## Architectural intent
 
@@ -11,7 +11,8 @@ This platform demonstrates an AI-native governed document-intelligence loop wher
 3. human reviewers make operational decisions,
 4. separate human training labels are collected,
 5. only training-eligible labels flow into retraining,
-6. retrained models are versioned, monitored, and auditable.
+6. retrained candidates are governance-gated before production promotion,
+7. promoted models are versioned, monitored, and auditable.
 
 ---
 
@@ -78,9 +79,15 @@ flowchart LR
   F --> J[Human Training Labels tab]
   J --> K{Matches / Does not match / Cannot verify}
   K --> L[Training-eligible label export]
-  L --> M[Retrain model]
-  M --> N[Versioned model + active model overwrite]
-  N --> O[Re-run extraction under newer model version]
+  L --> M[Retrain candidate model]
+  M --> M1{Regression vs active model?}
+  M1 -- No --> N[Auto-promote to active model]
+  M1 -- Yes --> M2[Governance block]
+  M2 --> M3{Force Promote approved?}
+  M3 -- No --> M4[Keep current production model]
+  M3 -- Yes --> N
+  N --> O[Versioned model + manifest audit trail]
+  O --> P[Re-run extraction under newer model version]
 ```
 
 ---
@@ -102,9 +109,15 @@ sequenceDiagram
   UI->>RT: retrain_with_feedback(label_weight=n)
   RT->>FB: export_training_labels(source_tab='human_feedback')
   RT->>RT: build learnable records + apply weighting
+  RT->>RT: compare candidate KPIs vs active model KPIs
+  alt Candidate regresses
+    RT->>UI: block auto-promote + return KPI deltas
+    Reviewer->>UI: optional Force Promote with reviewer + reason
+    UI->>RT: retrain_with_feedback(..., force_promote=True)
+  end
   RT->>M: save versioned backup model
-  RT->>M: overwrite active model file
-  RT->>Mon: append manifest entry with KPIs
+  RT->>M: overwrite active model file (if allowed)
+  RT->>Mon: append manifest entry with KPIs + deltas + override metadata
   Reviewer->>UI: Re-run extraction
   UI->>M: load active model
 ```
@@ -120,6 +133,7 @@ sequenceDiagram
 - `models/field_validation_rf_encoded_model.joblib` — active deployed model
 - `models/field_validation_rf_v*_*.joblib` — versioned model backups
 - LLM runtime is provider-backed (local Ollama by default in launcher) with status surfaced in UI
+- Retrain manifest captures governance gate context (metric deltas and any force-promote reviewer/reason)
 
 ---
 

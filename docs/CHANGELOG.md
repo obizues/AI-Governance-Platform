@@ -1,5 +1,18 @@
 # Changelog
 
+## [v1.1.0] - 2026-03-15
+
+### Added
+- Retrain governance gate UX in Model Monitoring:
+  - blocks production promotion when candidate KPIs regress
+  - shows KPI deltas versus active production model
+  - supports explicit Force Promote with reviewer and written justification
+- Compatibility retrain invocation wrapper in UI to handle runtime signature drift safely
+
+### Changed
+- Application/UI and documentation version references updated to **v1.1.0**
+- Sidebar/About/Tech Stack/System Design/Architecture/README language updated to explicitly include guardrail behavior
+
 ## [v1.0.0] - 2026-03-15
 
 ### Added
@@ -14,6 +27,7 @@
 - Sidebar app summary, Tech Stack, and System Design Notes rewritten for AI-native architecture
 - Architecture documentation and diagrams updated to include LLM/hybrid extraction flow and provider integration
 - Upload rerun behavior now avoids unintended re-extraction during unrelated Streamlit reruns
+- Retrain promotion now includes a governance guardrail (block on KPI regression unless force-promoted with reviewer accountability)
 
 ## [v0.11.4] - 2026-03-15
 

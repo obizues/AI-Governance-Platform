@@ -1,4 +1,4 @@
-# 🤖 AI Governance & Evaluation Platform v1.0.0
+# 🤖 AI Governance & Evaluation Platform v1.1.0
 
 An AI-native enterprise governance platform for document intelligence with:
 
@@ -34,13 +34,13 @@ This enables a realistic demo of:
 
 ## Version
 
-Current application version: **v1.0.0**
+Current application version: **v1.1.0**
 
 Baseline model version for demo reset: **v0.11.1**
 
 ---
 
-## Core capabilities in v1.0.0
+## Core capabilities in v1.1.0
 
 - **AI-native extraction runtime** with configurable `rules` / `llm` / `hybrid` modes
 - **Local-first LLM operation** via Ollama, with OpenAI-compatible provider support
@@ -49,6 +49,7 @@ Baseline model version for demo reset: **v0.11.1**
 - **Operational HIL decisions** separated from **training labels**
 - **Training-eligible label export** limited to known-ground-truth human feedback
 - **Retraining with model versioning** and active model overwrite for immediate use in extraction
+- **Pre-production retrain guardrail** that blocks candidate deployment on KPI regression unless Force Promote is explicitly approved
 - **Baseline reset** to replay the before/after demo loop
 - **KPI monitoring** focused on:
   - invalid recall
@@ -164,6 +165,8 @@ The app intentionally distinguishes:
 
 That is why retrain outcomes are labeled as **Improved**, **Mixed**, or **Regressed** rather than assuming all retrains are beneficial.
 
+Additionally, retrain promotion is governance-gated: if the candidate regresses against current production KPIs, deployment is blocked by default and requires explicit **Force Promote** approval with reviewer accountability and written justification.
+
 ---
 
 ## Documentation
@@ -171,7 +174,7 @@ That is why retrain outcomes are labeled as **Improved**, **Mixed**, or **Regres
 - [docs/README.md](docs/README.md) — documentation index
 - [docs/architecture.md](docs/architecture.md) — architecture, flow, and diagrams
 - [docs/CHANGELOG.md](docs/CHANGELOG.md) — release history
-- [docs/CHANGELOG-v1.0.0.md](docs/CHANGELOG-v1.0.0.md) — v1.0.0 release notes
+- [docs/CHANGELOG-v1.1.0.md](docs/CHANGELOG-v1.1.0.md) — v1.1.0 release notes
 
 ---
 

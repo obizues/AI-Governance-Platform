@@ -1,6 +1,6 @@
 ## AI Governance Platform v0.11.1
 
-> Historical release note. For current release details, see `CHANGELOG-v1.0.0.md`.
+> Historical release note. For current release details, see `CHANGELOG-v1.1.0.md`.
 
 ### Release highlights
 - Full sidebar and About-panel copy aligned to the final v0.11.1 HIL + retraining workflow

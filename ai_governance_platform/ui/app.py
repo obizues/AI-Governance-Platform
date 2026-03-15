@@ -1,5 +1,6 @@
 import csv  # noqa: F401 (kept for any residual usage)
 import datetime  # noqa: F401
+import inspect
 import io
 import json
 import os
@@ -23,7 +24,7 @@ if _scripts_path not in sys.path:
 from demo_retrain_with_feedback import retrain_with_feedback, reset_active_model_to_baseline
 
 
-APP_VERSION = "v1.0.0"
+APP_VERSION = "v1.1.0"
 BASELINE_MODEL_VERSION = "v0.11.1"
 
 MANIFEST_PATH = os.path.abspath(
@@ -42,6 +43,22 @@ def _is_older_version(version, reference):
 
 def _load_active_model_metadata():
     return ModelMonitoringService.load_active_model_metadata(MANIFEST_PATH)
+
+
+def _invoke_retrain_with_compat(label_weight, force_promote=False, override_reviewer="", override_reason=""):
+    """Call retrain_with_feedback with backward-compatible argument handling."""
+    try:
+        sig = inspect.signature(retrain_with_feedback)
+        if "force_promote" in sig.parameters:
+            return retrain_with_feedback(
+                label_weight=label_weight,
+                force_promote=force_promote,
+                override_reviewer=override_reviewer,
+                override_reason=override_reason,
+            )
+        return retrain_with_feedback(label_weight=label_weight)
+    except TypeError:
+        return retrain_with_feedback(label_weight=label_weight)
         
 REVIEWER_NAMES = ["Alice Smith", "Bob Johnson", "Chris Obermeier", "Dana Lee", "Evan Kim"]
 
@@ -50,6 +67,7 @@ def _init_session_state():
     st.session_state.setdefault("reviewed_escalations", set())
     st.session_state.setdefault("current_escalation_idx", 0)
     st.session_state.setdefault("submitted_human_feedback", set())
+    st.session_state.setdefault("pending_retrain_gate", None)
 
 def main():
     _init_session_state()  # MUST be first in main()
@@ -172,6 +190,9 @@ def main():
 <span style="font-size:1em;">🔁</span> <span>Continuous retraining with versioned deployment and rollback safety</span>
 </div>
 <div style='display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:2px;'>
+<span style="font-size:1em;">🚦</span> <span>Pre-production guardrail blocks regressed retrains unless force-promoted</span>
+</div>
+<div style='display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:2px;'>
 <span style="font-size:1em;">📊</span> <span>KPI monitoring for invalid recall, macro F1, pending labels, and throughput</span>
 </div>
 <div style='display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:2px;'>
@@ -213,6 +234,7 @@ def main():
     - Policy-driven escalation and reviewer controls
     - Human training labels with source-document verification
     - Governed retraining with active model version control
+    - Regression guardrail: blocks deployment if candidate KPIs decline unless Force Promote is explicitly approved
     - KPI monitoring for invalid recall, macro F1, pending labels, and workflow throughput
     - Baseline reset for replayable before/after demos
     - Streamlit-based multi-tab operator experience
@@ -225,7 +247,7 @@ def main():
         st.markdown("- <span style='font-size:1.05em;'>📘</span> [README.md](https://github.com/obizues/AI-Governance-Platform/blob/main/README.md): Project overview, setup, features", unsafe_allow_html=True)
         st.markdown("- <span style='font-size:1.05em;'>📝</span> [CHANGELOG.md](https://github.com/obizues/AI-Governance-Platform/blob/main/docs/CHANGELOG.md): Release notes and updates", unsafe_allow_html=True)
         st.markdown("- <span style='font-size:1.05em;'>🗂️</span> [System Architecture](https://github.com/obizues/AI-Governance-Platform/blob/main/docs/architecture.md): Design and flow diagrams", unsafe_allow_html=True)
-        st.markdown("**Key Sections:**\n- HIL workflow and escalation flow\n- Training-label and retraining architecture\n- KPI and governance monitoring\n- Baseline reset and model versioning\n- Deployment and usage guide")
+        st.markdown("**Key Sections:**\n- HIL workflow and escalation flow\n- Training-label and retraining architecture\n- Regression guardrails and force-promote governance overrides\n- KPI and governance monitoring\n- Baseline reset and model versioning\n- Deployment and usage guide")
 
     with st.sidebar.expander("&#128295; Tech Stack", expanded=False):
         st.markdown("""
@@ -241,6 +263,7 @@ def main():
 <li>YAML policy configuration for review and escalation controls</li>
 <li>requests-based provider integration for LLM runtime health and inference calls</li>
 <li>Modular Python service layer for extraction, escalation, feedback, evaluation, and model monitoring</li>
+<li>Governance gate in retraining flow (block-on-regression with explicit force-promote override + justification)</li>
 <li>Pytest for service-level regression coverage</li>
 </ul>
 """, unsafe_allow_html=True)
@@ -253,8 +276,9 @@ def main():
 <li><b>Runtime provider health is surfaced to operators;</b> sidebar status confirms whether Ollama/LLM extraction is active or unavailable.</li>
 <li><b>Operational escalation review is separate from model-training feedback;</b> governance decisions are logged without polluting training labels.</li>
 <li><b>Only human-verified ground-truth labels are eligible for retraining;</b> 'cannot_verify' stays out of the training export.</li>
+<li><b>Retrain promotion is safety-gated;</b> candidate models are blocked from production deployment on KPI regression unless an explicit force-promote override is approved.</li>
 <li><b>The deployed model is always the active artifact</b> at <code>field_validation_rf_encoded_model.joblib</code>, while timestamped backups preserve version history.</li>
-<li><b>Retraining is manifest-driven and auditable;</b> each run records model version, metrics, label counts, and outcome history.</li>
+<li><b>Retraining is manifest-driven and auditable;</b> each run records model version, metrics, deltas, and any force-promotion reviewer/reason metadata.</li>
 <li><b>KPI monitoring prioritizes governance-relevant quality signals</b> such as invalid recall, macro F1, review throughput, and pending label volume.</li>
 <li><b>Baseline reset is built in</b> so before/after HIL demo flows can be replayed reliably.</li>
 <li><b>Configuration, datasets, model artifacts, and logs are kept in dedicated folders</b> to make the workflow inspectable and demo-friendly.</li>
@@ -912,11 +936,21 @@ def main():
 
         if st.button("Retrain with Human Feedback", disabled=(eligible == 0), type="primary"):
             with st.spinner("Exporting labels, augmenting dataset, training model…"):
-                result = retrain_with_feedback(label_weight=label_weight)
+                result = _invoke_retrain_with_compat(label_weight=label_weight, force_promote=False)
 
-            if not result.get("success"):
+            if result.get("blocked_by_governance"):
+                st.session_state["pending_retrain_gate"] = {
+                    "label_weight": label_weight,
+                    "result": result,
+                }
+                st.warning(
+                    "Retrained candidate is BLOCKED from production deployment due to KPI regression. "
+                    "Review deltas below and use Force Promote only with explicit approval."
+                )
+            elif not result.get("success"):
                 st.error(f"Retraining failed: {result.get('error')}")
             else:
+                st.session_state["pending_retrain_gate"] = None
                 st.success(
                     f"Model retrained successfully. "
                     f"New model version: {result['model_version']}. "
@@ -936,6 +970,83 @@ def main():
                     st.text(result["classification_report"])
 
                 st.rerun()
+
+        pending_gate = st.session_state.get("pending_retrain_gate")
+        if pending_gate:
+            blocked_result = pending_gate.get("result", {})
+            metric_deltas = blocked_result.get("metric_deltas", {})
+            previous_metrics = blocked_result.get("previous_metrics", {})
+            candidate_metrics = blocked_result.get("candidate_metrics", {})
+
+            st.markdown("### Governance Gate — Candidate Blocked")
+            st.markdown(
+                "This retrained candidate is blocked from auto-deployment because one or more KPIs declined "
+                "versus the currently active production model."
+            )
+
+            g1, g2, g3 = st.columns(3)
+            g1.metric(
+                "Accuracy Δ",
+                f"{(metric_deltas.get('accuracy') or 0) * 100:.2f}%",
+                help=f"Prev: {(previous_metrics.get('accuracy') or 0) * 100:.2f}% | Candidate: {(candidate_metrics.get('accuracy') or 0) * 100:.2f}%",
+            )
+            g2.metric(
+                "Invalid Recall Δ",
+                f"{(metric_deltas.get('invalid_recall') or 0) * 100:.2f}%",
+                help=f"Prev: {(previous_metrics.get('invalid_recall') or 0) * 100:.2f}% | Candidate: {(candidate_metrics.get('invalid_recall') or 0) * 100:.2f}%",
+            )
+            g3.metric(
+                "Macro F1 Δ",
+                f"{(metric_deltas.get('macro_f1') or 0) * 100:.2f}%",
+                help=f"Prev: {(previous_metrics.get('macro_f1') or 0) * 100:.2f}% | Candidate: {(candidate_metrics.get('macro_f1') or 0) * 100:.2f}%",
+            )
+
+            st.error(
+                "Auto-promote blocked. To proceed, an authorized reviewer must explicitly force promote this candidate "
+                "and provide a written justification."
+            )
+
+            force_reviewer = st.selectbox("Force Promote Reviewer", REVIEWER_NAMES, key="force_promote_reviewer")
+            force_reason = st.text_area(
+                "Force Promote Justification (required)",
+                key="force_promote_reason",
+                help="Explain why this regression is acceptable for deployment (e.g., targeted business correction).",
+            )
+            force_confirm = st.checkbox(
+                "I acknowledge this deployment promotes a regressed candidate and accept governance accountability.",
+                key="force_promote_confirm",
+            )
+
+            force_col1, force_col2 = st.columns([1, 1])
+            with force_col1:
+                if st.button("Force Promote Regressed Candidate", type="secondary", key="force_promote_btn"):
+                    if not force_confirm:
+                        st.error("You must acknowledge governance accountability before force promotion.")
+                    elif not force_reason.strip():
+                        st.error("Justification is required for force promotion.")
+                    else:
+                        with st.spinner("Retraining and force-promoting candidate with governance override…"):
+                            force_result = _invoke_retrain_with_compat(
+                                label_weight=int(pending_gate.get("label_weight", label_weight)),
+                                force_promote=True,
+                                override_reviewer=force_reviewer,
+                                override_reason=force_reason,
+                            )
+                        if not force_result.get("success"):
+                            st.error(f"Force promote failed: {force_result.get('error')}")
+                        else:
+                            st.session_state["pending_retrain_gate"] = None
+                            st.success(
+                                f"Force promote complete. Active model updated to {force_result.get('model_version')} "
+                                "with governance override logged in retrain manifest."
+                            )
+                            st.rerun()
+
+            with force_col2:
+                if st.button("Cancel Candidate", key="cancel_force_promote_btn"):
+                    st.session_state["pending_retrain_gate"] = None
+                    st.info("Blocked candidate dismissed. Active production model unchanged.")
+                    st.rerun()
 
     with tabs[4]:
         st.markdown("""

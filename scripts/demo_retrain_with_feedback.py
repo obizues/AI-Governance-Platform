@@ -240,7 +240,13 @@ def _next_model_version(history: list, default_base: str = "v0.11.1") -> str:
     return f"v{major}.{minor}.{patch + 1}"
 
 
-def retrain_with_feedback(filters=None, label_weight: int = 10):
+def retrain_with_feedback(
+    filters=None,
+    label_weight: int = 10,
+    force_promote: bool = False,
+    override_reviewer: str = "",
+    override_reason: str = "",
+):
     """
     Run the full feedback → augment → retrain cycle.
 
@@ -358,9 +364,61 @@ def retrain_with_feedback(filters=None, label_weight: int = 10):
         report = classification_report(y_test, y_pred, output_dict=True)
         report_text = classification_report(y_test, y_pred)
 
+        # ── 7b. Regression gate before production deployment ────────────────
+        previous = history[-1] if history else {}
+        candidate_accuracy = float(report.get("accuracy") or 0)
+        candidate_invalid_recall = float((report.get("0") or {}).get("recall") or 0)
+        candidate_macro_f1 = float((report.get("macro avg") or {}).get("f1-score") or 0)
+
+        previous_accuracy = float(previous.get("test_set_accuracy") or 0)
+        previous_invalid_recall = float(previous.get("invalid_recall") or 0)
+        previous_macro_f1 = float(previous.get("macro_f1") or 0)
+
+        deltas = {
+            "accuracy": candidate_accuracy - previous_accuracy,
+            "invalid_recall": candidate_invalid_recall - previous_invalid_recall,
+            "macro_f1": candidate_macro_f1 - previous_macro_f1,
+        }
+        regressed_metrics = [name for name, delta in deltas.items() if delta < 0]
+        blocked_by_governance = bool(history) and bool(regressed_metrics) and not force_promote
+
+        model_version = _next_model_version(history)
+
+        if blocked_by_governance:
+            return {
+                "success": False,
+                "blocked_by_governance": True,
+                "error": "Retrained candidate regressed on one or more KPIs and is blocked from production deployment.",
+                "model_version": model_version,
+                "base_records": len(base_data),
+                "new_records": len(deduped_new),
+                "label_weight": label_weight,
+                "weighted_records": len(weighted_new),
+                "skipped_duplicates": skipped_dupes,
+                "augmented_records": len(augmented_data),
+                "metrics": report,
+                "invalid_recall": candidate_invalid_recall,
+                "valid_recall": float((report.get("1") or {}).get("recall") or 0),
+                "macro_f1": candidate_macro_f1,
+                "classification_report": report_text,
+                "export_summary": export,
+                "filters_applied": effective_filters,
+                "regressed_metrics": regressed_metrics,
+                "metric_deltas": deltas,
+                "previous_metrics": {
+                    "accuracy": previous_accuracy,
+                    "invalid_recall": previous_invalid_recall,
+                    "macro_f1": previous_macro_f1,
+                },
+                "candidate_metrics": {
+                    "accuracy": candidate_accuracy,
+                    "invalid_recall": candidate_invalid_recall,
+                    "macro_f1": candidate_macro_f1,
+                },
+            }
+
         # ── 8. Save model + encoder ──────────────────────────────────────────
         os.makedirs(MODEL_DIR, exist_ok=True)
-        model_version = _next_model_version(history)
         model_version_token = model_version.replace(".", "_")
         timestamp = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
         model_filename = f"field_validation_rf_{model_version_token}_{timestamp}.joblib"
@@ -397,6 +455,11 @@ def retrain_with_feedback(filters=None, label_weight: int = 10):
             "weighted_f1": (report.get("weighted avg") or {}).get("f1-score"),
             "classification_report": report_text,
             "filters_applied": effective_filters,
+            "force_promoted": bool(force_promote),
+            "force_promoted_by": str(override_reviewer or "").strip(),
+            "force_promoted_reason": str(override_reason or "").strip(),
+            "metric_deltas_vs_previous": deltas,
+            "regressed_metrics_vs_previous": regressed_metrics,
         }
 
         os.makedirs(os.path.dirname(MANIFEST_PATH), exist_ok=True)
