@@ -17,6 +17,6 @@ markdown-it-py
 mdurl
 pygments
 pytest
-# Version: v0.11.1
+# Version: v0.11.3
 # Requirements updated to reflect the current UI, training, retraining,
 # KPI monitoring, and test workflow used by the application.

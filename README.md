@@ -1,4 +1,4 @@
-# 🤖 AI Governance & Evaluation Platform v0.11.1
+# 🤖 AI Governance & Evaluation Platform v0.11.3
 
 An enterprise-style AI governance demo for document extraction with:
 
@@ -33,13 +33,13 @@ This enables a realistic demo of:
 
 ## Version
 
-Current application version: **v0.11.1**
+Current application version: **v0.11.3**
 
 Baseline model version for demo reset: **v0.11.1**
 
 ---
 
-## Core capabilities in v0.11.1
+## Core capabilities in v0.11.3
 
 - **Field-level confidence scoring** with escalation threshold visibility in the UI
 - **Operational HIL decisions** separated from **training labels**

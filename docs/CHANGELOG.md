@@ -1,5 +1,14 @@
 # Changelog
 
+## [v0.11.3] - 2026-03-15
+
+### Fixed
+- Step 1 upload flow now re-runs extraction when selecting the same ZIP again (not only when filename changes)
+- Upload dedupe gate now keys off a per-upload token (name + size + upload id) instead of filename-only state
+
+### Changed
+- Application/UI version bumped to v0.11.3
+
 ## [v0.11.2] - 2026-03-15
 
 ### Changed

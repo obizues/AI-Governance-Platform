@@ -22,7 +22,7 @@ if _scripts_path not in sys.path:
 from demo_retrain_with_feedback import retrain_with_feedback, reset_active_model_to_baseline
 
 
-APP_VERSION = "v0.11.1"
+APP_VERSION = "v0.11.3"
 BASELINE_MODEL_VERSION = "v0.11.1"
 
 MANIFEST_PATH = os.path.abspath(
@@ -141,16 +141,16 @@ def main():
 """, unsafe_allow_html=True)
 
     # Sidebar with app version and dropdowns
-    st.sidebar.markdown("""
+    st.sidebar.markdown(f"""
 <div style='background:#eaf6ff;border:1.5px solid #b3e5fc;padding:10px 12px 8px 12px;margin-bottom:12px;text-align:center;border-radius:8px;'>
 <span style='font-size:1.08em;font-weight:600;color:#1976d2;'>App version:</span><br>
-v0.11.1 - HIL governance, training labels, retraining, KPI monitoring, and model version control
+{APP_VERSION} - HIL governance, training labels, retraining, KPI monitoring, and model version control
 </div>
 """, unsafe_allow_html=True)
-    st.sidebar.markdown("""
+    st.sidebar.markdown(f"""
 <div class='sidebar-card' style='background:#eaf6ff;font-size:0.93em;margin-bottom:16px;border:1.5px solid #b3e5fc;padding:8px 8px 6px 8px;'>
 <div style='font-weight:700;font-size:1em;line-height:1.2;margin-bottom:2px;text-align:center;'>
-<span style="font-size:1.05em;vertical-align:middle;">&#129302;</span> AI Governance & Evaluation Platform v0.11.1
+<span style="font-size:1.05em;vertical-align:middle;">&#129302;</span> AI Governance & Evaluation Platform {APP_VERSION}
 </div>
 <div style='margin:0 0 0 0;font-size:0.91em;line-height:1.35;text-align:center;'>
 <span style="font-size:1em;">&#128221;</span> <span>Audit logging and governance history</span>
@@ -291,7 +291,9 @@ v0.11.1 - HIL governance, training labels, retraining, KPI monitoring, and model
         )
         uploaded_file = st.file_uploader("Upload a ZIP file containing PDFs", type=["zip"])
         if uploaded_file:
-            if 'extraction_done' not in st.session_state or st.session_state['extraction_done'] != uploaded_file.name:
+            upload_id = getattr(uploaded_file, "id", None) or getattr(uploaded_file, "file_id", None) or ""
+            upload_token = f"{uploaded_file.name}|{uploaded_file.size}|{upload_id}"
+            if st.session_state.get('extraction_done_token') != upload_token:
                 zip_bytes = uploaded_file.read()
                 with st.spinner("Extracting documents, running inference, and logging results…"):
                     orch_result = ExtractionOrchestrationService.process_zip(zip_bytes)
@@ -343,6 +345,7 @@ v0.11.1 - HIL governance, training labels, retraining, KPI monitoring, and model
                     else:
                         st.markdown(f"<div style='background:#fff3e0;padding:8px;border-radius:8px;margin-bottom:8px;text-align:center;'><b>Overall Confidence:</b> N/A</div>", unsafe_allow_html=True)
                 st.session_state['extraction_done'] = uploaded_file.name
+                st.session_state['extraction_done_token'] = upload_token
     with tabs[1]:
         st.markdown("""
 <div style='background:#fff3e0;padding:8px 0 8px 0;text-align:center;font-size:1.08em;font-weight:500;border-radius:8px;margin-bottom:8px;'>
