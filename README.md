@@ -1,4 +1,4 @@
-# 🤖 AI Governance & Evaluation Platform v0.11.3
+# 🤖 AI Governance & Evaluation Platform v0.11.4
 
 An enterprise-style AI governance demo for document extraction with:
 
@@ -33,13 +33,13 @@ This enables a realistic demo of:
 
 ## Version
 
-Current application version: **v0.11.3**
+Current application version: **v0.11.4**
 
 Baseline model version for demo reset: **v0.11.1**
 
 ---
 
-## Core capabilities in v0.11.3
+## Core capabilities in v0.11.4
 
 - **Field-level confidence scoring** with escalation threshold visibility in the UI
 - **Operational HIL decisions** separated from **training labels**
@@ -104,6 +104,41 @@ requirements.txt    # Python dependencies
    - Submit a source-document label in **Human Training Labels**
    - Retrain the model in **Model Monitoring**
    - Re-run extraction and compare the outcome under the new model version
+
+---
+
+## Enable LLM extraction (truly AI path)
+
+By default extraction stays in deterministic **rules** mode so the app works without external model credentials.
+
+Set environment variables before launching the app:
+
+```sh
+# options: rules | llm | hybrid
+set AI_EXTRACTION_MODE=hybrid
+
+# provider: openai (cloud) or ollama (local)
+set LLM_PROVIDER=openai
+set LLM_MODEL=gpt-4o-mini
+set OPENAI_API_KEY=YOUR_KEY_HERE
+```
+
+For local Ollama instead:
+
+```sh
+set AI_EXTRACTION_MODE=hybrid
+set LLM_PROVIDER=ollama
+set LLM_MODEL=llama3.2
+set OLLAMA_BASE_URL=http://localhost:11434/v1
+```
+
+Mode behavior:
+
+- `rules`: existing parser only
+- `llm`: LLM-only extraction
+- `hybrid`: rules first, then LLM enriches/overrides non-empty fields
+
+If the LLM call fails, extraction automatically falls back safely to rules.
 
 ---
 

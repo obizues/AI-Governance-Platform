@@ -1,5 +1,22 @@
 # Changelog
 
+## [v0.11.4] - 2026-03-15
+
+### Added
+- New `LLMExtractionService` for AI-native document field extraction from PDF text
+- Provider-agnostic extraction options via environment configuration:
+  - `LLM_PROVIDER=openai` (OpenAI-compatible API)
+  - `LLM_PROVIDER=ollama` (local Ollama endpoint)
+
+### Changed
+- `extract_and_validate()` now supports extraction modes via `AI_EXTRACTION_MODE`:
+  - `rules` (default, deterministic parser)
+  - `llm` (LLM-only extraction)
+  - `hybrid` (rules + LLM enrichment)
+- Added safe fallback to rules when LLM extraction is unavailable or errors
+- Added extraction metadata in results (`extraction_method`, `llm_provider`, `llm_model`, `llm_error`)
+- Documentation updated with setup instructions for LLM extraction mode
+
 ## [v0.11.3] - 2026-03-15
 
 ### Fixed

@@ -1,6 +1,7 @@
 import pdfplumber
 from io import BytesIO
 import re
+from ai_governance_platform.services.llm_extraction_service import LLMExtractionService
 
 def extract_pdf_text(pdf_bytes):
     with pdfplumber.open(BytesIO(pdf_bytes)) as pdf:
@@ -58,6 +59,26 @@ def build_object(doc_type, fields):
             fields.get('buyer',''), fields.get('seller',''), fields.get('signature',''))
     else:
         return fields
+
+
+def _detect_doc_type(text):
+    if 'Loan Application' in text:
+        return 'Loan Application'
+    elif 'Disclosure' in text:
+        return 'Disclosure'
+    elif 'Credit Report' in text:
+        return 'Credit Report'
+    elif 'Appraisal Report' in text:
+        return 'Appraisal Report'
+    elif 'Income Verification' in text:
+        return 'Income Verification'
+    elif 'Bank Statement' in text:
+        return 'Bank Statement'
+    elif 'Tax Return' in text:
+        return 'Tax Return'
+    elif 'Closing Documents' in text:
+        return 'Closing Documents'
+    return 'Unknown'
 
 class LoanApplication:
     def __init__(self, applicant_name, property_address, loan_amount, interest_rate, term_years, signature):
@@ -132,27 +153,37 @@ def extract_and_validate(document_bytes):
         validate_tax_return, validate_closing_documents
     )
     text = extract_pdf_text(document_bytes)
-    # Simple heuristic for doc_type
-    doc_type = None
-    if 'Loan Application' in text:
-        doc_type = 'Loan Application'
-    elif 'Disclosure' in text:
-        doc_type = 'Disclosure'
-    elif 'Credit Report' in text:
-        doc_type = 'Credit Report'
-    elif 'Appraisal Report' in text:
-        doc_type = 'Appraisal Report'
-    elif 'Income Verification' in text:
-        doc_type = 'Income Verification'
-    elif 'Bank Statement' in text:
-        doc_type = 'Bank Statement'
-    elif 'Tax Return' in text:
-        doc_type = 'Tax Return'
-    elif 'Closing Documents' in text:
-        doc_type = 'Closing Documents'
-    else:
-        doc_type = 'Unknown'
+    doc_type = _detect_doc_type(text)
     fields = parse_fields(text, doc_type)
+
+    extraction_method = "rules"
+    llm_provider = ""
+    llm_model = ""
+    llm_error = ""
+
+    if LLMExtractionService.is_enabled():
+        try:
+            llm_result = LLMExtractionService.extract_fields(text, detected_doc_type=doc_type)
+            llm_fields = llm_result.get("fields", {})
+            llm_doc_type = llm_result.get("doc_type", doc_type)
+
+            mode = LLMExtractionService.extraction_mode()
+            if mode == "llm":
+                fields = llm_fields or fields
+                doc_type = llm_doc_type or doc_type
+                extraction_method = "llm"
+            elif mode == "hybrid":
+                merged_fields = dict(fields)
+                merged_fields.update({k: v for k, v in llm_fields.items() if str(v).strip()})
+                fields = merged_fields
+                doc_type = llm_doc_type or doc_type
+                extraction_method = "hybrid"
+
+            llm_provider = str(llm_result.get("provider", ""))
+            llm_model = str(llm_result.get("model", ""))
+        except Exception as ex:
+            llm_error = str(ex)
+            extraction_method = "rules_fallback"
     obj = build_object(doc_type, fields)
     errors = []
     if doc_type == 'Loan Application':
@@ -176,5 +207,9 @@ def extract_and_validate(document_bytes):
         'fields': fields,
         'errors': errors,
         'confidence': 0.8 if not errors else 0.5,
-        'status': 'success' if not errors else 'validation_errors'
+        'status': 'success' if not errors else 'validation_errors',
+        'extraction_method': extraction_method,
+        'llm_provider': llm_provider,
+        'llm_model': llm_model,
+        'llm_error': llm_error,
     }
