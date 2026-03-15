@@ -9,6 +9,7 @@ AI-native extraction + governed human oversight + auditable continuous improveme
 - Runtime extraction mode control (`rules`, `llm`, `hybrid`) with safe deterministic fallback on provider failures
 - Sidebar LLM status card showing mode, provider, model, and runtime health
 - Upload flow improved with explicit **Re-run selected ZIP** control to avoid expensive unintended reruns during unrelated tab actions
+- Retrain governance guardrail: block candidate promotion on KPI regression unless explicit **Force Promote** override is approved with reviewer + justification
 
 ### Governance and safety posture
 - Operational escalation decisions remain separated from training labels

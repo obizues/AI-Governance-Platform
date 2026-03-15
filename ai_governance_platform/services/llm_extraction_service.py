@@ -69,6 +69,48 @@ class LLMExtractionService:
             "api_key": api_key,
         }
 
+    @classmethod
+    def runtime_status(cls) -> Dict[str, Any]:
+        cfg = cls._provider_config()
+        mode = cls.extraction_mode()
+        enabled = cls.is_enabled()
+
+        status = {
+            "enabled": enabled,
+            "mode": mode,
+            "provider": cfg["provider"],
+            "model": cfg["model"],
+            "base_url": cfg["base_url"],
+            "healthy": None,
+            "message": "",
+        }
+
+        if not enabled:
+            status["message"] = "LLM extraction disabled (rules mode)."
+            return status
+
+        if cfg["provider"] == "ollama":
+            tags_url = cfg["base_url"].replace("/v1", "").rstrip("/") + "/api/tags"
+            try:
+                response = requests.get(tags_url, timeout=2)
+                healthy = response.status_code == 200
+                status["healthy"] = healthy
+                status["message"] = "Ollama reachable" if healthy else f"Ollama HTTP {response.status_code}"
+            except Exception as ex:
+                status["healthy"] = False
+                status["message"] = f"Ollama unavailable: {ex}"
+            return status
+
+        # openai-compatible provider
+        if cfg["provider"] == "openai" and not cfg["api_key"]:
+            status["healthy"] = False
+            status["message"] = "Missing OPENAI_API_KEY"
+            return status
+
+        status["healthy"] = True
+        status["message"] = "Provider configured"
+        return status
+
     @staticmethod
     def _extract_json_object(text: str) -> Optional[Dict[str, Any]]:
         if not text:
