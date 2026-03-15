@@ -1,8 +1,9 @@
-# 🤖 AI Governance & Evaluation Platform v0.11.4
+# 🤖 AI Governance & Evaluation Platform v1.0.0
 
-An enterprise-style AI governance demo for document extraction with:
+An AI-native enterprise governance platform for document intelligence with:
 
-- document extraction and field-level confidence scoring
+- LLM-native document extraction (local Ollama or OpenAI-compatible providers)
+- field-level confidence scoring and deterministic safety validation
 - escalation decisions for low-confidence or risky outputs
 - human training labels for supervised feedback
 - governed retraining with model versioning
@@ -33,14 +34,17 @@ This enables a realistic demo of:
 
 ## Version
 
-Current application version: **v0.11.4**
+Current application version: **v1.0.0**
 
 Baseline model version for demo reset: **v0.11.1**
 
 ---
 
-## Core capabilities in v0.11.4
+## Core capabilities in v1.0.0
 
+- **AI-native extraction runtime** with configurable `rules` / `llm` / `hybrid` modes
+- **Local-first LLM operation** via Ollama, with OpenAI-compatible provider support
+- **Live LLM status visibility** in the UI (mode, provider, model, runtime health)
 - **Field-level confidence scoring** with escalation threshold visibility in the UI
 - **Operational HIL decisions** separated from **training labels**
 - **Training-eligible label export** limited to known-ground-truth human feedback
@@ -107,9 +111,13 @@ requirements.txt    # Python dependencies
 
 ---
 
-## Enable LLM extraction (truly AI path)
+## LLM extraction modes
 
-By default extraction stays in deterministic **rules** mode so the app works without external model credentials.
+The app supports three extraction modes:
+
+- `rules` — deterministic parser only
+- `llm` — LLM-only extraction
+- `hybrid` — deterministic parser + LLM enrichment
 
 Set environment variables before launching the app:
 
@@ -138,7 +146,7 @@ Mode behavior:
 - `llm`: LLM-only extraction
 - `hybrid`: rules first, then LLM enriches/overrides non-empty fields
 
-If the LLM call fails, extraction automatically falls back safely to rules.
+If LLM inference fails, extraction falls back safely to deterministic rules.
 
 ---
 
@@ -163,7 +171,7 @@ That is why retrain outcomes are labeled as **Improved**, **Mixed**, or **Regres
 - [docs/README.md](docs/README.md) — documentation index
 - [docs/architecture.md](docs/architecture.md) — architecture, flow, and diagrams
 - [docs/CHANGELOG.md](docs/CHANGELOG.md) — release history
-- [docs/CHANGELOG-v0.11.1.md](docs/CHANGELOG-v0.11.1.md) — v0.11.1 release notes
+- [docs/CHANGELOG-v1.0.0.md](docs/CHANGELOG-v1.0.0.md) — v1.0.0 release notes
 
 ---
 

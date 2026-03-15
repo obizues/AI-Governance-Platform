@@ -1,5 +1,20 @@
 # Changelog
 
+## [v1.0.0] - 2026-03-15
+
+### Added
+- AI-native extraction path via `LLMExtractionService`
+- Local-first provider support for Ollama with OpenAI-compatible alternative support
+- Sidebar LLM runtime status card showing mode/provider/model/health
+- Explicit **Re-run selected ZIP** control for deliberate reprocessing behavior
+- Dedicated v1.0.0 release notes: `docs/CHANGELOG-v1.0.0.md`
+
+### Changed
+- Application/UI version upgraded to **v1.0.0**
+- Sidebar app summary, Tech Stack, and System Design Notes rewritten for AI-native architecture
+- Architecture documentation and diagrams updated to include LLM/hybrid extraction flow and provider integration
+- Upload rerun behavior now avoids unintended re-extraction during unrelated Streamlit reruns
+
 ## [v0.11.4] - 2026-03-15
 
 ### Added

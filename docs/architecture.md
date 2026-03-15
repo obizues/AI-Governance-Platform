@@ -1,12 +1,12 @@
 # AI Governance & Evaluation Platform Architecture
 
-## Version: v0.11.1
+## Version: v1.0.0
 
 ## Architectural intent
 
-This platform demonstrates a governed AI document-extraction loop where:
+This platform demonstrates an AI-native governed document-intelligence loop where:
 
-1. extraction outputs are scored for confidence,
+1. LLM extraction (or hybrid extraction) produces structured fields,
 2. low-confidence results are escalated,
 3. human reviewers make operational decisions,
 4. separate human training labels are collected,
@@ -17,7 +17,7 @@ This platform demonstrates a governed AI document-extraction loop where:
 
 ## Primary tabs and responsibilities
 
-- **Extract & Validate** — document upload, extraction, confidence scoring, escalation triggering
+- **Extract & Validate** — document upload, AI-native extraction, confidence scoring, escalation triggering
 - **Escalation Decisions** — operational HIL review (`approve` / `deny`)
 - **Human Training Labels** — source-of-truth labels (`matches_document`, `does_not_match`, `cannot_verify`)
 - **Model Monitoring** — pending labels, retrain controls, model version KPIs, baseline reset
@@ -31,10 +31,14 @@ This platform demonstrates a governed AI document-extraction loop where:
 graph TD
   User --> StreamlitUI
   StreamlitUI --> ExtractionService
+  StreamlitUI --> LLMStatus[LLM Runtime Status Card]
+  LLMStatus --> LLMExtractionService
   StreamlitUI --> EscalationService
   StreamlitUI --> FeedbackService
   StreamlitUI --> EvaluationService
   StreamlitUI --> MetricsService
+  ExtractionService --> LLMExtractionService
+  LLMExtractionService --> Ollama[Ollama / OpenAI-Compatible Provider]
   ExtractionService --> Models
   ExtractionService --> Data
   ExtractionService --> Logs
@@ -56,7 +60,15 @@ graph TD
 ```mermaid
 flowchart LR
   A[Upload ZIP of PDFs] --> B[Extract fields]
-  B --> C[Score field confidence]
+  B --> B1{Extraction mode}
+  B1 -->|rules| B2[Deterministic parser]
+  B1 -->|llm| B3[LLM extractor]
+  B1 -->|hybrid| B4[Rules + LLM enrichment]
+  B3 --> B5{LLM available?}
+  B5 -- No --> B2
+  B5 -- Yes --> C[Score field confidence]
+  B2 --> C
+  B4 --> C
   C --> D{Confidence < 0.80?}
   D -- No --> E[Return validated extraction]
   D -- Yes --> F[Escalate field]
@@ -107,6 +119,7 @@ sequenceDiagram
 - `logs/retrain_manifest.json` — model version history and KPI history
 - `models/field_validation_rf_encoded_model.joblib` — active deployed model
 - `models/field_validation_rf_v*_*.joblib` — versioned model backups
+- LLM runtime is provider-backed (local Ollama by default in launcher) with status surfaced in UI
 
 ---
 

@@ -14,6 +14,7 @@ from ai_governance_platform.services.escalation_service import EscalationService
 from ai_governance_platform.services.evaluation_service import EvaluationService
 from ai_governance_platform.services.extraction_orchestration_service import ExtractionOrchestrationService
 from ai_governance_platform.services.feedback_service import FeedbackService
+from ai_governance_platform.services.llm_extraction_service import LLMExtractionService
 from ai_governance_platform.services.model_monitoring_service import ModelMonitoringService
 
 _scripts_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "scripts"))
@@ -22,7 +23,7 @@ if _scripts_path not in sys.path:
 from demo_retrain_with_feedback import retrain_with_feedback, reset_active_model_to_baseline
 
 
-APP_VERSION = "v0.11.4"
+APP_VERSION = "v1.0.0"
 BASELINE_MODEL_VERSION = "v0.11.1"
 
 MANIFEST_PATH = os.path.abspath(
@@ -144,7 +145,7 @@ def main():
     st.sidebar.markdown(f"""
 <div style='background:#eaf6ff;border:1.5px solid #b3e5fc;padding:10px 12px 8px 12px;margin-bottom:12px;text-align:center;border-radius:8px;'>
 <span style='font-size:1.08em;font-weight:600;color:#1976d2;'>App version:</span><br>
-{APP_VERSION} - HIL governance, training labels, retraining, KPI monitoring, and model version control
+{APP_VERSION} - AI-native extraction, governed HIL decisions, continuous model improvement, and auditable KPIs
 </div>
 """, unsafe_allow_html=True)
     st.sidebar.markdown(f"""
@@ -153,31 +154,31 @@ def main():
 <span style="font-size:1.05em;vertical-align:middle;">&#129302;</span> AI Governance & Evaluation Platform {APP_VERSION}
 </div>
 <div style='margin:0 0 0 0;font-size:0.91em;line-height:1.35;text-align:center;'>
-<span style="font-size:1em;">&#128221;</span> <span>Audit logging and governance history</span>
+<span style="font-size:1em;">🧠</span> <span>AI-native document extraction with local LLM runtime</span>
 </div>
 <div style='display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:2px;'>
-<span style="font-size:1em;">&#9878;</span> <span>Policy-driven review controls and escalation workflow</span>
+<span style="font-size:1em;">🟢</span> <span>Live LLM runtime status and provider health visibility</span>
 </div>
 <div style='display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:2px;'>
-<span style="font-size:1em;">&#128172;</span> <span>Human training labels and governed retraining</span>
+<span style="font-size:1em;">🛡️</span> <span>Policy-driven escalation controls and operational human review</span>
 </div>
 <div style='display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:2px;'>
-<span style="font-size:1em;">&#128721;</span> <span>Escalation decisions for low-confidence document fields</span>
+<span style="font-size:1em;">🧑‍⚖️</span> <span>Escalation decisions separated from training-label supervision</span>
 </div>
 <div style='display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:2px;'>
-<span style="font-size:1em;">&#128200;</span> <span>KPI monitoring for invalid recall, macro F1, and throughput</span>
+<span style="font-size:1em;">🏷️</span> <span>Ground-truth human labels feeding governed retraining pipelines</span>
 </div>
 <div style='display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:2px;'>
-<span style="font-size:1em;">&#128196;</span> <span>Document extraction, validation, and confidence scoring</span>
+<span style="font-size:1em;">🔁</span> <span>Continuous retraining with versioned deployment and rollback safety</span>
 </div>
 <div style='display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:2px;'>
-<span style="font-size:1em;">&#128451;</span> <span>Model versioning, audit review, and baseline reset</span>
+<span style="font-size:1em;">📊</span> <span>KPI monitoring for invalid recall, macro F1, pending labels, and throughput</span>
 </div>
 <div style='display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:2px;'>
-<span style="font-size:1em;">&#128421;</span> <span>Streamlit-based modern UI</span>
+<span style="font-size:1em;">🧾</span> <span>Full audit trails for extraction, review actions, and model lineage</span>
 </div>
 <div style='display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:2px;'>
-<span style="font-size:1em;">&#127760;</span> <span>Open-source, modular Python codebase</span>
+<span style="font-size:1em;">🌐</span> <span>Open-source modular platform (local-first with Ollama or cloud LLM options)</span>
 </div>
 </div>
 """, unsafe_allow_html=True)
@@ -201,28 +202,28 @@ def main():
 
     with st.sidebar.expander("ℹ️ About This Project", expanded=False):
         st.markdown("""
-    This platform showcases an end-to-end AI governance workflow for document extraction and validation. It combines confidence-based escalation, human review, governed training-label capture, model retraining, versioned deployment, and KPI monitoring in one auditable experience.
+    This platform is an AI-native governance system for document intelligence. It combines LLM-based extraction, deterministic safety validation, confidence-driven escalation, separated human oversight workflows, governed retraining, and KPI monitoring in one auditable operating model.
 
     **Target Audience:**
-    Executives, engineering leaders, technical evaluators, and operators who need a practical demonstration of safe, observable, and improvable enterprise AI workflows.
+    Executives, engineering leaders, technical evaluators, and operators who need a practical demonstration of safe, observable, and continuously improvable enterprise AI workflows.
 
     **Key Features:**
-    - Audit logging and governance history
+    - LLM-based field extraction (local Ollama or OpenAI-compatible providers)
+    - Live LLM runtime status visibility in the operator sidebar
     - Policy-driven escalation and reviewer controls
     - Human training labels with source-document verification
     - Governed retraining with active model version control
     - KPI monitoring for invalid recall, macro F1, pending labels, and workflow throughput
-    - Document extraction, validation, and confidence scoring
     - Baseline reset for replayable before/after demos
     - Streamlit-based multi-tab operator experience
-    - Modular Python services and inspectable logs for demo transparency
+    - Modular Python services and inspectable logs for governance transparency
     """, unsafe_allow_html=True)
 
     with st.sidebar.expander("&#128193; Project Documentation", expanded=False):
         st.markdown("**Project Documentation**")
         st.markdown("<span style='font-size:1.05em;'>🌐</span> [GitHub Repository](https://github.com/obizues/AI-Governance-Platform)", unsafe_allow_html=True)
         st.markdown("- <span style='font-size:1.05em;'>📘</span> [README.md](https://github.com/obizues/AI-Governance-Platform/blob/main/README.md): Project overview, setup, features", unsafe_allow_html=True)
-        st.markdown("- <span style='font-size:1.05em;'>📝</span> [CHANGELOG.md](https://github.com/obizues/AI-Governance-Platform/blob/main/CHANGELOG.md): Release notes and updates", unsafe_allow_html=True)
+        st.markdown("- <span style='font-size:1.05em;'>📝</span> [CHANGELOG.md](https://github.com/obizues/AI-Governance-Platform/blob/main/docs/CHANGELOG.md): Release notes and updates", unsafe_allow_html=True)
         st.markdown("- <span style='font-size:1.05em;'>🗂️</span> [System Architecture](https://github.com/obizues/AI-Governance-Platform/blob/main/docs/architecture.md): Design and flow diagrams", unsafe_allow_html=True)
         st.markdown("**Key Sections:**\n- HIL workflow and escalation flow\n- Training-label and retraining architecture\n- KPI and governance monitoring\n- Baseline reset and model versioning\n- Deployment and usage guide")
 
@@ -233,11 +234,13 @@ def main():
 <li>Python 3.10+ application runtime</li>
 <li>Streamlit for the multi-tab governance UI</li>
 <li>pandas and JSON/CSV log persistence for audit and feedback data</li>
-<li>pdfplumber for PDF field extraction</li>
+<li>pdfplumber for PDF text extraction pre-processing</li>
+<li>Ollama / OpenAI-compatible Chat Completions APIs for AI-native field extraction</li>
 <li>scikit-learn RandomForest + joblib for field-validation models and versioned artifacts</li>
 <li>matplotlib, Altair, and Plotly for KPI monitoring and trend visualization</li>
 <li>YAML policy configuration for review and escalation controls</li>
-<li>Modular Python service layer for extraction, escalation, feedback, and evaluation</li>
+<li>requests-based provider integration for LLM runtime health and inference calls</li>
+<li>Modular Python service layer for extraction, escalation, feedback, evaluation, and model monitoring</li>
 <li>Pytest for service-level regression coverage</li>
 </ul>
 """, unsafe_allow_html=True)
@@ -246,6 +249,8 @@ def main():
         st.markdown("""
 **Key architectural decisions**
 <li><b>The Streamlit UI is orchestration only;</b> extraction, escalation, feedback, and evaluation logic live in dedicated services.</li>
+<li><b>Extraction is AI-native by design;</b> LLM extraction can run in <code>llm</code> or <code>hybrid</code> mode with deterministic fallback for resilience.</li>
+<li><b>Runtime provider health is surfaced to operators;</b> sidebar status confirms whether Ollama/LLM extraction is active or unavailable.</li>
 <li><b>Operational escalation review is separate from model-training feedback;</b> governance decisions are logged without polluting training labels.</li>
 <li><b>Only human-verified ground-truth labels are eligible for retraining;</b> 'cannot_verify' stays out of the training export.</li>
 <li><b>The deployed model is always the active artifact</b> at <code>field_validation_rf_encoded_model.joblib</code>, while timestamped backups preserve version history.</li>
@@ -272,6 +277,42 @@ def main():
         unsafe_allow_html=True,
     )
 
+    _llm_status = LLMExtractionService.runtime_status()
+    _llm_healthy = _llm_status.get("healthy")
+    _llm_mode = _llm_status.get("mode", "rules")
+    _llm_provider = _llm_status.get("provider", "-")
+    _llm_model = _llm_status.get("model", "-")
+    _llm_message = _llm_status.get("message", "")
+
+    if _llm_healthy is True:
+        _llm_bg = "#f6fff8"
+        _llm_border = "#b7e4c7"
+        _llm_text = "#1b5e20"
+        _llm_badge = "🟢 Active"
+    elif _llm_healthy is False:
+        _llm_bg = "#ffebee"
+        _llm_border = "#ffcdd2"
+        _llm_text = "#b71c1c"
+        _llm_badge = "🔴 Unavailable"
+    else:
+        _llm_bg = "#fff8e1"
+        _llm_border = "#ffe082"
+        _llm_text = "#8d6e00"
+        _llm_badge = "🟡 Rules Mode"
+
+    st.sidebar.markdown(
+        f"<div style='background:{_llm_bg};border:1px solid {_llm_border};"
+        f"border-radius:8px;padding:8px 12px;margin-bottom:12px;'>"
+        f"<b style='color:{_llm_text};'>LLM Extraction Status</b><br>"
+        f"<span style='font-size:0.85em;color:{_llm_text};'><b>{_llm_badge}</b></span><br>"
+        f"<span style='font-size:0.8em;color:{_llm_text};'>Mode: {_llm_mode}</span><br>"
+        f"<span style='font-size:0.8em;color:{_llm_text};'>Provider: {_llm_provider}</span><br>"
+        f"<span style='font-size:0.8em;color:{_llm_text};word-break:break-all;'>Model: {_llm_model}</span><br>"
+        f"<span style='font-size:0.78em;color:{_llm_text};word-break:break-all;'>{_llm_message}</span>"
+        f"</div>",
+        unsafe_allow_html=True,
+    )
+
     tabs = st.tabs(["Extract & Validate", "Escalation Decisions", "Human Training Labels", "Model Monitoring", "Governance & Audit"])
     with tabs[0]:
         st.markdown("""
@@ -291,14 +332,30 @@ def main():
         )
         uploaded_file = st.file_uploader("Upload a ZIP file containing PDFs", type=["zip"])
         if uploaded_file:
-            upload_id = getattr(uploaded_file, "id", None) or getattr(uploaded_file, "file_id", None) or ""
-            upload_token = f"{uploaded_file.name}|{uploaded_file.size}|{upload_id}"
-            if st.session_state.get('extraction_done_token') != upload_token:
+            upload_token = f"{uploaded_file.name}|{uploaded_file.size}"
+
+            rerun_col, info_col = st.columns([1, 3])
+            with rerun_col:
+                rerun_requested = st.button("Re-run selected ZIP", key="rerun_selected_zip")
+            with info_col:
+                st.caption("Extraction runs once per selected file. Use 'Re-run selected ZIP' to run it again.")
+
+            should_process = rerun_requested or st.session_state.get('extraction_done_token') != upload_token
+
+            if should_process:
                 zip_bytes = uploaded_file.read()
                 with st.spinner("Extracting documents, running inference, and logging results…"):
                     orch_result = ExtractionOrchestrationService.process_zip(zip_bytes)
-                loan_package = orch_result["loan_package"]
-                summary = orch_result["summary"]
+                st.session_state['last_loan_package'] = orch_result["loan_package"]
+                st.session_state['last_extraction_summary'] = orch_result["summary"]
+                st.session_state['extraction_done'] = uploaded_file.name
+                st.session_state['extraction_done_token'] = upload_token
+
+            loan_package = st.session_state.get('last_loan_package', '')
+            summary = st.session_state.get('last_extraction_summary', {})
+
+            if summary:
+                st.caption(f"Showing extraction results for package: {loan_package}")
 
                 for fname, res in summary.items():
                     st.markdown(f"### {fname}")
@@ -344,8 +401,6 @@ def main():
                         st.markdown(f"<div style='background:#fff3e0;padding:8px;border-radius:8px;margin-bottom:8px;text-align:center;'><b>Overall Confidence:</b> {avg_conf:.2f}</div>", unsafe_allow_html=True)
                     else:
                         st.markdown(f"<div style='background:#fff3e0;padding:8px;border-radius:8px;margin-bottom:8px;text-align:center;'><b>Overall Confidence:</b> N/A</div>", unsafe_allow_html=True)
-                st.session_state['extraction_done'] = uploaded_file.name
-                st.session_state['extraction_done_token'] = upload_token
     with tabs[1]:
         st.markdown("""
 <div style='background:#fff3e0;padding:8px 0 8px 0;text-align:center;font-size:1.08em;font-weight:500;border-radius:8px;margin-bottom:8px;'>
