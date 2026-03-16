@@ -41,6 +41,13 @@ DOC_TYPES = [
 
 class LLMExtractionService:
     @staticmethod
+    def _anthropic_messages_url(base_url: str) -> str:
+        normalized = str(base_url or "").rstrip("/")
+        if normalized.endswith("/v1"):
+            return f"{normalized}/messages"
+        return f"{normalized}/v1/messages"
+
+    @staticmethod
     def extraction_mode() -> str:
         configured_mode = str(os.getenv("AI_EXTRACTION_MODE", "")).strip().lower()
         if configured_mode:
@@ -131,8 +138,9 @@ class LLMExtractionService:
                 return status
 
             try:
+                anthropic_url = cls._anthropic_messages_url(cfg["base_url"])
                 response = requests.post(
-                    f"{cfg['base_url']}/v1/messages",
+                    anthropic_url,
                     headers={
                         "Content-Type": "application/json",
                         "x-api-key": cfg["api_key"],
@@ -149,8 +157,16 @@ class LLMExtractionService:
                     status["healthy"] = True
                     status["message"] = "Anthropic reachable"
                 else:
+                    error_hint = ""
+                    try:
+                        err = response.json()
+                        err_msg = str(err.get("error", {}).get("message", "")).strip()
+                        if err_msg:
+                            error_hint = f": {err_msg}"
+                    except Exception:
+                        pass
                     status["healthy"] = False
-                    status["message"] = f"Anthropic HTTP {response.status_code}"
+                    status["message"] = f"Anthropic HTTP {response.status_code}{error_hint}"
             except Exception as ex:
                 status["healthy"] = False
                 status["message"] = f"Anthropic unavailable: {ex}"
@@ -226,8 +242,9 @@ class LLMExtractionService:
                 "system": system_prompt,
                 "messages": [{"role": "user", "content": user_prompt}],
             }
+            anthropic_url = cls._anthropic_messages_url(cfg["base_url"])
             response = requests.post(
-                f"{cfg['base_url']}/v1/messages",
+                anthropic_url,
                 headers={
                     "Content-Type": "application/json",
                     "x-api-key": cfg["api_key"],
