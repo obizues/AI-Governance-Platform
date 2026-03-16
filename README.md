@@ -126,10 +126,15 @@ Set environment variables before launching the app:
 # options: rules | llm | hybrid
 set AI_EXTRACTION_MODE=hybrid
 
-# provider: openai (cloud) or ollama (local)
+# provider: openai (cloud), anthropic (Claude), or ollama (local)
 set LLM_PROVIDER=openai
 set LLM_MODEL=gpt-4o-mini
 set OPENAI_API_KEY=YOUR_KEY_HERE
+
+# Claude via native Anthropic API
+set LLM_PROVIDER=anthropic
+set LLM_MODEL=claude-3-5-haiku-latest
+set ANTHROPIC_API_KEY=YOUR_CLAUDE_KEY_HERE
 ```
 
 For local Ollama instead:
@@ -148,6 +153,28 @@ Mode behavior:
 - `hybrid`: rules first, then LLM enriches/overrides non-empty fields
 
 If LLM inference fails, extraction falls back safely to deterministic rules.
+
+---
+
+## Streamlit Cloud (Claude) setup
+
+For Streamlit Cloud, add secrets in your app settings (**App → Settings → Secrets**).
+
+Ready-to-paste template: `.streamlit/secrets.toml.example`
+
+Required values:
+
+```toml
+AI_EXTRACTION_MODE = "hybrid"
+LLM_PROVIDER = "anthropic"
+LLM_MODEL = "claude-3-5-haiku-latest"
+ANTHROPIC_API_KEY = "YOUR_CLAUDE_KEY_HERE"
+```
+
+Notes:
+
+- `hybrid` is recommended for resiliency (rules fallback + LLM enrichment).
+- You do not need `OPENAI_API_KEY` when using `LLM_PROVIDER=anthropic`.
 
 ---
 

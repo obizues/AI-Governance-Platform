@@ -337,6 +337,18 @@ def main():
         unsafe_allow_html=True,
     )
 
+    if (
+        _llm_mode in {"llm", "hybrid"}
+        and _llm_provider == "anthropic"
+        and _llm_healthy is False
+        and "ANTHROPIC_API_KEY" in str(_llm_message)
+    ):
+        st.sidebar.warning(
+            "Claude is configured but ANTHROPIC_API_KEY is missing. "
+            "Add it in Streamlit Cloud: App → Settings → Secrets.",
+            icon="⚠️",
+        )
+
     tabs = st.tabs(["Extract & Validate", "Escalation Decisions", "Human Training Labels", "Model Monitoring", "Governance & Audit"])
     with tabs[0]:
         st.markdown("""

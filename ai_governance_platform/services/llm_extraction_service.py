@@ -5,14 +5,17 @@ Provider-agnostic LLM extraction for document text -> structured fields.
 Supported providers via environment variables:
 - openai (default): OpenAI-compatible Chat Completions endpoint
 - ollama: local Ollama OpenAI-compatible endpoint
+- anthropic: native Anthropic Messages API endpoint
 
 Environment variables:
 - AI_EXTRACTION_MODE=rules|llm|hybrid (default: rules)
-- LLM_PROVIDER=openai|ollama (default: openai)
+- LLM_PROVIDER=openai|ollama|anthropic (default: openai)
 - LLM_MODEL (defaults vary by provider)
 - OPENAI_API_KEY (required for openai provider)
 - OPENAI_BASE_URL (default: https://api.openai.com/v1)
 - OLLAMA_BASE_URL (default: http://localhost:11434/v1)
+- ANTHROPIC_API_KEY (required for anthropic provider)
+- ANTHROPIC_BASE_URL (default: https://api.anthropic.com)
 """
 
 import json
@@ -56,6 +59,10 @@ class LLMExtractionService:
             base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434/v1")
             model = os.getenv("LLM_MODEL", "llama3.2")
             api_key = os.getenv("OPENAI_API_KEY", "ollama")
+        elif provider == "anthropic":
+            base_url = os.getenv("ANTHROPIC_BASE_URL", "https://api.anthropic.com")
+            model = os.getenv("LLM_MODEL", os.getenv("ANTHROPIC_MODEL", "claude-3-5-haiku-latest"))
+            api_key = os.getenv("ANTHROPIC_API_KEY", "")
         else:
             provider = "openai"
             base_url = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
@@ -101,6 +108,38 @@ class LLMExtractionService:
                 status["message"] = f"Ollama unavailable: {ex}"
             return status
 
+        if cfg["provider"] == "anthropic":
+            if not cfg["api_key"]:
+                status["healthy"] = False
+                status["message"] = "Missing ANTHROPIC_API_KEY"
+                return status
+
+            try:
+                response = requests.post(
+                    f"{cfg['base_url']}/v1/messages",
+                    headers={
+                        "Content-Type": "application/json",
+                        "x-api-key": cfg["api_key"],
+                        "anthropic-version": "2023-06-01",
+                    },
+                    json={
+                        "model": cfg["model"],
+                        "max_tokens": 16,
+                        "messages": [{"role": "user", "content": "ping"}],
+                    },
+                    timeout=5,
+                )
+                if response.status_code in (200, 400):
+                    status["healthy"] = True
+                    status["message"] = "Anthropic reachable"
+                else:
+                    status["healthy"] = False
+                    status["message"] = f"Anthropic HTTP {response.status_code}"
+            except Exception as ex:
+                status["healthy"] = False
+                status["message"] = f"Anthropic unavailable: {ex}"
+            return status
+
         # openai-compatible provider
         if cfg["provider"] == "openai" and not cfg["api_key"]:
             status["healthy"] = False
@@ -139,6 +178,8 @@ class LLMExtractionService:
 
         if cfg["provider"] == "openai" and not cfg["api_key"]:
             raise ValueError("OPENAI_API_KEY is required when LLM_PROVIDER=openai")
+        if cfg["provider"] == "anthropic" and not cfg["api_key"]:
+            raise ValueError("ANTHROPIC_API_KEY is required when LLM_PROVIDER=anthropic")
 
         system_prompt = (
             "You extract mortgage-loan document fields into strict JSON. "
@@ -161,34 +202,61 @@ class LLMExtractionService:
             f"{text}"
         )
 
-        payload = {
-            "model": cfg["model"],
-            "temperature": 0,
-            "messages": [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt},
-            ],
-            "response_format": {"type": "json_object"},
-        }
+        if cfg["provider"] == "anthropic":
+            payload = {
+                "model": cfg["model"],
+                "max_tokens": 1200,
+                "temperature": 0,
+                "system": system_prompt,
+                "messages": [{"role": "user", "content": user_prompt}],
+            }
+            response = requests.post(
+                f"{cfg['base_url']}/v1/messages",
+                headers={
+                    "Content-Type": "application/json",
+                    "x-api-key": cfg["api_key"],
+                    "anthropic-version": "2023-06-01",
+                },
+                json=payload,
+                timeout=60,
+            )
+            response.raise_for_status()
+            data = response.json()
+            content_blocks = data.get("content", [])
+            content = "\n".join(
+                block.get("text", "")
+                for block in content_blocks
+                if isinstance(block, dict) and block.get("type") == "text"
+            )
+        else:
+            payload = {
+                "model": cfg["model"],
+                "temperature": 0,
+                "messages": [
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt},
+                ],
+                "response_format": {"type": "json_object"},
+            }
 
-        headers = {"Content-Type": "application/json"}
-        if cfg["api_key"]:
-            headers["Authorization"] = f"Bearer {cfg['api_key']}"
+            headers = {"Content-Type": "application/json"}
+            if cfg["api_key"]:
+                headers["Authorization"] = f"Bearer {cfg['api_key']}"
 
-        response = requests.post(
-            f"{cfg['base_url']}/chat/completions",
-            headers=headers,
-            json=payload,
-            timeout=60,
-        )
-        response.raise_for_status()
-        data = response.json()
+            response = requests.post(
+                f"{cfg['base_url']}/chat/completions",
+                headers=headers,
+                json=payload,
+                timeout=60,
+            )
+            response.raise_for_status()
+            data = response.json()
 
-        content = (
-            data.get("choices", [{}])[0]
-            .get("message", {})
-            .get("content", "")
-        )
+            content = (
+                data.get("choices", [{}])[0]
+                .get("message", {})
+                .get("content", "")
+            )
         parsed = cls._extract_json_object(content)
         if not parsed:
             raise ValueError("LLM did not return valid JSON object")
