@@ -1,6 +1,6 @@
 # AI Governance & Evaluation Platform Architecture
 
-## Version: v1.1.0
+## Version: v1.2.0
 
 ## Architectural intent
 

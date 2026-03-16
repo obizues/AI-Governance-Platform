@@ -1,5 +1,26 @@
 # Changelog
 
+## [v1.2.0] - 2026-03-15
+
+### Added
+- Native Anthropic Claude provider support in `LLMExtractionService` (`LLM_PROVIDER=anthropic`, `ANTHROPIC_API_KEY`, `ANTHROPIC_BASE_URL`)
+- Streamlit Cloud Claude secrets template at `.streamlit/secrets.toml.example`
+- Sidebar startup warning for missing `ANTHROPIC_API_KEY` when running in `llm`/`hybrid` Anthropic mode
+- New demo package assets for controlled testing:
+  - `sample_zips/home_loan_docs_7.zip`
+  - `scripts/generate_home_loan_zip_7.py`
+
+### Changed
+- LLM defaults now key-aware:
+  - auto-select Anthropic provider when only Claude key is present
+  - auto-enable `hybrid` extraction when provider API keys are configured
+- Launcher provider bootstrap now selects Anthropic/OpenAI/Ollama based on available keys
+- Anthropic endpoint normalization now handles both base URL forms:
+  - `https://api.anthropic.com`
+  - `https://api.anthropic.com/v1`
+- Anthropic model fallback handling added for unavailable model aliases (404 model errors)
+- Application/UI and documentation version references updated to **v1.2.0**
+
 ## [v1.1.0] - 2026-03-15
 
 ### Added

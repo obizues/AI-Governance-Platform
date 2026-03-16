@@ -1,4 +1,4 @@
-# 🤖 AI Governance & Evaluation Platform v1.1.0
+# 🤖 AI Governance & Evaluation Platform v1.2.0
 
 An AI-native enterprise governance platform for document intelligence with:
 
@@ -34,13 +34,13 @@ This enables a realistic demo of:
 
 ## Version
 
-Current application version: **v1.1.0**
+Current application version: **v1.2.0**
 
 Baseline model version for demo reset: **v0.11.1**
 
 ---
 
-## Core capabilities in v1.1.0
+## Core capabilities in v1.2.0
 
 - **AI-native extraction runtime** with configurable `rules` / `llm` / `hybrid` modes
 - **Local-first LLM operation** via Ollama, with OpenAI-compatible provider support
@@ -201,7 +201,7 @@ Additionally, retrain promotion is governance-gated: if the candidate regresses 
 - [docs/README.md](docs/README.md) — documentation index
 - [docs/architecture.md](docs/architecture.md) — architecture, flow, and diagrams
 - [docs/CHANGELOG.md](docs/CHANGELOG.md) — release history
-- [docs/CHANGELOG-v1.1.0.md](docs/CHANGELOG-v1.1.0.md) — v1.1.0 release notes
+- [docs/CHANGELOG-v1.2.0.md](docs/CHANGELOG-v1.2.0.md) — v1.2.0 release notes
 
 ---
 

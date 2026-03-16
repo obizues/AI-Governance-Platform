@@ -24,7 +24,7 @@ if _scripts_path not in sys.path:
 from demo_retrain_with_feedback import retrain_with_feedback, reset_active_model_to_baseline
 
 
-APP_VERSION = "v1.1.0"
+APP_VERSION = "v1.2.0"
 BASELINE_MODEL_VERSION = "v0.11.1"
 
 MANIFEST_PATH = os.path.abspath(
