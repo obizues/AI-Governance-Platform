@@ -7,6 +7,23 @@ import requests
 
 
 def _configure_local_ollama_defaults():
+    anthropic_key = str(os.environ.get("ANTHROPIC_API_KEY", "")).strip()
+    openai_key = str(os.environ.get("OPENAI_API_KEY", "")).strip()
+
+    if anthropic_key:
+        os.environ.setdefault("AI_EXTRACTION_MODE", "hybrid")
+        os.environ.setdefault("LLM_PROVIDER", "anthropic")
+        os.environ.setdefault("LLM_MODEL", "claude-3-5-haiku-latest")
+        os.environ.setdefault("ANTHROPIC_BASE_URL", "https://api.anthropic.com")
+        return
+
+    if openai_key:
+        os.environ.setdefault("AI_EXTRACTION_MODE", "hybrid")
+        os.environ.setdefault("LLM_PROVIDER", "openai")
+        os.environ.setdefault("LLM_MODEL", "gpt-4o-mini")
+        os.environ.setdefault("OPENAI_BASE_URL", "https://api.openai.com/v1")
+        return
+
     os.environ.setdefault("AI_EXTRACTION_MODE", "llm")
     os.environ.setdefault("LLM_PROVIDER", "ollama")
     os.environ.setdefault("LLM_MODEL", "llama3.2")
@@ -59,12 +76,18 @@ def _ensure_ollama_running(base_url: str, wait_seconds: int = 15) -> bool:
 
 if __name__ == "__main__":
     _configure_local_ollama_defaults()
-    ollama_base = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434/v1")
-    ollama_ok = _ensure_ollama_running(ollama_base)
-    if ollama_ok:
-        print("[launcher] Local Ollama ready - LLM extraction enabled.")
-    else:
-        print("[launcher] Ollama not reachable after auto-start attempt; extraction will safely fall back if needed.")
+    llm_provider = str(os.environ.get("LLM_PROVIDER", "")).strip().lower()
+    if llm_provider == "ollama":
+        ollama_base = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434/v1")
+        ollama_ok = _ensure_ollama_running(ollama_base)
+        if ollama_ok:
+            print("[launcher] Local Ollama ready - LLM extraction enabled.")
+        else:
+            print("[launcher] Ollama not reachable after auto-start attempt; extraction will safely fall back if needed.")
+    elif llm_provider == "anthropic":
+        print("[launcher] Anthropic provider detected - using Claude API.")
+    elif llm_provider == "openai":
+        print("[launcher] OpenAI-compatible provider detected.")
 
     subprocess.run([
         sys.executable,

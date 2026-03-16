@@ -42,7 +42,16 @@ DOC_TYPES = [
 class LLMExtractionService:
     @staticmethod
     def extraction_mode() -> str:
-        return str(os.getenv("AI_EXTRACTION_MODE", "rules")).strip().lower()
+        configured_mode = str(os.getenv("AI_EXTRACTION_MODE", "")).strip().lower()
+        if configured_mode:
+            return configured_mode
+
+        has_anthropic = bool(str(os.getenv("ANTHROPIC_API_KEY", "")).strip())
+        has_openai = bool(str(os.getenv("OPENAI_API_KEY", "")).strip())
+        if has_anthropic or has_openai:
+            return "hybrid"
+
+        return "rules"
 
     @classmethod
     def is_enabled(cls) -> bool:
@@ -50,7 +59,14 @@ class LLMExtractionService:
 
     @staticmethod
     def _provider() -> str:
-        return str(os.getenv("LLM_PROVIDER", "openai")).strip().lower()
+        configured_provider = str(os.getenv("LLM_PROVIDER", "")).strip().lower()
+        if configured_provider:
+            return configured_provider
+
+        if str(os.getenv("ANTHROPIC_API_KEY", "")).strip():
+            return "anthropic"
+
+        return "openai"
 
     @classmethod
     def _provider_config(cls) -> Dict[str, Any]:
