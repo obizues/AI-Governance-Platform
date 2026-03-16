@@ -393,7 +393,46 @@ def main():
             if summary:
                 st.caption(f"Showing extraction results for package: {loan_package}")
 
+                display_mode = st.selectbox(
+                    "Extraction display",
+                    [
+                        "Flagged documents only",
+                        "Flagged documents + full extracted data",
+                        "All documents + full extracted data",
+                    ],
+                    index=0,
+                    key="extract_display_mode",
+                    help=(
+                        "Flagged documents are those with validation errors or overall confidence below 0.80. "
+                        "Use a full-data mode to inspect all extracted fields and metadata."
+                    ),
+                )
+
+                hide_clean_docs = display_mode != "All documents + full extracted data"
+                show_full_data = "full extracted data" in display_mode.lower()
+
+                hidden_clean_count = 0
+                shown_doc_count = 0
+
                 for fname, res in summary.items():
+                    field_confidences = [
+                        value
+                        for value in res.get('field_confidences', {}).values()
+                        if isinstance(value, float)
+                    ]
+                    avg_conf = (
+                        sum(field_confidences) / len(field_confidences)
+                        if field_confidences
+                        else 0.0
+                    )
+                    has_errors = bool(res.get('errors'))
+                    is_clean_doc = (avg_conf >= 0.8) and (not has_errors)
+
+                    if hide_clean_docs and is_clean_doc:
+                        hidden_clean_count += 1
+                        continue
+
+                    shown_doc_count += 1
                     st.markdown(f"### {fname}")
                     st.markdown(f"<div style='background:#eaf6ff;padding:8px 0 8px 0;text-align:center;font-size:1.08em;font-weight:500;border-radius:8px;margin-bottom:8px;'>Document Type: <b>{res.get('doc_type', 'Unknown')}</b></div>", unsafe_allow_html=True)
                     # Display validation errors grouped in a card with icons
@@ -431,12 +470,19 @@ def main():
 </ul></div>
 """, unsafe_allow_html=True)
                     # Show overall confidence as average of field confidences
-                    field_confidences = list(res.get('field_confidences', {}).values())
                     if field_confidences:
-                        avg_conf = sum([c for c in field_confidences if isinstance(c, float)]) / len([c for c in field_confidences if isinstance(c, float)])
                         st.markdown(f"<div style='background:#fff3e0;padding:8px;border-radius:8px;margin-bottom:8px;text-align:center;'><b>Overall Confidence:</b> {avg_conf:.2f}</div>", unsafe_allow_html=True)
                     else:
                         st.markdown(f"<div style='background:#fff3e0;padding:8px;border-radius:8px;margin-bottom:8px;text-align:center;'><b>Overall Confidence:</b> N/A</div>", unsafe_allow_html=True)
+
+                    if show_full_data:
+                        st.markdown("**Full extracted data**")
+                        st.json(res)
+
+                if hide_clean_docs and hidden_clean_count > 0:
+                    st.caption(f"Hidden {hidden_clean_count} clean document(s) (confidence ≥ 0.80 and no validation errors).")
+                if shown_doc_count == 0:
+                    st.info("No flagged documents for this package. Use the dropdown to show all extracted data.")
     with tabs[1]:
         st.markdown("""
 <div style='background:#fff3e0;padding:8px 0 8px 0;text-align:center;font-size:1.08em;font-weight:500;border-radius:8px;margin-bottom:8px;'>
