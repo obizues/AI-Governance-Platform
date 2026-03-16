@@ -2,7 +2,7 @@
 
 An AI-native enterprise governance platform for document intelligence with:
 
-- LLM-native document extraction (local Ollama or OpenAI-compatible providers)
+- LLM-native document extraction (local Ollama, native Anthropic Claude, or OpenAI-compatible providers)
 - field-level confidence scoring and deterministic safety validation
 - escalation decisions for low-confidence or risky outputs
 - human training labels for supervised feedback
@@ -43,8 +43,11 @@ Baseline model version for demo reset: **v0.11.1**
 ## Core capabilities in v1.2.0
 
 - **AI-native extraction runtime** with configurable `rules` / `llm` / `hybrid` modes
-- **Local-first LLM operation** via Ollama, with OpenAI-compatible provider support
+- **Multi-provider LLM operation** across Ollama, native Anthropic Claude, and OpenAI-compatible runtimes
 - **Live LLM status visibility** in the UI (mode, provider, model, runtime health)
+- **Error-first extraction UX** in Extract & Validate with expandable full extraction details per document
+- **Key-aware provider defaults** that auto-select Anthropic/OpenAI in cloud-style deployments
+- **Anthropic model fallback resilience** when configured aliases are unavailable for a specific account
 - **Field-level confidence scoring** with escalation threshold visibility in the UI
 - **Operational HIL decisions** separated from **training labels**
 - **Training-eligible label export** limited to known-ground-truth human feedback
