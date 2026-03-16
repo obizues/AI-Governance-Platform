@@ -1,6 +1,6 @@
 """
 Audit Logging Service Module
-Centralizes audit logging logic for the AI Governance Platform.
+Centralizes audit logging logic for the AI Document Governance Platform.
 """
 
 import os

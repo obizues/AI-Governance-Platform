@@ -1,6 +1,6 @@
 # Documentation
 
-Documentation set for **AI Governance & Evaluation Platform v1.2.0**.
+Documentation set for **AI Document Governance Platform v1.2.0**.
 
 ## Files
 

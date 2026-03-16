@@ -1,4 +1,4 @@
-## AI Governance Platform v1.0.0
+## AI Document Governance Platform v1.0.0
 
 ### Release theme
 AI-native extraction + governed human oversight + auditable continuous improvement.

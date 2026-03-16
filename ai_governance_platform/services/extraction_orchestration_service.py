@@ -1,7 +1,7 @@
 """
 ExtractionOrchestrationService: Orchestrates ZIP processing, per-PDF extraction,
 field validation inference, escalation decisions, interaction log writing, and
-escalated PDF saving for the AI Governance Platform.
+escalated PDF saving for the AI Document Governance Platform.
 """
 import csv
 import datetime

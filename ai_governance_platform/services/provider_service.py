@@ -1,6 +1,6 @@
 """
 Provider Management Service Module
-Centralizes provider interface logic for the AI Governance Platform.
+Centralizes provider interface logic for the AI Document Governance Platform.
 """
 
 from typing import Any, Dict

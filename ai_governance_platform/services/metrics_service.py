@@ -1,6 +1,6 @@
 """
 Metrics & KPIs Service Module
-Centralizes metrics calculation and KPI logic for the AI Governance Platform.
+Centralizes metrics calculation and KPI logic for the AI Document Governance Platform.
 """
 
 import os

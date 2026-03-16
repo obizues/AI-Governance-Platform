@@ -142,7 +142,7 @@ def main():
     }
 </style>
 <div class="main-title-banner">
-    <span class="emoji">🤖</span> AI Governance & Evaluation Platform
+    <span class="emoji">🤖</span> AI Document Governance Platform
 </div>
 <div class="app-title-banner">
     <div class="name-title" style="font-size:0.95em; font-weight:400; margin-bottom:0.08em; text-align:center; color:#1976d2;"><b>Chris Obermeier</b> | SVP of Engineering</div>
@@ -169,7 +169,7 @@ def main():
     st.sidebar.markdown(f"""
 <div class='sidebar-card' style='background:#eaf6ff;font-size:0.93em;margin-bottom:16px;border:1.5px solid #b3e5fc;padding:8px 8px 6px 8px;'>
 <div style='font-weight:700;font-size:1em;line-height:1.2;margin-bottom:2px;text-align:center;'>
-<span style="font-size:1.05em;vertical-align:middle;">&#129302;</span> AI Governance & Evaluation Platform {APP_VERSION}
+<span style="font-size:1.05em;vertical-align:middle;">&#129302;</span> AI Document Governance Platform {APP_VERSION}
 </div>
 <div style='margin:0 0 0 0;font-size:0.91em;line-height:1.35;text-align:center;'>
 <span style="font-size:1em;">🧠</span> <span>AI-native document extraction with local LLM runtime</span>
@@ -243,7 +243,7 @@ def main():
 
     with st.sidebar.expander("&#128193; Project Documentation", expanded=False):
         st.markdown("**Project Documentation**")
-        st.markdown("<span style='font-size:1.05em;'>🌐</span> [GitHub Repository](https://github.com/obizues/AI-Governance-Platform)", unsafe_allow_html=True)
+        st.markdown("<span style='font-size:1.05em;'>🌐</span> [GitHub Repository: AI Document Governance Platform](https://github.com/obizues/AI-Governance-Platform)", unsafe_allow_html=True)
         st.markdown("- <span style='font-size:1.05em;'>📘</span> [README.md](https://github.com/obizues/AI-Governance-Platform/blob/main/README.md): Project overview, setup, features", unsafe_allow_html=True)
         st.markdown("- <span style='font-size:1.05em;'>📝</span> [CHANGELOG.md](https://github.com/obizues/AI-Governance-Platform/blob/main/docs/CHANGELOG.md): Release notes and updates", unsafe_allow_html=True)
         st.markdown("- <span style='font-size:1.05em;'>🗂️</span> [System Architecture](https://github.com/obizues/AI-Governance-Platform/blob/main/docs/architecture.md): Design and flow diagrams", unsafe_allow_html=True)

@@ -1,5 +1,5 @@
 """
-EscalationService: Handles escalation review logic, CSV parsing, and HIL actions for the AI Governance Platform.
+EscalationService: Handles escalation review logic, CSV parsing, and HIL actions for the AI Document Governance Platform.
 """
 import csv
 import os

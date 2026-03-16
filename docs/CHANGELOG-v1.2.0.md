@@ -1,4 +1,4 @@
-## AI Governance Platform v1.2.0
+## AI Document Governance Platform v1.2.0
 
 Release date: 2026-03-15
 

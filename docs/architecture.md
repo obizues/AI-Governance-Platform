@@ -1,4 +1,4 @@
-# AI Governance & Evaluation Platform Architecture
+# AI Document Governance Platform Architecture
 
 ## Version: v1.2.0
 

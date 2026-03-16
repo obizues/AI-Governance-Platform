@@ -1,4 +1,4 @@
-## AI Governance Platform v0.11.0
+## AI Document Governance Platform v0.11.0
 
 ### Release highlights
 - Separated **Escalation Decisions** from **Human Training Labels**

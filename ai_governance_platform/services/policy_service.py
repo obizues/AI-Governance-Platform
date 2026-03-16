@@ -1,6 +1,6 @@
 """
 Policy Engine Service Module
-Centralizes policy evaluation and risk assessment logic for the AI Governance Platform.
+Centralizes policy evaluation and risk assessment logic for the AI Document Governance Platform.
 """
 
 import yaml

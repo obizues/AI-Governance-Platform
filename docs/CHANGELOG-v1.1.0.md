@@ -1,4 +1,4 @@
-## AI Governance Platform v1.1.0
+## AI Document Governance Platform v1.1.0
 
 ### Release theme
 Governed promotion guardrails for safer model lifecycle control.

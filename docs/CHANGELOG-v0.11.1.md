@@ -1,4 +1,4 @@
-## AI Governance Platform v0.11.1
+## AI Document Governance Platform v0.11.1
 
 > Historical release note. For current release details, see `CHANGELOG-v1.2.0.md`.
 

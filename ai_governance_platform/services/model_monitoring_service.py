@@ -1,6 +1,6 @@
 """
 ModelMonitoringService: Handles retrain manifest reading, metric extraction,
-outcome classification, and KPI trend computations for the AI Governance Platform.
+outcome classification, and KPI trend computations for the AI Document Governance Platform.
 """
 import json
 import os

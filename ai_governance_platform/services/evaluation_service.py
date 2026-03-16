@@ -1,5 +1,5 @@
 """
-EvaluationService: Handles evaluation dataset loading, running, scoring, and report generation for the AI Governance Platform.
+EvaluationService: Handles evaluation dataset loading, running, scoring, and report generation for the AI Document Governance Platform.
 """
 import json
 from typing import List

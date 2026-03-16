@@ -1,6 +1,6 @@
 """
 File Management Service Module
-Handles CSV, JSON, and log file operations for the AI Governance Platform.
+Handles CSV, JSON, and log file operations for the AI Document Governance Platform.
 """
 
 import os

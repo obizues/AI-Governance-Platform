@@ -1,4 +1,4 @@
-# 🤖 AI Governance & Evaluation Platform v1.2.0
+# 🤖 AI Document Governance Platform v1.2.0
 
 An AI-native enterprise governance platform for document intelligence with:
 

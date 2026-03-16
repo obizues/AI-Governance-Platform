@@ -1,4 +1,4 @@
-## AI Governance Platform v0.10.0
+## AI Document Governance Platform v0.10.0
 
 Archived release note for the first streamlined extraction / escalation UI cleanup release.
 
