@@ -40,12 +40,39 @@ DOC_TYPES = [
 
 
 class LLMExtractionService:
+    ANTHROPIC_DEFAULT_FALLBACK_MODELS = [
+        "claude-3-5-sonnet-latest",
+        "claude-3-5-haiku-latest",
+        "claude-3-haiku-20240307",
+    ]
+
     @staticmethod
     def _anthropic_messages_url(base_url: str) -> str:
         normalized = str(base_url or "").rstrip("/")
         if normalized.endswith("/v1"):
             return f"{normalized}/messages"
         return f"{normalized}/v1/messages"
+
+    @classmethod
+    def _anthropic_model_candidates(cls, preferred_model: str) -> list[str]:
+        candidates: list[str] = []
+
+        preferred = str(preferred_model or "").strip()
+        if preferred:
+            candidates.append(preferred)
+
+        env_fallbacks = str(os.getenv("ANTHROPIC_FALLBACK_MODELS", "")).strip()
+        if env_fallbacks:
+            for model_name in env_fallbacks.split(","):
+                value = str(model_name).strip()
+                if value and value not in candidates:
+                    candidates.append(value)
+
+        for default_model in cls.ANTHROPIC_DEFAULT_FALLBACK_MODELS:
+            if default_model not in candidates:
+                candidates.append(default_model)
+
+        return candidates
 
     @staticmethod
     def extraction_mode() -> str:
@@ -139,24 +166,33 @@ class LLMExtractionService:
 
             try:
                 anthropic_url = cls._anthropic_messages_url(cfg["base_url"])
-                response = requests.post(
-                    anthropic_url,
-                    headers={
-                        "Content-Type": "application/json",
-                        "x-api-key": cfg["api_key"],
-                        "anthropic-version": "2023-06-01",
-                    },
-                    json={
-                        "model": cfg["model"],
-                        "max_tokens": 16,
-                        "messages": [{"role": "user", "content": "ping"}],
-                    },
-                    timeout=5,
-                )
-                if response.status_code in (200, 400):
-                    status["healthy"] = True
-                    status["message"] = "Anthropic reachable"
-                else:
+                headers = {
+                    "Content-Type": "application/json",
+                    "x-api-key": cfg["api_key"],
+                    "anthropic-version": "2023-06-01",
+                }
+
+                for model_name in cls._anthropic_model_candidates(cfg["model"]):
+                    response = requests.post(
+                        anthropic_url,
+                        headers=headers,
+                        json={
+                            "model": model_name,
+                            "max_tokens": 16,
+                            "messages": [{"role": "user", "content": "ping"}],
+                        },
+                        timeout=5,
+                    )
+
+                    if response.status_code in (200, 400):
+                        status["healthy"] = True
+                        status["model"] = model_name
+                        if model_name == cfg["model"]:
+                            status["message"] = "Anthropic reachable"
+                        else:
+                            status["message"] = f"Anthropic reachable (fallback model: {model_name})"
+                        return status
+
                     error_hint = ""
                     try:
                         err = response.json()
@@ -165,8 +201,17 @@ class LLMExtractionService:
                             error_hint = f": {err_msg}"
                     except Exception:
                         pass
+
+                    retryable_model_error = response.status_code == 404 and "model" in error_hint.lower()
+                    if retryable_model_error:
+                        continue
+
                     status["healthy"] = False
                     status["message"] = f"Anthropic HTTP {response.status_code}{error_hint}"
+                    return status
+
+                status["healthy"] = False
+                status["message"] = "Anthropic model unavailable. Set LLM_MODEL to one your account can access."
             except Exception as ex:
                 status["healthy"] = False
                 status["message"] = f"Anthropic unavailable: {ex}"
@@ -235,26 +280,54 @@ class LLMExtractionService:
         )
 
         if cfg["provider"] == "anthropic":
-            payload = {
-                "model": cfg["model"],
-                "max_tokens": 1200,
-                "temperature": 0,
-                "system": system_prompt,
-                "messages": [{"role": "user", "content": user_prompt}],
-            }
             anthropic_url = cls._anthropic_messages_url(cfg["base_url"])
-            response = requests.post(
-                anthropic_url,
-                headers={
-                    "Content-Type": "application/json",
-                    "x-api-key": cfg["api_key"],
-                    "anthropic-version": "2023-06-01",
-                },
-                json=payload,
-                timeout=60,
-            )
-            response.raise_for_status()
-            data = response.json()
+            headers = {
+                "Content-Type": "application/json",
+                "x-api-key": cfg["api_key"],
+                "anthropic-version": "2023-06-01",
+            }
+
+            data = None
+            resolved_model = cfg["model"]
+            last_error = ""
+            for model_name in cls._anthropic_model_candidates(cfg["model"]):
+                payload = {
+                    "model": model_name,
+                    "max_tokens": 1200,
+                    "temperature": 0,
+                    "system": system_prompt,
+                    "messages": [{"role": "user", "content": user_prompt}],
+                }
+                response = requests.post(
+                    anthropic_url,
+                    headers=headers,
+                    json=payload,
+                    timeout=60,
+                )
+                if response.status_code == 200:
+                    data = response.json()
+                    resolved_model = model_name
+                    break
+
+                error_text = ""
+                try:
+                    err = response.json()
+                    error_text = str(err.get("error", {}).get("message", "")).strip()
+                except Exception:
+                    error_text = ""
+
+                retryable_model_error = response.status_code == 404 and "model" in error_text.lower()
+                if retryable_model_error:
+                    last_error = f"Anthropic HTTP {response.status_code}: {error_text}" if error_text else f"Anthropic HTTP {response.status_code}"
+                    continue
+
+                response.raise_for_status()
+
+            if data is None:
+                if last_error:
+                    raise ValueError(last_error)
+                raise ValueError("Anthropic model unavailable. Set LLM_MODEL to one your account can access.")
+
             content_blocks = data.get("content", [])
             content = "\n".join(
                 block.get("text", "")
@@ -311,5 +384,5 @@ class LLMExtractionService:
             "doc_type": doc_type,
             "fields": normalized_fields,
             "provider": cfg["provider"],
-            "model": cfg["model"],
+            "model": resolved_model if cfg["provider"] == "anthropic" else cfg["model"],
         }
