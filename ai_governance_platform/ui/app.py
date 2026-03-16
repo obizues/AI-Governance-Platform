@@ -229,7 +229,7 @@ def main():
     Executives, engineering leaders, technical evaluators, and operators who need a practical demonstration of safe, observable, and continuously improvable enterprise AI workflows.
 
     **Key Features:**
-    - LLM-based field extraction (local Ollama, native Anthropic Claude, or OpenAI-compatible providers)
+    - LLM-based field extraction (local Ollama or OpenAI-compatible providers)
     - Live LLM runtime status visibility in the operator sidebar
     - Policy-driven escalation and reviewer controls
     - Human training labels with source-document verification
@@ -257,7 +257,7 @@ def main():
 <li>Streamlit for the multi-tab governance UI</li>
 <li>pandas and JSON/CSV log persistence for audit and feedback data</li>
 <li>pdfplumber for PDF text extraction pre-processing</li>
-<li>Ollama, native Anthropic Messages API, and OpenAI-compatible APIs for AI-native field extraction</li>
+<li>Ollama / OpenAI-compatible Chat Completions APIs for AI-native field extraction</li>
 <li>scikit-learn RandomForest + joblib for field-validation models and versioned artifacts</li>
 <li>matplotlib, Altair, and Plotly for KPI monitoring and trend visualization</li>
 <li>YAML policy configuration for review and escalation controls</li>
@@ -273,9 +273,7 @@ def main():
 **Key architectural decisions**
 <li><b>The Streamlit UI is orchestration only;</b> extraction, escalation, feedback, and evaluation logic live in dedicated services.</li>
 <li><b>Extraction is AI-native by design;</b> LLM extraction can run in <code>llm</code> or <code>hybrid</code> mode with deterministic fallback for resilience.</li>
-<li><b>Runtime provider health is surfaced to operators;</b> sidebar status confirms whether Ollama/Anthropic/OpenAI extraction is active, unavailable, or fallback-adjusted.</li>
-<li><b>Provider bootstrapping is key-aware;</b> launcher and runtime defaults auto-select Anthropic/OpenAI when API keys are present, otherwise local Ollama defaults are used.</li>
-<li><b>Anthropic model compatibility is resilient;</b> configured model aliases can fall back to compatible models if an account-level model lookup returns 404.</li>
+<li><b>Runtime provider health is surfaced to operators;</b> sidebar status confirms whether Ollama/LLM extraction is active or unavailable.</li>
 <li><b>Operational escalation review is separate from model-training feedback;</b> governance decisions are logged without polluting training labels.</li>
 <li><b>Only human-verified ground-truth labels are eligible for retraining;</b> 'cannot_verify' stays out of the training export.</li>
 <li><b>Retrain promotion is safety-gated;</b> candidate models are blocked from production deployment on KPI regression unless an explicit force-promote override is approved.</li>
@@ -439,46 +437,6 @@ def main():
                         st.markdown(f"<div style='background:#fff3e0;padding:8px;border-radius:8px;margin-bottom:8px;text-align:center;'><b>Overall Confidence:</b> {avg_conf:.2f}</div>", unsafe_allow_html=True)
                     else:
                         st.markdown(f"<div style='background:#fff3e0;padding:8px;border-radius:8px;margin-bottom:8px;text-align:center;'><b>Overall Confidence:</b> N/A</div>", unsafe_allow_html=True)
-
-                    with st.expander(f"Show full extraction details — {fname}", expanded=False):
-                        extraction_method = str(res.get("extraction_method", "rules"))
-                        llm_provider = str(res.get("llm_provider", "") or "-")
-                        llm_model = str(res.get("llm_model", "") or "-")
-                        llm_error = str(res.get("llm_error", "")).strip()
-
-                        st.markdown(
-                            f"**Extraction method:** `{extraction_method}`  "+
-                            f"**Provider:** `{llm_provider}`  "+
-                            f"**Model:** `{llm_model}`"
-                        )
-                        if llm_error:
-                            st.warning(f"LLM fallback/error: {llm_error}")
-
-                        fields_map = res.get("fields", {}) or {}
-                        confidence_map = res.get("field_confidences", {}) or {}
-                        detail_rows = []
-                        for field_name, field_value in fields_map.items():
-                            confidence_value = confidence_map.get(field_name)
-                            if isinstance(confidence_value, float):
-                                confidence_text = f"{confidence_value:.2f}"
-                            else:
-                                confidence_text = "N/A"
-
-                            detail_rows.append(
-                                {
-                                    "field": field_name,
-                                    "value": field_value if str(field_value).strip() else "(empty)",
-                                    "confidence": confidence_text,
-                                }
-                            )
-
-                        if detail_rows:
-                            st.dataframe(pd.DataFrame(detail_rows), use_container_width=True, hide_index=True)
-                        else:
-                            st.caption("No extracted fields available.")
-
-                        st.markdown("**Full extraction payload**")
-                        st.json(res)
     with tabs[1]:
         st.markdown("""
 <div style='background:#fff3e0;padding:8px 0 8px 0;text-align:center;font-size:1.08em;font-weight:500;border-radius:8px;margin-bottom:8px;'>

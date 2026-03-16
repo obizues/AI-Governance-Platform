@@ -16,12 +16,11 @@ Documentation set for **AI Governance & Evaluation Platform v1.2.0**.
 
 The documentation now reflects:
 
-- AI-native extraction with Ollama + Anthropic + OpenAI-compatible runtime support and deterministic fallback
+- AI-native extraction with LLM runtime support and deterministic fallback
 - separated escalation decisions vs training labels
 - pending-label-based retraining workflow
 - regression guardrails before production promotion (block by default, force-promote override)
 - versioned model deployment and baseline reset
-- key-aware provider defaults and Anthropic model fallback handling for deployment reliability
 - KPI monitoring focused on invalid recall, macro F1, and governance throughput
 
 Version: **v1.2.0**

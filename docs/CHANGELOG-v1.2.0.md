@@ -29,7 +29,6 @@ Release date: 2026-03-15
 - Anthropic endpoint handling now supports both `https://api.anthropic.com` and `https://api.anthropic.com/v1`
 - Anthropic model fallback sequence added to handle account-specific model availability
 - README, docs index, architecture, app version, and requirements version marker updated to v1.2.0
-- Extract & Validate now uses an error-first default view with per-document expandable full extraction details
 
 ### Verification notes
 
